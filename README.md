@@ -1,5 +1,5 @@
 # BPAS
-Basic Polynomial Algebra Subprograms
+## Basic Polynomial Algebra Subprograms
 
 The Basic Polynomial Algebra Subprograms (BPAS) library provides
 support for arithmetic operations with polynomials on modern
