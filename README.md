@@ -1,6 +1,11 @@
 Basic Polynomial Algebra Subprograms (BPAS)
 ===========================================
 
+
+![alt text][logo]
+
+[logo]: http://www.bpaslib.org/bpas.png "BPAS Logo"
+
 The BPAS library provides support for arithmetic operations with polynomials
 on modern computer architectures. Typical operations are
 addition, multiplication, division, evaluation and interpolation.
