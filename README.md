@@ -5,7 +5,6 @@ Basic Polynomial Algebra Subprograms (BPAS)
 <img src="http://www.bpaslib.org/bpas.png" alt="BPAS Logo">
 </p>
 
-<p style='text-align: justify;'>
 The BPAS library provides support for arithmetic operations with polynomials
 on modern computer architectures. Typical operations are
 addition, multiplication, division, evaluation and interpolation.
@@ -13,7 +12,7 @@ The BPAS library also supports polynoial system solving
 and real root isolation. The code is mainly written in C++
 for ease of use, with underlying C for performance. The CilkPlus
 extension is used in places for parallelism targeting multi-core processors.
-</p>
+
 
 Class Overview
 --------------
@@ -81,4 +80,5 @@ a full view of the templating and inheritance of a class.
 
 Questions
 ---------
+
 Questions, comments, bug reports: create an ["issue"](https://github.com/orcca-uwo/BPAS/issues) and we'll get back to you.
