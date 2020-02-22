@@ -1,0 +1,14 @@
+To build this directory make sure that your CPLUS_INCLUDE_PATH is set to include the path to your maple include directory.
+On my machine that is: 
+'export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MAPLE_HOME/extern/include'
+
+To link with the built object file, ensure you also include '-lmaplec -lrt' and likely, also set up your library environment variable.
+On my machine that is: 
+'LIBRARY_PATH=$LIBRARY_PATH:$MAPLE_HOME/bin.X86_64_LINUX
+ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MAPLE_HOME/bin.X86_64_LINUX'
+
+NOTE: if you include maplec.h before bpas.h you will get some horrible errors out of gmp
+NOTE: You must have the environment variable MAPLE set to point to the install location of maple.
+      It cannot be MAPLE_HOME, the environment variable must be exactly 'MAPLE'. The internal libraries
+      of maple use this environment varibale. (A wonderful undocumented dependency)
+NOTE: In Maple 2017 restarting from C is broken. Variable names will not be reset. 

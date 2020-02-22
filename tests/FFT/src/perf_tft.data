@@ -1,0 +1,39 @@
+ Performance counter stats for '/home/alina/Main/tests/ModularPolynomial/src/fft 8 16777216':
+
+       5714.629848 task-clock                #    0.993 CPUs utilized          
+               732 context-switches          #    0.000 M/sec                  
+                22 CPU-migrations            #    0.000 M/sec                  
+           229,990 page-faults               #    0.040 M/sec                  
+    13,626,967,372 cycles                    #    2.385 GHz                     [49.86%]
+   <not supported> stalled-cycles-frontend 
+   <not supported> stalled-cycles-backend  
+     9,233,516,037 instructions              #    0.68  insns per cycle         [75.11%]
+       304,575,613 branches                  #   53.298 M/sec                   [75.06%]
+         1,223,392 branch-misses             #    0.40% of all branches         [75.13%]
+
+       5.756148088 seconds time elapsed
+
+
+Events: 4K cycles                                                               
+ 36.49%  fft  fft                [.] TFT_tree1::DFT_eff_p1(int, int, long*, long
+ 17.89%  fft  fft                [.] TFT_tree1::DFT_iter512(long*, long*)
+ 13.24%  fft  [kernel.kallsyms]  [k] 0xffffffff8103d0ca
+ 11.47%  fft  fft                [.] PBPAS1::DFT_eff_p1(int, int, long*, long*,
+  8.52%  fft  fft                [.] TFT_tree1::DFT_iter256(long*, long*)
+  6.51%  fft  fft                [.] PBPAS::DFT_iter(int, int, long*, long*, MON
+  1.75%  fft  libc-2.15.so       [.] __memcpy_ssse3
+  1.31%  fft  fft                [.] test8(long, int, int)
+  1.25%  fft  fft                [.] PBPAS::ArrayBitReversalSpe512(long*)
+  1.24%  fft  libc-2.15.so       [.] __memset_sse2
+  0.18%  fft  fft                [.] TFT_tree1::DFT_rec_p1(int, int, long*, long
+  0.10%  fft  ld-2.15.so         [.] check_match.11236
+  0.04%  fft  fft                [.] TFT_tree1::DFT_iter32(long*, long*)
+  0.02%  fft  libc-2.15.so       [.] __libc_start_main
+
+ Performance counter stats for '/home/alina/Main/tests/ModularPolynomial/src/fft 8 16777216':
+
+    14,043,969,972 cycles                    #    0.000 GHz                    
+     9,201,853,218 instructions              #    0.66  insns per cycle        
+        57,956,883 cache-misses                                                
+
+       5.888307452 seconds time elapsed

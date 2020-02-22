@@ -1,0 +1,18 @@
+The regular chain classes in BPAS  provide a collection of routines
+for solving systems of algebraic equations by means
+of exact methods, a.k.a. symbolic computation.
+The main commands for accomplishing this are the
+\texttt{triangularize} and
+\texttt{intersect} methods of the
+\texttt{RegularChain} class and the
+\texttt{intersect} method of the
+\texttt{ZeroDimensionalRegularChain} class. The objects of both these
+classes are \emph{regular chains}. Becuase regular chains are
+mathematical objects that algebraically encode geometric components of
+the solution space, the solutions to a system of algebraic equations
+can be expressed as a set of regular chains. This is precisely what
+\texttt{triangularize} and
+\texttt{intersect} accomplish: for an input
+polynomial $p$ (for \texttt{intersect}) or algebraic system $S$ (for
+\texttt{triangularize}), the output is a description of the solution
+set as a collection of \texttt{RegularChain} objects.

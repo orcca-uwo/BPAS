@@ -1,0 +1,74 @@
+
+
+#######################################
+SRC_LIST:=\
+	cpu_timer\
+	GFPF_Support\
+# 	gfpf_all_headers\
+#	gfpf_data_tools\
+#	gfpf_gmp_fft\
+#	gfpf_gmp_tools\
+#	gfpf_six_step_fft\
+
+#######################################
+INCLUDES = ../../include
+CC  = gcc #-pg -g3
+LIBS= -lgmp -lm -lcilkrts 
+#######################################
+## -flto -Wl,-flto
+## -flto needs a plugin in gcc7.4
+COMPILER_OPTIONS=-fpic -fcilkplus \
+								 -DLINUXINTEL64\
+								 -march=x86-64 -Ofast\
+								 -I$(INCLUDES)\
+								-DVERIFICATION_ENABLED=0\
+								-DVERBOSE=0\
+								-DSMALL_FFT_STEPS_TIMING_ENABLED=0\
+								-DENABLE_CILK=1\
+								#-DTWIDDLE_CACHE_SIZE=64\
+								#-pg\
+								#-DLEVEL1_DCACHE_LINESIZE=64\
+								#-DPROFILING_ENABLED -DPROFILING_GMP_ENABLED=1
+#######################################
+COMPILE_ARGS=$(CC) $(COMPILER_OPTIONS) $(LIBS)
+#######################################
+OBJS:=$(SRC_LIST:=.o)
+#######################################
+compile: $(OBJS)
+	@#echo $(OBJS)
+	@#$(COMPILE_ARGS) -shared -o libgfpf.so $(OBJS) $(LIBS) #>/dev/null 2>&1
+	@#ar rcs libgfpf.a $(OBJS) 
+	
+#######################################
+%.o: %.c
+	@echo gcc [$<] ...
+	$(COMPILE_ARGS) $< $(LIBS) -c #>/dev/null 2>&1
+
+#######################################
+serial-gmp: COMPILE_ARGS+= -DGMP_SERIAL_ENABLED=1
+serial-gmp: compile
+
+#######################################
+SERIAL_OBJS:=$(SRC_LIST:=.serial)
+#######################################
+serial: $(SERIAL_OBJS)
+#######################################
+%.serial: %.c
+	@echo gcc serial [$<] ...
+	@$(COMPILE_ARGS) -DENABLE_CILK=0 $< -c -o $@ #>/dev/null 2>&1
+	@cp $@ $(@:%.serial=%.o)
+
+
+#######################################
+check: compile
+
+#######################################
+benchmark: compile
+
+#######################################
+RM_LIST= bin log o data out tmp serial
+#######################################
+clean:
+	@$(foreach x,$(RM_LIST),\
+		rm -rf *.$x;\
+		echo "rm -rf [*.$x]...";)

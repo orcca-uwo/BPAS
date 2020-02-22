@@ -1,0 +1,171 @@
+\newcommand{\euclideanDivision}[4]{\mbox{{$ \begin{array}{c|c} #1 & #2 \\ \cline{2-2}
+                                                               #3 & #4 \\ \end{array} $}}}
+\newtheorem{Notation}{Notation}
+\newtheorem{Hypothesis}{Hypothesis}
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}{Proposition}
+\newtheorem{defn}{Definition}
+\newtheorem{lem}{Lemma}
+\newtheorem{cor}{Corollary}
+\newtheorem{Conjecture}{Conjecture}
+\newtheorem{Remark}{Remark}
+\newtheorem{Example}{Example}
+\newtheorem{Algorithm}{Algorithm}
+\newcommand{\myproof}{\textsc{Proof.} }
+\newcommand{\myfoorp}{\hfill$\square$}
+\newenvironment{Proof}{\par\noindent{\bf Proof. }}{\unskip~$\Box$\par}
+
+\usepackage{amssymb}
+\newcommand*{\QEDA}{\hfill\ensuremath{\blacksquare}}%
+\newcommand*{\QEDB}{\hfill\ensuremath{\square}}%
+
+
+\pagestyle{empty}
+
+%%%%%%%%%%%%
+%% Numbers %
+%%%%%%%%%%%%
+\def\C {\ensuremath{\mathbb{C}}}
+\def\K {\ensuremath{\mathbb{K}}}
+\def\Q {\ensuremath{\mathbb{Q}}}
+\def\R {\ensuremath{\mathbb{R}}}
+\def\Z {\ensuremath{\mathbb{Z}}}
+\def\KK {\ensuremath{\mathbb{K}}}
+\def\KKK {\ensuremath{\overline{\mathbb{K}}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Polynomials and regular chains %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\discrim}[1]{\mbox{{\rm discrim}$(#1)$}}
+\newcommand{\init}[1]{\mbox{{\rm init}$(#1)$}}
+\newcommand{\iter}[1]{\mbox{{\rm iter}$(#1)$}}
+\newcommand{\mdeg}[1]{\mbox{{\rm mdeg}$(#1)$}}
+\newcommand{\mvar}[1]{\mbox{{\rm mvar}$(#1)$}}
+\newcommand{\prem}[1]{\mbox{{\rm prem}$(#1)$}}
+\newcommand{\pquo}[1]{\mbox{{\rm pquo}$(#1)$}}
+\newcommand{\rank}[1]{\mbox{{\rm rank}$(#1)$}}
+\newcommand{\ires}[1]{\mbox{{\rm ires}$(#1)$}}
+\newcommand{\src}[1]{\mbox{{\rm src}$(#1)$}}
+\newcommand{\sat}[1]{\mbox{{\rm sat}$(#1)$}}
+\newcommand{\sep}[1]{\mbox{{\rm sep}$(#1)$}}
+\newcommand{\tail}[1]{\mbox{{\rm tail}$(#1)$}}
+\newcommand{\head}[1]{\mbox{{\rm head}$(#1)$}}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%% Software packages %
+%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\RegularChains}{{\tt RegularChains}}
+\newcommand{\Maple}{\textsc{Maple}}
+\newcommand{\bpas}{\textsc{bpas}}
+\newcommand{\cumodp}{\textsc{cumodp}}
+\newcommand{\cilkplus}{\textsc{CilkPlus}}
+\newcommand{\mpsolve}{\textsc{MPSolve}}
+\newcommand{\matlab}{\textsc{Matlab}}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%% From preamble.tex %
+%%%%%%%%%%%%%%%%%%%%%%
+
+
+% FANCY ENUMERATION
+%% This gives us fun enumeration environments. compactenum will be nice.
+\usepackage{paralist}
+% An itemize-style list with lots of space between items
+\newenvironment{outerlist}[1][\enskip\textbullet]%
+        {\begin{enumerate}[#1]}{\end{enumerate}%
+         \vspace{-.6\baselineskip}}
+% An itemize-style list with little space between items
+\newenvironment{innerlist}[1][\enskip\textbullet]%
+        {\begin{compactenum}[#1]}{\end{compactenum}}
+
+\renewcommand{\ie}{\emph{i.e.}}
+\renewcommand{\eg}{\emph{e.g.}}
+\renewcommand{\etc}{\emph{etc.}}
+\newcommand{\nn}{\nonumber}
+
+\newcommand{\bt}{\begin{thm}}
+\newcommand{\et}{\end{thm}}
+\newcommand{\bco}{\begin{cor}}
+\newcommand{\eco}{\end{cor}}
+\newcommand{\bl}{\begin{lem}}
+\newcommand{\el}{\end{lem}}
+\newcommand{\bp}{\begin{prop}}
+\newcommand{\ep}{\end{prop}}
+\newcommand{\bdf}{\begin{defn}}
+\newcommand{\edf}{\end{defn}}
+\newcommand{\bpf}{\begin{proof}}
+\newcommand{\epf}{\end{proof}}
+\newcommand{\bcor}{\begin{correct}}
+\newcommand{\ecor}{\end{correct}}
+\newcommand{\bci}{\begin{compactitem}}
+\newcommand{\eci}{\end{compactitem}}
+
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\bd}{\begin{description}}
+\newcommand{\ed}{\end{description}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}
+\newcommand{\bq}{\begin{quote}\small}
+\newcommand{\eq}{\end{quote}}
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\bea}{\setlength\arraycolsep{2pt}\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}\setlength\arraycolsep{6pt}}
+\newcommand{\bfig}{\begin{figure}}
+\newcommand{\efig}{\end{figure}}
+\newcommand{\bcom}{\begin{comment}}
+\newcommand{\ecom}{\end{comment}}
+\newcommand{\etal}{\emph{et.\ al.}}
+\newcommand{\viz}{\emph{viz.}}
+\newcommand{\cf}{\emph{cf.}}
+\newcommand{\p}{\paragraph{}}
+\newcommand{\s}{\section}
+\newcommand{\subs}{\subsection}
+\newcommand{\subss}{\subsubsection}
+\newcommand{\st}{\section*}
+\newcommand{\subst}{\subsection*}
+\newcommand{\subsst}{\subsubsection*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For pseudocode and code %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=C++,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,           % adds a frame around the code
+tabsize=2,          % sets default tabsize to 2 spaces
+captionpos=b,           % sets the caption-position to bottom
+breaklines=true,        % sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
+\lstset{language=C++}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\newcommand{\alnam}[1]{\textsc{#1}}
+\newcommand{\templ}[1]{$\langle$#1$\rangle$}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Miscellaneous macros %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\hidetext}[1]{\mbox{ \ }}
+\newcommand{\todo}[2]{{{\textcolor{red}{ #1}}}\footnote{ {\textcolor{blue}{ #2}} }}
+\newcommand{\todolater}[2]{#1}
+\newcommand{\fix}[3]{#1}
+%% \newcommand{\reworked}[1]{{{\textcolor{blue}{ #1}}}}
+\newcommand{\reworked}[1]{{ #1}}

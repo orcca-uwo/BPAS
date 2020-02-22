@@ -1,0 +1,17 @@
+# To use our realroot, it needs "examples" folder (can be extracted from 
+examples.zip) under the same directory as the "BPAS" folder
+# Usage: ./realroot <test =0..2> <example =1..8/1..53> <degree =at most 2^16>
+
+The first argument can 0, 1 or 2
+    0 is for Taylor shift
+    1 is for univariate isolation
+    2 is for multivariate isolation
+    Any other number is for internal test only
+The second argument is the example number (1..8) in the case of Taylor shift
+   or univariate isolation whereas it is the example number (1..53)
+   in the case of multivariate isolation
+The third argument is the degree in the case of Taylor shift
+   or univariate isolation
+
+IMPORTANT: there is a hidden argument at last, which can be 1 or 0
+depending on whether or not the results should be checked.

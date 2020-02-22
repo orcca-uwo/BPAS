@@ -1,0 +1,262 @@
+To state clearly what the output of \texttt{triangularize} or
+\texttt{intersect} is, we must define the concept of a regular
+chain. To this end, first observe that algebraic equations act as
+constraints on the geometric space defined by the possible values of
+their variables (typically $\mathbb{C}^n$ for $n$ variables).
+%%
+For a set $S$ of algebraic equations in $n$ variables, and with
+coefficients in a subfield of $\mathbb{C}$, say the field $\mathbb{Q}$
+of rational numbers, the set of points in $\mathbb{C}^n$ consistent
+with these algebraic constraints, \emph{i.e.}, the locus of common
+zeros of the equations in $S$, is a certain geometric object, the
+algebraic variety $V(S)$, in $\mathbb{C}^n$. For example, if
+$S=\{x^2+y^2-1\}$, then $V(S)$ is the complex unit circle in
+$\mathbb{C}^2$. The strategy of the \texttt{intersect} algorithm is to
+compute the solution space by dividing it into so-called
+\emph{quasi-components}, 
+%%
+%% (that we might call \emph{regular components}
+%% for reasons that will become clear) 
+%% MARC: we should introduce nee tersm, in particular
+%% when there is already one for the same purpose.
+%%
+each of which is encoded by a
+special kind of algebraic system, called a \emph{regular chain}, that
+has a particular structure.
+
+There are two key structural properties of regular chains that allow
+them to encode distinct components of algebraic varieties. First of
+all, regular chains have a triangular structure, in the sense that for
+polynomials in $\mathbb{K}[x_1,\ldots,x_n]$, with $\mathbb{K}$ a field
+and variable ordering $x_1<x_2<\cdots<x_n$, the polynomials in a
+regular chain $T$ are non-constant and have \emph{pairwise distinct
+  main variables}. This implies that each variable can be the main
+variable of at most one element of $T$. So if $p\in T$ has $x_i$ as
+its main variable, the only other variables that can appear in $p$ are
+in $\{x_1,x_2,\ldots,x_{i-1}\}$. Regular chains are therefore
+\emph{triangular sets}. For this reason, the \texttt{RegularChain}
+class in \bpas{} inherits from the \texttt{TriangularSet} class.
+
+Having the structure of a triangular set allows a regular chain to
+encode a solution set in a manner analogous to linear systems in row
+echelon form. In this case, linear systems can be solved by
+back-substitution. Suppose that a linear system has $m$ equations and
+$n$ variables.  If $m=n$ (and the system is non-singular), then the
+solution set is simply a unique point in $\mathbb{C}^n$. If $m<n$,
+however, then the solution set is a parameterized linear subspace of
+$\mathbb{C}^n$, and if all the equations are linearly independent it
+has dimension $n-m$. The situation is similar for regular chains. If
+$m=n$ (same number of equations as variables) for a regular chain $T$,
+then the variety $V(T)$ is a set of points in $\mathbb{C}^n$. Thus,
+the non-linearity of the equations allows a single system $T$ to
+encode many solutions, even when the solutions are points. If $m<n$,
+on the other hand, then the variety $V(T)$ is a complex manifold of
+dimension $m-n$ embedded in $\mathbb{C}^n$. You may notice that we did
+not mention for regular chains an analogous condition to the
+non-singularity of linear systems. This is because regular chains have
+another structural property, over being triangular, that ensures they
+are ``non-singular'' in a sense that will now be made clear.
+
+To see what the issue is here, consider the following example. Suppose
+that we have a triangular set $T=\{T_1,T_2\}=\left\{ x_1^2 - 1, (x_1 + 1) x_2^2 + 1 \right\}$, 
+where $T_1,T_2\in\mathbb{Q}[x_1,x_2]$, $x_1<x_2$. Consider $T_2$, 
+which has the largest main variable, $x_2$, in the set. The leading coefficient 
+of $T_2$ viewed as a univariate polynomial in its main variable, called 
+the \emph{initial} of $T_2$, is $x_1+1$. Provided that $x_1\neq -1$, $T_2$ 
+provides a valid constraint on the ambient space of $T$. If $x_1=-1$, however, 
+then the system becomes inconsistent, because $T_2$ asserts that $1=0$. So, 
+provided we avoid this ``singular'' point things are fine. The problem with $T$, 
+however, is that $T_1=(x_1+1)(x_1-1)$, so $T_1$ includes the ``singular'' case, so 
+that at $x_1=-1$, $T$ gives an inconsistent set of constraints.
+
+There are issues even if the system does not become inconsistent. 
+Consider the positive-dimensional case where  
+$$T=\{T_1,T_3\}=\left\{ x_1^2 - 1/4, (x_1+1/2)x_3^2+x_2^2+x_1^2-5/4 \right\},$$ 
+where $T_1,T_3\in\mathbb{Q}[x_1,x_2,x_3]$, $x_1<x_2<x_3$. The constraint $T_1=0$ imposes the condition
+that $x_1=\pm\tfrac{1}{2}$. At $x_1=1/2$, $T_3$ becomes $x_3^2+x_2^2-1$, a circle in the $x_2x_3$-plane, and a one-dimensional manifold. But, at $x_1=-1/2$, $T_3$ becomes $x_2^2-1$, a degenerate two-point zero-dimensional case. This is another kind of ``singular'' case we wish to avoid. For positive dimensional regular chains, then, avoiding such ``singular'' cases means that the quasi-component of the chain has \emph{unmixed dimension}, \emph{i.e.}, the dimension is constant across all of $W(T)$.
+
+%There are issues even if the system does not become inconsistent. 
+%Consider a similar example where  $T=\{T_1,T_2\}=\left\{ x_1^2 - 1, (x_1 + 1) x_2^2 + x_2 \right\}$.
+%Note that the system is zero-dimensional, so the solution is a set of points.
+%If it were the case that $p_1\neq 0$ at $x_1=-1$, so that the initial of $p_2$ is never zero
+%within the solution set, then 
+%the system would have $\deg_{x_1}(p_1)\cdot\deg_{x_2}(p_2)$ solutions. Since $\deg{x_1}(p_1)=2=\deg{x_2}(p_2)$, we should 
+%expect 4 solutions. There are only 3, however, because at $x_1=-1$, the degree of $p_2$ drops. This is another
+%kind of ``singular'' case we wish to avoid. For positive dimensional regular chains, avoiding ``singular'' cases means
+%that the quasi-components of the chain have \emph{unmixed dimension}, \emph{i.e.}, the dimension is 
+%constant across all of $W(T)$.
+
+%\todo{The other key structural property concerns the initals of the
+%polynomials in a regular chain. Any polynomial $p$ in
+%$\mathbb{K}[x_1,\ldots,x_n]$, $x_1<x_2<\cdots<x_n$, can be expressed
+%as
+%$$p=\initial(p)x_i^{\deg_{x_i}(p)}+\tail{p},$$ where $x_i$ is the
+%leading (or main) variable (highest variable in the variable order
+%appearing in $p$). Since $\deg_{x_i}(\tail{p})$ is strictly smaller
+%than $\deg_{x_i}(p)$, if at some point $h_p\equiv\initial(p)=0$, then
+%$p=\tail{p}$ and the degree (in the main variable $x_i$) of the
+%constraint imposed by $p$ has dropped. This is a kind of singular
+%case. To see how it is a singular case, one may recall that for a
+%single variable, reducing the degree reduces the number of
+%solutions. Thus, the inital being zero changes the structure of the
+%solution set. It is perhaps more clearly a singular case, however,
+%when $\deg_{x_i}(\tail{p})=0$, in which case $p$ no longer places any
+%constraint on $x_i$, only on lower variables in the order. This is
+%more like the case of a singular linear system, since, provided the
+%system does not become inconsistent, the dimension of the zero set
+%increases, a more pronounced change in structure.
+%%%
+%To prevent this singular case, part of the definition of a regular
+%chain $T$ is that the initials of the polynomials in $T$ can never be
+%zero. To explain this more clearly, let $T_{x_i}$ denote the
+%polynomial of a triangular set $T$ with main variable $x_i$, and
+%suppose that $x_i$ is the highest variable such that $T_{x_i}\neq
+%0$. Then the triangular set is singular if $h_{T_{x_i}}$ is
+%identically zero on some lower dimensional sub-manifold of
+%$V(T)$. This is made precise algebraically, as we will explain
+%below. The key point to appreciate is that the exclusion of this
+%singular case means that a regular chain does not encode the component
+%variety $V(T)$ of the polynomials of $T$, but rather the
+%\emph{quasi-component} $W(T)\equiv V(T)\backslash V(h_T)$, where $h_T$
+%is the product of all of the initials of polynomials in $T$.
+%% This is why a regular chain encodes a quasi-component $W(T)$ of the solution set rather than a component $V(T)$. 
+% As such, a regular chain picks out the generic zeros of $V(T)$, leaving out the ``singular'' boundary points of $V(h_T)$, which, if required, will be encoded by another regular chain in the full decomposition of the solution set.
+%%%
+%To make the non-singular condition precise we need to introduce another important concept, that of the saturated ideal of a regular chain. 
+%}{This is too unformal and too long. It would be much
+%more effective to take an example of a triangular set
+%which is not a regular chain and explain what is the problem.
+%Example: $\{ x_1^2 - 1, (x_1 + 1) x_2^2 + 1 \}$.
+%My paper {\em On the theories of triangular sets} has a 
+%few examples illustrating basic concepts around
+%triangukar sets and regular chains.}
+
+Thus, to avoid the possibility that a triangular set can be ``singular'' in these ways, we must ensure that
+the initials of the polynomials in the set can never be zero. Let $T_k$ be the polynomial of $T$ with main
+variable $x_k$, if it exists, let $x_i$ be the largest main variable of 
+a polynomial in a triangular set $T$, with $T$ non-empty, and let $T_{<i}=_{\mathrm{def}}T\backslash T_{i}$.
+The polynomials in $T$ generate an ideal $\langle T\rangle$ that itself generates the variety $V(T)$.
+To rule out the case that $h_{T_i}$ can be zero it must
+certainly be the case that $h_{T_{i}}\nin\langle T_{<i}\rangle$,
+\emph{i.e.}, $h_{T_{i}}$ must not be zero modulo $\langle
+T_{<i}\rangle$ (we consider $T_{<i}$ and not $T$ here because $T_{<i}$ places the constraints on variables
+less than $x_i$, and $h_{T_i}$ has only variables less than $x_i$). But this is not the only situation in which $h_{T_i}$ can be zero on some part of $V(T_{<i})$.
+If there exist any
+polynomials in $q\in\mathbb{K}[x_1,\ldots,x_n]$ such that
+$h_{T_{i}}^k\cdot q\in\langle T_{<i}\rangle$ for some $k\in\mathbb{N}$,
+\emph{i.e.}, any constraints $q$ such that either $q=0$ or
+$h_{T_{i}}=0$ holding guarantees that we are in $V(T_{<i})$, then there
+are still parts of $V(T_{<i})$ on which $h_{T_{i}}=0$. In this case,
+$h_{T_{i}}$ is a zero-divisor modulo $\langle T_{<i}\rangle$. Thus, to
+avoid ``singular'' cases, we must therefore prevent $h_{T_{i}}$ from being zero or
+a zero-divisor modulo $\langle T_{<i}\rangle$.
+%
+% Adding such constraints forces us to be in those parts of $V(T)$ where $h_{T_{x_i}}\neq 0$, \emph{i.e.} in $V(T)\backslash V(h_{T_{x_i}})$ (the case where both $q=0$ and $h_{T_{x_i}}=0$ simultaneously is ruled out by the definition of a regular chain, as we will see below).
+
+Since we can repeat this reasoning for all of the initals of the polynomials $T_{j}$ in a chain modulo the ideals generated by $T_{<{j}}$, we require that an analogous ``non-singular'' condition holds simultaneously on all of the initials of the polynomials in $T$, \emph{i.e.}, for $h_{T}$, so that none of the initials of polynomials in $T$ can ever be zero or a zero-divisor.
+% Extending this idea to $T_{<x_{i}}$ and its sub-chains (removing the top polynomial each time), the same kind of condition must hold for all of the initials of the polynomials in $T$, \emph{i.e.}, for all members of $h_T$. 
+The concept we need to make this precise is the \emph{saturated ideal} of a triangular set $T$, denoted $\sat{T}$, which is the set of polynomials $q\in\mathbb{K}[x_1,\ldots,x_n]$ such that $h_T^k\cdot q\in\langle T\rangle$, $k\in\mathbb{N}$. Given that we need to avoid zeros and zero-divisors modulo an ideal,  we naturally define a polynomial to be \emph{regular} modulo an ideal $\mathcal{I}$ if it is neither zero nor a zero-divisor modulo $\mathcal{I}$. We then finally have that a triangular set $T\subset \mathbb{K}[x_1,\ldots,x_n]$ is a \emph{regular chain} if either (1) $T$ is empty, or (2) $T_{<T_{\textrm{max}}}$ is a regular chain, where $T_{\textrm{max}}$ is the polynomial in $T$ with greatest main variable, and the initial of $T_{\textrm{max}}$ is regular modulo $\sat{T_{<{\textrm{max}}}}$.
+
+Since regular chains work with the ideal $\sat{T}$, we ensure that the points picked out by a regular chain are in $W(T)=V(T)\backslash V(h_T)$, as pointed out above. $W(T)$ is a quasi-component because it is defined by removing a lower dimensional boundary, and hence its zero set is not in general actually a variety (not closed in the Zariski topology); its Zariski closure $\overline{W(T)}$, however, is precisely $V(\sat{T})\subseteq V(T)$.
+
+%The polynomials in $T_{<x_{i}}$ generate an ideal $\mathcal{I}=\langle T_{<x_{i}}\rangle$ that defines the variety $V(T_{<x_{i}})$. $h_{T_{x_i}}$ is a zero divisor modulo $\mathcal{I}$ if there is some $g\in\mathbb{K}[x_1,\ldots,x_{i-1}]$ such that $g\cdot h_{T_{x_i}}\in\mathcal{I}$, \emph{i.e.}, $g\cdot h_{T_{x_i}}$ is zero modulo $\mathcal{I}$.  identically zero then we can understand the zero divsor case as that where the initial $h_{T_{x_i}}$ is not identically zero, but zero modulo a special ideal that extends that of the ideal $I(T_{<x_i})$ generated by the polynomials of $T_{<x_i}$. The \emph{saturated ideal} of a regular chain $T$, denoted $\sat{T}$, includes the ideal $I(T)$ generated by the elements of $T$ together with those polynomials $q$ of $\mathbb{K}[x_1,\ldots,x_n]$ such that for some positive power $n$ of $h_T$, $h_T^n\cdot q\in I(T)$. If $h_{T_{x_i}}$ is a zero-divisor modulo $\sat{T_{<x_i}}$, then there is some polynomial $q$ such that $h_p\cdot q\in\sat{T_{<x_i}}$, which means that either (a) $h_{T_{x_i}}\cdot q$ is in $I(T_{<x_i})$ or (b) $h_{T_{<x_i}}^n\cdot h_{T_{x_i}}\cdot q\in I(T_{<x_i})$ for some $n$. This essentially means that $h_{T_{x_i}}$ becomes zero either (a) on some part of $W(T_{<x_i})$ or (b) on some part of its geometric boundary. Given that for a regular chain $T$, the Zariski closure of $W(T)$, denoted $\overline{W(T)}$, is the variety $V(\sat{T})$, this last statement is made more clear.
+
+\section{ \texttt{triangularize}}
+
+For a set $F$ of polynomials in $\mathbb{Q}[x_1,\ldots,x_n]$, which can be encoded as as \texttt{vector} \texttt{F} of \texttt{SparseMultivariateRationalPolynomial} objects (abbreviated with \texttt{type\-def} \texttt{SMQP}), which have \texttt{RationalNumber} coefficients (abbreviated with \texttt{typedef} \texttt{RN})), we can compute the triangular decomposition of the variety $V(F)$ by defining an empty regular chain over the ambient space defined by the variable ordering $x_1<x_2<\cdots<x_n$  by calling
+\begin{verbatim}
+vector<Symbol> R = {'x_n',...,'x_2','x_1'};
+RegularChain T(R);
+\end{verbatim}
+and then calling
+\begin{verbatim}
+vector<RegularChain<RN,SMQP>> dec;
+dec = T.triangularize(F);
+\end{verbatim}
+For example, to compute the intersection of the unit sphere $p_1=x^2+y^2+z^2-1\in\mathbb{Q}[x,y,z]$ and the unit circle $p_2=x^2+y^2-1\in\mathbb{Q}[x,y]$, with $z<y<x$, in the ambient space $\mathbb{C}^3$ with Cartesian coordinates $x,y,z$, then we can use
+\begin{verbatim}
+vector<SMQP> F = {SMQP("x^2+y^2+z^2-1"),SMQP("x^2+y^2-1")};
+vector<Symbol> R = {'x','y','z'};
+RegularChain<RN,SMQP> T(R);
+vector<RegularChain<RN,SMQP>> dec;
+dec = T.triangularize(F);
+for (auto d : dec)
+   d.display();
+\end{verbatim}
+which produces the output
+\begin{verbatim}
+ /
+ | x^2 + y^2 - 1 = 0
+< 
+ | z = 0
+ \ 
+\end{verbatim}
+which is a regular chain that picks out the complex unit circle in $\mathbb{C}^3$, described as the intersection of the unit cylinder ($x^2 + y^2 - 1 = 0$) and the $xy$-plane ($z = 0$).
+
+Note that the \texttt{triangularize} method can also be called with a non-empty regular chain $T$. In this case it will compute the intersection of the zero set of the set $F$ of input polynomials and the quasi-component of $T$. This is the sort of case handled by the method \texttt{intersect}.
+
+\section{\texttt{intersect}}
+The method \texttt{intersect} of the \texttt{RegularChain} class is essentially a special case of \texttt{triangularize} for a single polynomial input (or contrariwise, and more acurately, \texttt{triangularize} is really just a wrapper for \texttt{intersect}). For a polynomial $p\in\mathbb{Q}[x_1,\ldots,x_n]$, encoded as an \texttt{SMQP} object \texttt{p}, and a regular chain $T$ over the ambient space defined by the variable ordering $x_1<x_2<\cdots<x_n$, encoded as a \texttt{RegularChain<RN,SMQP>} object \texttt{T},  we can compute the intersection of the variety $V(p)$ and the quasi-component $W(T)$ by calling
+\begin{verbatim}
+vector<RegularChain<RN,SMQP>> dec;
+dec = T.intersect(p);
+\end{verbatim}
+For example, suppose that $T$ is the result of the example for \texttt{triangularize} above. Then we can compute the intersection of the complex unit circle and the line $x=y$ with the code
+\begin{verbatim}
+dec[0].upper(Symbol("z"),T);
+\end{verbatim}
+which defines $T$ to be the regular chain formed by removing the $z$-component from the previous result (since our present computation is really in the complex $xy$-plane), followed by the code
+\begin{verbatim}
+SMQP p("x-y");
+dec = T.intersect(p);
+for (auto d : dec)
+   d.display();
+\end{verbatim}
+which produces the output
+\begin{verbatim}
+ /
+ | x - y = 0
+< 
+ | 2*y^2 - 1 = 0
+ \
+\end{verbatim}
+so that the intersection is just the points $(x,y)=\left(\pm1/\sqrt{2},\pm1/\sqrt{2}\right)$, as expected.
+
+\section{\texttt{regularize}}
+The method \texttt{regularize} is a routine that will take a polynomial $p$ and a regular chain $T$ and decompose $T$ into regular chains of two types: components on which $p$ is regular modulo $\sat{T}$, the regular case; and  components on which $p$ is zero modulo $\sat{T}$, the singular case. The return type of \texttt{regularize} is a \texttt{vector} of \texttt{PolyChainPair<PolyType,RegularChainType>} objects. If \texttt{A} is a  \texttt{PolyChainPair} object, then we can access the polynomial as \texttt{A.poly} and the regular chain as \texttt{A.chain}. For the singular components returned by \texttt{regularize}, \texttt{A.poly} is zero, and for the regular components it is non-zero.\\
+
+For example, suppose that a regular chain $T$ has two polynomials, $T_3=x^2+y^2-z$, describing an elliptic paraboloid, and $T_2=y(y-1)$, describing a parabolic cylinder. Then suppose that we want to determine the regular and singular components of $T$ for $p=xy$, a saddle surface. Then we can do so with the following code:
+\begin{verbatim}vector<Symbol> R = {'x','y','z'};
+T = RegularChain<RN,SMQP>(R); // Empty chain with ordered ring R
+T += SMQP("x^2+y^2-z");
+T += SMQP("y*(y-1)");
+p = SMQP("x*y");
+vector<PolyChainPair<SMQP,RegularChain<RN,SMQP>>> components;
+components = T.regularize(p);
+cout << "Regular Components" << endl;
+for (auto c : components) {
+   if (!c.poly.isZero())
+      c.chain.display();
+}
+cout << "Singular Components" << endl;
+for (auto c : components) {
+   if (c.poly.isZero())
+      c.chain.display();
+}
+\end{verbatim}
+which produces the output
+\begin{verbatim}
+Regular Components
+ /
+ | x^2 - z + 1 = 0
+< 
+ | y - 1 = 0
+ \ 
+Singular Components
+ /
+ | x^2 - z = 0
+< 
+ | y = 0
+ \ 
+\end{verbatim}
+Thus, $p=xy$ is regular on the parabola $z=x^2+1$ in the plane $y=1$ and singular on the parabola $z=x^2$ in the $xz$ plane.

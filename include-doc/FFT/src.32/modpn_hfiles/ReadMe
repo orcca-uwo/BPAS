@@ -1,0 +1,20 @@
+(1) Static functions and variables cannot be called out side of the .so lib 
+
+    all functions in AS.h:
+    ----------------------
+    static inline void MulHiLoUnsigned(sfixn *h, sfixn *l);
+    static void MulHiLoUnsigned(usfixn *h, usfixn *l);
+    
+    and all fns in inlineFuncs.h
+       
+
+    "the variable cannot be static and extern at the same time"
+
+    "Within a class, static means that the function or variable is only there
+once, for the class, not for each instance of it. Same for a local
+static variable, if you count calling a function as "instantiating" it.
+Well, and a static variable/function on namespace scope is there for
+this one translation unit. It always has a meaning similar to "there is
+only one".
+
+(2) 

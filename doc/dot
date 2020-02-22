@@ -1,0 +1,47 @@
+#! /bin/bash
+
+# This hack is a wrapper to GraphViz dot that removes any nodes that
+# are contained in the following list.
+
+# echo "Dot hack!"
+
+LABELS_TO_FILTER="Derived_from.* std::conditional.* BPASIntegralPolynomial[^,]* BPASGCDPolynomial[^,]*"
+
+ARGS=$@
+
+for ARG in ${ARGS}
+do
+  if [ -e ${ARG} ]
+  then
+    FILENAME=$(basename "${ARG}")
+    EXT="${FILENAME##*.}"
+
+    if [ ${EXT} == "dot" ]
+    then
+      DOT_FILE=${ARG}
+
+      for LABEL_TO_FILTER in ${LABELS_TO_FILTER}
+      do
+        # echo "grep -G \"label=\"${LABEL_TO_FILTER}\"\" ${DOT_FILE}"
+        FULL_GREP=$(grep -G "label=\"${LABEL_TO_FILTER}\"" ${DOT_FILE})
+        # echo -e "FULL_GREP:\n${FULL_GREP}"
+        NODE_NAME=$(grep -G "label=\"${LABEL_TO_FILTER}\"" ${DOT_FILE} | awk '{print $1}')
+        # echo "NODE_NAME = ${NODE_NAME}"
+        # echo "END NODE_NAME"
+        if [[ ! -z "${NODE_NAME}" ]]
+        then
+          for NODE in ${NODE_NAME}
+          do
+            echo "${NODE} is labelled ${LABEL_TO_FILTER}, filtering..."
+            sed -i "/${NODE}/d" ${DOT_FILE}
+          done
+        fi
+      done
+      # echo ""
+
+      break
+    fi
+  fi
+done
+
+dot ${ARGS}

@@ -1,0 +1,5 @@
+La fonction TwoConvolutionModNew requiert un dernier argument : on numerote les
+nombres premiers utilises.
+Si on passe p1 et p2, p1 correspond a 1, p2 a 2. Pour appeler le code
+correspondant a p1, il faut passer le parametre 1 a TwoConvolutionNew.
+Pour appeler du code non specialise, il suffit de mettre 0

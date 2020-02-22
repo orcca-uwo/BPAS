@@ -1,0 +1,47 @@
+CILKPP  = g++
+CC = gcc
+INCLUDES = ../../include/
+COMPILEARG = -I$(INCLUDES) -c -O2 -fpic -fcilkplus -DLINUXINTEL64=1 -march=native #-pg
+#-Wall
+CCOMPILEARG = -I$(INCLUDES) -c -O2 -Wall -Wno-unused-function -fpic -DLINUXINTEL64=1 -march=native #-pg
+
+vpath %.cpp ./ 
+vpath %.c ./ 
+vpath %.h $(INCLUDES)/Interval/ $(INCLUDES)/RationalNumberPolynomial/ $(INCLUDES)RingPolynomial/ $(INCLUDES)/DyadicRationalNumber $(INCLUDES)/
+
+all: SMQP_Support-AA.o SMQP_Support_Test-AA.o SMQP_Support_Recursive-AA.o SMQP_Support_Unpacked.o SMQP_Support_Recursive_Unpacked.o urpolynomial.o urpolynomial_taylorshift.o urpolynomial_realroot.o mrpolynomial.o mrpolynomial_mdd-altarr.o urpolynomial-altarr.o SUQP_Support.o
+
+#all: SMQP_Support.o SMQP_Support_Test.o SMQP_Support_Recursive.o urpolynomial.o urpolynomial_taylorshift.o urpolynomial_realroot.o mrpolynomial.o mrpolynomial_mdd.o
+
+altarray: SMQP_Support-AA.o SMQP_Support_Test-AA.o SMQP_Support_Recursive-AA.o mrpolynomial-altarr.o
+
+%.o: %.cpp
+	$(CILKPP) $(COMPILEARG) $<
+
+%.o : %.c
+	$(CC) $(CCOMPILEARG) $<
+
+
+##LinAlg
+##LinearAlgebra: SMQP_Interpolator-AA.o SMQP_SparseInterpolation-AA.o
+
+SMQP_Interpolator-AA.o : SMQP_Interpolator-AA.c
+	$(CC) $(CCOMPILEARG) -I$(GMP-INCLUDE) -I$(ATLAS-INCLUDE) $< 
+
+SMQP_SparseInterpolation-AA.o : SMQP_SparseInterpolation-AA.c
+	$(CC) $(CCOMPILEARG) -I$(GMP-INCLUDE) -I$(ATLAS-INCLUDE) $< 
+
+
+serial: COMPILEARG += -DSERIAL=1
+serial: SMQP_Support-AA.o SMQP_Support_Test-AA.o SMQP_Support_Recursive-AA.o SMQP_Support_Unpacked.o SMQP_Support_Recursive_Unpacked.o urpolynomial.o urpolynomial_taylorshift.o urpolynomial_realroot.o mrpolynomial.o mrpolynomial_mdd-altarr.o
+
+PrepBLAD:
+	(rm -f mrpolynomial.o)
+
+BLAD: COMPILEARG += -DWITH_BLAD=1 
+BLAD: PrepBLAD all
+
+test:
+
+clean:
+	rm -rf *.o

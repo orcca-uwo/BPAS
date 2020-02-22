@@ -1,0 +1,19 @@
+# Usage: ./mul <size> <number of bits> <algorithm number> <check?>
+
+The first argument is the size of an input polynomial (two input polynomials are assumed with the same size).
+
+The second argument is the number of bits for the coefficients of the input polynomials.
+
+The third argument is for specifying the algorithm
+    ** 0   Naive (Schoolbook)
+    ** 1   Kronecker Substitution
+    ** 3   4-Way Toom-Cook
+    ** 4   Classical Devide & Conquer
+    ** 5   8-Way Toom-Cook
+    ** 6   Two-Convolution method
+    ** 10  Final (Adaptive, using all methods)
+
+The fourth argument whether to check the result:
+    ** 0 Skip checking
+    ** 1 Check the result
+

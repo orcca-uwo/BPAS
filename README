@@ -1,0 +1,85 @@
+<0> Basic Polynomial Algebra Subprogram
+
+  The Basic Polynomial Algebra Subprograms (BPAS) library provides
+  support for arithmetic operations with polynomials on modern 
+  computer architectures, in particular hardware accelerators. 
+  Typical operations are polynomial multiplication, multi-point evaluation
+  and interpolation, real root isolation for both univariate 
+  and multivariate systems. Its code is written in C/C++ with
+  CilkPlus extension targeting multi-core processors.
+
+  **NOTE** BPAS is currently going through wide library changes, 
+  code is not guaranteed to be stable or backward compatible 
+  until the next major version release.
+
+<1> Building the library
+
+  - BPAS is deployed for LINUX systems, e.g. Ubuntu.
+  - BPAS uses CMake to help the configuration and build process. 
+    Configuration options are explained within the CMake gui.
+	An out-of-source build is required.
+	The following is a typical sequence of commands to build using CMake:
+
+		mkdir build && cd build
+		ccmake ..
+		make
+		make check
+		make sanity-tests ## sanity tests
+		make validate-tests  ## testing against maple
+		make test ## both sanity-tests and validate-tests 
+		make install ## optional; will copy library and headers to /usr
+
+  - GCC version 6 or 7 is required to build BPAS due to the required C++
+    standards and to avoid internal compiler bugs. 
+  - MPSolve version 3.1.4
+    -- Newer versions may work, but compiling those are difficult.
+    -- https://github.com/robol/MPSolve/releases/tag/3.1.4
+  - Some features (e.g. validation testing) is made possible
+    through linking with Maple's C interface. If you have Maple
+    installed it is advisable to build with maple via "BPAS_WITH_MAPLE"
+    build option.
+
+<A> Optional Library Extensions: 
+
+  Polyhedral Sets and Fourier–Motzkin elimination:
+
+    - This extension requires FLINT and MPFR be installed 
+    - To build, simply use the command "make Polyhedral-Sets" 
+      and the necessary objects will be built and packed into the 
+      BPAS library. 
+
+<B> BPAS environment variables:
+  
+  Environment Variables:
+
+    - When linking to BPAS when built with maple it required to set 
+      the environment variable MAPLE to point to the directory in which 
+      your Maple installation is installed. 
+      -- One must also update LD_LIBRARY_PATH with the same pointer to
+         Maple's installation directory.
+
+  FFT code generators:
+
+    - FURERCOMPLEXITY which is either 1 or something else; 
+      it switchs between the two 1D FFT code generators:
+      -- 1 is for the configurable 1D FFT code generator
+         see the file Main/src/ModularPolynomial/src.64/.config_furer
+      -- otherwise the old and less configurable 1D FFT code generator
+         is used
+
+    - ASM which is either 1 or something else; in the former 
+      case (generic X86) assembly code is executed 
+      (with SSE2 but without SSE3 or SSE4)
+
+    - XEON5600  which is either 1 or something else; in the former case X86
+      assembly code with SSE4 instructions is executed 
+
+    - HTHRESHOLD which is a power 2, at least 32
+
+    - For the old 1D FFT code generator, the variable COMPOSESHUFFLE
+      is either 1 or something else; in tthe former case, three
+      shuffle passes are performed in one pass.
+
+    - By default, all those variables are set to the empty word 
+      except HTHRESHOLD which has 1024 as default value.
+

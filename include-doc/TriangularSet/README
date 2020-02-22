@@ -1,0 +1,118 @@
+triangularset.h
+================
+<> 
+
+<> the attributes are:
+- "n" the number of variables
+- "set" an array (of size n) of the defining polynomials;
+   if no polynomial in a given main variable, then
+   zero is stored instead
+- "names" an array of the increasingly ordered variables
+- "algVariables" an array of the algebraic variables 
+- "isEmptyRC" a boolean
+- "stronglyNormalized"
+
+<> methods that are work-in-progress:
+- Display() is meant to print 2D
+- NormalForm should be implemented using Groebner basis primitives
+  leadingMonomial, leadingTerm, reductum; those latter should
+  be implemented in SMP:Ring>
+
+zerodimregularchain.h
+====================
+
+<> For "elegance" purpose, we should re-implement
+   +  and =* in order to impose that the non-zero
+   polynomials contained in a 0-dim reg chain 
+   form indeed a 0-dim reg chain, that is, they
+   satisfy number of polynomials = number of vars
+  (Thereis a function doing that in regularchain.h)
+  
+<> Reimplement the methods below because they 
+   are mathemetically wrong and we should satisfy
+   the "elegance" criterion
+
+inline ZeroDimensionRegularChain<Ring> operator+ (SparseMultivariatePolynomial<Ring>& smp)
+
+inline RegularChain<Ring>& operator+= (SparseMultivariatePolynomial<Ring> smp) 
+
+
+
+<> Do we need to have (in fact duplicate from TriangularSet) 
+   the following constructor:
+  
+ZeroDimensionRegularChain<Ring> (int s, std::vector<std::string> xs)
+
+    and method:
+
+ZeroDimensionRegularChain<Ring> (const ZeroDimensionRegularChain<Ring>& a)
+
+inline ZeroDimensionRegularChain<Ring>& operator= (ZeroDimensionRegularChain<Ring> a) 
+
+inline ZeroDimensionRegularChain<Ring>& operator= (std::string &str)
+
+
+
+<> Deal with the code duplication of "under" 
+   using conditional implementation when the compiler
+   uses C11, otherwise leave the code duplication as it is
+
+<> For "upper", we jsu need take out the code from
+   zerodimregularchain.h and rely on the RegularChain version
+
+   ==> obviously we need a contructor from
+       RegularChain to ZeroDimensionalRegularChain
+
+<>   In the methods below, results are passed by referenc ein the C-way
+
+inline int regularizeDim0(SparseMultivariatePolynomial<Ring> poly, std::vector<ZeroDimensionRegularChain<Ring> > &newRcOut, std::vector<SparseMultivariatePolynomial<Ring> > &newPolys )
+
+  inline int regularGcd(SparseMultivariatePolynomial<Ring> p, SparseMultivariatePolynomial<Ring> q ,std::vector<ZeroDimensionRegularChain<Ring> > &rc_out, std::vector<SparseMultivariatePolynomial<Ring> > &polys 
+
+<>   Possible bugs
+- regularGcd does not check whether p and q are not constant
+  and have the same main variable; moreover one of them must
+  have a regular initial
+
+<> Move the helper functions to another header file
+
+
+regularchain.h
+===============
+
+<> What is BPASRegularChain ???
+
+<> Reimplement the methods below because they 
+   are mathemetically wrong 
+
+inline ZeroDimensionRegularChain<Ring> operator+ (SparseMultivariatePolynomial<Ring>& smp)
+
+inline RegularChain<Ring>& operator+= (SparseMultivariatePolynomial<Ring> smp) 
+
+
+<> Functions that should simply be removed (after adjusting some 
+   possible other functions calling them)
+
+		inline int regularizeDim0(SparseMultivariatePolynomial<Ring> poly, std::vector<RegularChain<Ring> > &newRcOut, std::vector<SparseMultivariatePolynomial<Ring> > &newPolys )
+
+<> Rename:
+
+nline std::vector<RegularChain<Ring> > innerTriangularizeKalkbrener(std::vector< SparseMultivariatePolynomial<Ring> > lp)
+
+to
+
+nline std::vector<RegularChain<Ring> > innerTriangularizeLazard(std::vector< SparseMultivariatePolynomial<Ring> > lp)
+
+<> Incomplete:
+
+		inline  std::vector< SparseMultivariatePolynomial<Ring> >  mergeGcdFreeFactorization( std::vector< SparseMultivariatePolynomial<Ring> > lp
+
+
+
+<> Functions to be moved in a dedicated class for sub-resultant chains
+
+
+inline SparseMultivariatePolynomial<Ring> principleSubresultantCoefficientOfIndex(int k, std::vector<SparseUnivariatePolynomial<SparseMultivariatePolynomial<Ring > > > src)
+
+inline SparseUnivariatePolynomial<SparseMultivariatePolynomial<Ring > >  subresultantOfIndex(int k, std::vector<SparseUnivariatePolynomial<SparseMultivariatePolynomial<Ring > > > src)
+

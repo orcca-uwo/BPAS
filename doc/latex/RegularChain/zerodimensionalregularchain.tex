@@ -1,0 +1,14 @@
+The \texttt{ZeroDimensionalRegularChain} class handles the special
+case of regular chains of dimension zero (where there are the same
+number of equations as variables in the chain). The zero sets of
+zero-dimensional regular chains are therefore sets of points. Because zero-dimensional
+regular chains are particular kinds of regular chains, the \texttt{ZeroDimensionalRegularChain}
+class inherits from the \texttt{RegularChain} class. This special case allows for
+specialized algorithms that are more efficient than those needed for positive dimension, as
+well as being of mathematical interest in its own right, as we discuss briefly below.
+Specialized versions of \texttt{intersect} and
+\texttt{regularize} are provided by
+\texttt{ZeroDimensionalRegularChain}, which behave in precisely the same
+way as the arbitrary dimension routines, except that the underlying regular
+chain has \texttt{ZeroDimensionalRegularChain} type. The usage of these
+routines is illustrated below.

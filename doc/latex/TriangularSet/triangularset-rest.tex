@@ -1,0 +1,46 @@
+The \texttt{TriangularSet} class consists of a variety of support
+functions needed to manipulate triangular sets, as well as routines
+designed to reduce polynomials with respect to a triangular set. In
+particular, the \texttt{normalForm} routine computes the normal form
+(in the sense of lexicographical Gr\"{o}bner bases, see
+{\small{\url{https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis}}) of a
+  polynomial with respect to a triangular set when the triangular set
+  is strongly normalized (the initials of all of the polynomials are
+  constant), and the \texttt{pseudoDivide} routine computes the
+  pseudo-remainder of a polynomial with respect to the triangular
+  set.
+
+The most important basic feature of \texttt{TriangularSet} objects is
+that they come in two distinct types: fixed (intended for handling
+algebraic systems) and variable (intended for handling
+differential-algebraic systems). For fixed \texttt{TriangularSet}
+objects, the list of variables of the \texttt{TriangularSet} is fixed
+to be a certain ordered list of variables that cannot change over the
+life of the object. This is when the ambient space one is working in
+(explained below) is known and fixed. For variable
+\texttt{TriangularSet} objects, whenever a polynomial is added to the
+triangular set, any new variables in the polynomial are added to the
+list of variables of the \texttt{TriangularSet}. Both fixed and
+variable \texttt{TriangularSet} objects can be created with a list of
+transcendental variables, \emph{i.e.}, variables that can never be
+subject to algebraic constraints. In both cases, the list of
+transcendental variables is fixed for the life of the object.
+
+Objects of the \texttt{TriangularSet} class keep track of which
+variables $v$ in the list of variables are subject to constraints,
+\emph{i.e.}, for which there is a polynomial in the set with main
+variable $v$. Such variables are called \emph{algebraic variables},
+and are maintained in a special ordered list by the class (in the same
+order as the list of variables). To keep this distinction between the
+different kinds of variables clear, the list of variables are
+described in the documentation as ``potentially algebraic'', because
+they are the variables that can be subject to algebraic
+constraints. Thus, the intersection of the (potentially algebraic)
+variables and the transendental variables is always empty, and the
+algebraic variables form a subset of the (potentially algebraic)
+variables. It is the (potentially algebraic) variables that determine
+the dimension of the ambient space of the triangular set, \emph{i.e.},
+the (affine) space over which the polynomials of the triangular set
+act as constraints. The dimension of (the saturated ideal of) the
+triangular set is then the number of (potentially algebraic) variables
+minus the number of algebraic variables.

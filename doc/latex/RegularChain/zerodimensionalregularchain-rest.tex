@@ -1,0 +1,83 @@
+A zero-dimensional regular chain with polynomials in $\mathbb{K}[x_1,\ldots,x_n]$ actually encodes a tower of field extensions of the base field $\mathbb{K}$. In case that a zero-dimensional regular chain is strongly normalized, so that the initials of all polynomials in the chain are in the base field, then the regular chain defines a direct product of fields. Thus, in addition to being a special case of arbitrary dimension regular chains, the zero-dimensional case is of independent mathematical interest. We will not consider the mathematics here, except to note that for zero-dimensional regular chains $T$, $W(T)=V(T)$ since sets of points are Zariski-closed. For an explanation of the concept of regular chain see the \texttt{RegularChain} class description.
+
+The most important differences between the \texttt{Zero\-Dimensional\-Regular\-Chain} class and the \texttt{RegularChain} class have to do with the fact that being zero-dimensional imposes a strict condition (all variables are algebraic variables) that most \texttt{RegularChain} objects do not satisfy. This impacts the constructors for the class and certain routines, such as \texttt{lower} and \texttt{upper}. The zero-dimensionality requirement is handled by not allowing the direct construction of zero-dimensional regular chains with an underlying triangular set of fixed type. To allow this would allow the creation of \texttt{ZeroDimensionalRegularChain} objects that are not actually zero-dimensional because not all the variables are algebraic. Accordingly, only variable type \texttt{ZeroDimensionalRegularChain} objects can be created directly from the constructors of the class, and each of these constructors forces the created object to be genuinely zero-dimensional.
+
+This leads to an important restriction on how \texttt{Zero\-Dimensional\-Regular\-Chain} objects are created with the class. Because the objects are required to be zero-dimensional, it is not possible to add a polynomial to a variable type \texttt{ZeroDimensionalRegularChain} that does not have exactly one new variable $v$, \emph{i.e.}, $v$ is neither in the algebraic variables list nor the transcendentals list. Accordingly, the order in which polynomials are added to the chain matters. As such, \emph{polynomials with the least significant variables must be added first}. This is seen in the examples of the usage of \texttt{intersect} and \texttt{regularize} below.
+
+Even though this is the strictly mathematically correct way to handle zero-dimensional regular chains, there are situations where it is convenient to treat a positive-dimensional regular chain as zero-dimensional, but only when it is meaningful to do so. This is particularly important in the algorithms of the \texttt{RegularChain} class, so that the \texttt{ZeroDimensionalRegularChain} routines can be called without forcing a copy of the entire  \texttt{RegularChain} object. For this reason, the copy and move constructors that take a fixed type \texttt{RegularChain} as input allow the creation of technically positive-dimensional \texttt{Zero\-Dimensional\-Regular\-Chain} objects that are morally zero-dimensional (no free variables appear in the polynomials of the chain).
+
+The other main situation where  \texttt{ZeroDimensionalRegularChain} routines behave differently is for \texttt{upper} and \texttt{lower}. Here, \texttt{lower} is required to return a zero-dimensional regular chain, since lower on a zero-dimensional regular chain is always zero-dimensional. The routine \texttt{upper}, however, is required to return a regular chain, since upper on a zero-dimensional regular chain may be positive-dimensional. In addition to this, the behaviour of \texttt{lower} is different depending on whether the underlying \texttt{TriangularSet} of the  \texttt{Zero\-Dimensional\-Regular\-Chain} is fixed or variable. If it is fixed, the \texttt{Zero\-Dimensional\-Regular\-Chain} returned by lower may only be morally zero-dimensional.
+
+\section{\texttt{intersect}}
+The method \texttt{intersect} of the \texttt{ZeroDimensionalRegularChain} class allows the computation of the intersection of the points of a zero-dimensional regular chain and the variety of a polynomial $p$. For a polynomial $p\in\mathbb{Q}[x_1,\ldots,x_n]$, encoded as an \texttt{SMQP} object \texttt{p}, and a zero-dimensional regular chain $T$ over the ambient space defined by the variable ordering $x_1<x_2<\cdots<x_n$, encoded as a \texttt{ZeroDimensionalRegularChain<RN,SMQP>} object \texttt{T},  we can compute the intersection of the variety $V(p)$ and the quasi-component $W(T)$ by calling
+\begin{verbatim}
+vector<ZeroDimensionalRegularChain<RN,SMQP>> dec;
+dec = T.intersect(p);
+\end{verbatim}
+For example, if $p=xy$, which means that $x=0$ or $y=0$ on $V(p)$, and the zero-dimensional regular chain in $\mathbb{Q}[y,x]$ is $T=\{y^2+yx,x^2+x\}$, which picks out the three points $(x,y)=(0,0),(0,-1),(-1,-1)$, then we can compute the intersection of $V(p)$ and $W(T)$ with the following code
+\begin{verbatim}
+ZeroDimensionalRegularChain<RN,SMQP> T;
+T += SMQP("x^2+x");
+T += SMQP("y^2-y*x");
+vector<ZeroDimensionalRegularChain<RN,SMQP>> dec;
+SMQP p("x*y");
+dec = T.intersect(p);
+for (auto d : dec)
+   d.display();
+\end{verbatim}
+which produces the output
+\begin{verbatim}
+ /
+ | y = 0
+< 
+ | x + 1 = 0
+ \ 
+ /
+ | y = 0
+< 
+ | x = 0
+ \ 
+\end{verbatim}
+so that the intersection is just the points $(x,y)=(0,0),(0,-1)$, as expected.
+
+\section{\texttt{regularize}}
+The method \texttt{regularize} is a routine that will take a polynomial $p$ and a regular chain $T$ and decompose $T$ into regular chains of two types: components on which $p$ is regular modulo $\sat{T}$, the regular case; and components on which $p$ is zero modulo $\sat{T}$, the singular case. The return type of \texttt{regularize} is a \texttt{vector} of \texttt{PolyChainPair<PolyType,RegularChainType>} objects. If \texttt{A} is a  \texttt{PolyChainPair} object, then we can access the polynomial as \texttt{A.poly} and the regular chain as \texttt{A.chain}. For the singular components returned by \texttt{regularize}, \texttt{A.poly} is zero, and for the regular components it is non-zero.
+
+For example, reconsidering the example for \texttt{intersect} above, suppose that $T=\{y^2+yx,x^2+x\}$ and suppose that we want to determine the regular and singular components of $T$ for $p=xy$. Then we can do so with the following code:
+\begin{verbatim}
+vector<Symbol> R = {'x','y','z'};
+vector<PolyChainPair<SMQP,ZeroDimensionalRegularChain<RN,SMQP>>>
+   components;
+components = T.regularize(p);
+cout << "Regular Components" << endl;
+for (auto c : components) {
+   if (!c.poly.isZero())
+      c.chain.display();
+}
+cout << "Singular Components" << endl;
+for (auto c : components) {
+   if (c.poly.isZero())
+      c.chain.display();
+}
+\end{verbatim}
+which produces the output
+\begin{verbatim}
+Regular Components
+ /
+ | y + 1 = 0
+< 
+ | x + 1 = 0
+ \ 
+Singular Components
+ /
+ | y = 0
+< 
+ | x + 1 = 0
+ \ 
+ /
+ | y = 0
+< 
+ | x = 0
+ \ 
+\end{verbatim}
+Thus, the regular components are those where $p\neq 0$ but the polynomials of $T$ are zero (but the initials are nonzero), \emph{i.e.}, where $p$ is regular modulo $\sat{T}$, which is just $(x,y)=(-1,-1)$ in this case. The singular components are then those where both $p=xy=0$ and the polynomials of $T$ are zero (but the initials are nonzero), \emph{i.e.}, the intersection of $V(p)$ and $W(T)$. Since the singular components are always the intersection of $V(p)$ and $W(T)$ in dimension zero, \texttt{regularize} is actually called by \texttt{intersect} to compute intersections.

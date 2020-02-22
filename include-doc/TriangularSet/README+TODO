@@ -1,0 +1,20 @@
+
+<> Move the "isEmpty?" and "isStronglyNormalized?" attributes 
+   to TriangularSet
+
+<> Then move NormalForm" to TriangularSet as well
+
+<> The RegularChains's parser code should call
+   the TriangularSet's parser and then handles the
+   additional states
+
+<> Add an syntactic equality test in TriangularSet
+
+<> Add an "EqualSaturatedIdeals" for RegularChains
+
+<> Add simple tests for every exported
+
+<> PrimitiveFactorization (p::polynomial, x:: variable)
+   returns (c, q) such that 
+   c is the context of p w.r.t. x
+   q is the primitive part of P

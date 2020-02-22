@@ -1,0 +1,35 @@
+The "fft" binary
+----------------
+1/ Is built by typing "make"
+
+2/ The sinopsis is
+   fft <an_unsigned_int> <an_unsigned_int>
+
+    The first arg is an integer in the range 0..15
+    if 0 the Modpn 1D FFT is used1
+    if 1 the BPAS 1D FFT (whichever code generator is used) is used
+         and the result is not checked 
+    if 16 the BPAS 1D FFT (whichever code generator is used) is used
+         and the result is checked (takes time ...)
+    if 2  then 1+1 shuffles are done (no FFT is compuuted)
+    if 3  then 2 shuffles are done in one pass
+    if 4  then 1+1 shuffles are done (no  FFT is compuuted)
+    if 5  then 1+2 shuffles are done 
+    if 6  then 3 shuffles are done in one pass
+    if 7  then just vectors allocation
+    if 8 then the TFT (relax) parallel code generator is used, no verification
+    if 9 then the TFT (relax) parallel code generator is used and the results
+          are verified using FFT+zero_padding+shuffling
+    if 10 then TFT (relax) benchmarking is done
+    if 11 then the results of TFT_tree1::Shuffle_tft(K,A,SB1) are returned
+    12 and 13 are removed because of useless
+    if 14 then the ITFT (strict) parallel code generator is used and the
+    results are used with forward TFT
+
+    The second arg is a power of 2 (at least 2)
+    is the size of the input vector
+
+    The characteristic (prime numer) is hard coded. 
+
+    IMPORTANT (TODO) make the number of CilkPlus workers an argument
+     of this test binary

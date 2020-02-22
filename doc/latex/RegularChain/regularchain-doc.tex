@@ -1,0 +1,31 @@
+\documentclass{article}
+
+\usepackage{centernot}
+\input{settings}
+\input{macros}
+\newcommand{\lt}{\mathrm{lt}}
+\newcommand{\lc}{\mathrm{lc}}
+\newcommand{\lm}{\mathrm{lm}}
+\newcommand{\initial}{\mathrm{init}}
+\newcommand{\coef}{\mathrm{coef}}
+\newcommand{\heap}{\mathrm{heap}}
+\newcommand{\Peek}{{\bf heapPeek()}}
+\newcommand{\Extract}{{\bf heapExtract()}}
+\newcommand{\Insert}{{\bf heapInsert}}
+
+%\newcommand{\initial}{\textrm{init}}
+\title{Regular Chains in \textsc{bpas}}
+\date{}
+
+\begin{document}
+
+\maketitle{}
+
+\section{\texttt{RegularChain} Class Description}
+
+\input{regularchain}
+
+\input{regularchain-rest}
+
+
+\end{document}

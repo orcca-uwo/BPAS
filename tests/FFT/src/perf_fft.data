@@ -1,0 +1,39 @@
+ Performance counter stats for '/home/alina/Main/tests/ModularPolynomial/src/fft 1 16777216':
+
+       4830.571458 task-clock                #    0.998 CPUs utilized          
+               410 context-switches          #    0.000 M/sec                  
+                15 CPU-migrations            #    0.000 M/sec                  
+           213,464 page-faults               #    0.044 M/sec                  
+    11,510,770,176 cycles                    #    2.383 GHz                     [50.02%]
+   <not supported> stalled-cycles-frontend 
+   <not supported> stalled-cycles-backend  
+     9,826,263,423 instructions              #    0.85  insns per cycle         [75.02%]
+       514,681,433 branches                  #  106.547 M/sec                   [75.04%]
+           803,530 branch-misses             #    0.16% of all branches         [74.98%]
+
+       4.838375212 seconds time elapsed
+
+
+Events: 4K cycles                                                               
+ 36.49%  fft  fft                [.] TFT_tree1::DFT_eff_p1(int, int, long*, lon◆
+ 17.89%  fft  fft                [.] TFT_tree1::DFT_iter512(long*, long*)      ▒
+ 13.24%  fft  [kernel.kallsyms]  [k] 0xffffffff8103d0ca                        ▒
+ 11.47%  fft  fft                [.] PBPAS1::DFT_eff_p1(int, int, long*, long*,▒
+  8.52%  fft  fft                [.] TFT_tree1::DFT_iter256(long*, long*)      ▒
+  6.51%  fft  fft                [.] PBPAS::DFT_iter(int, int, long*, long*, MO▒
+  1.75%  fft  libc-2.15.so       [.] __memcpy_ssse3                            ▒
+  1.31%  fft  fft                [.] test8(long, int, int)                     ▒
+  1.25%  fft  fft                [.] PBPAS::ArrayBitReversalSpe512(long*)      ▒
+  1.24%  fft  libc-2.15.so       [.] __memset_sse2                             ▒
+  0.18%  fft  fft                [.] TFT_tree1::DFT_rec_p1(int, int, long*, lon▒
+  0.10%  fft  ld-2.15.so         [.] check_match.11236                         ▒
+  0.04%  fft  fft                [.] TFT_tree1::DFT_iter32(long*, long*)       ▒
+  0.02%  fft  libc-2.15.so       [.] __libc_start_main  
+
+ Performance counter stats for '/home/alina/Main/tests/ModularPolynomial/src/fft 1 16777216':
+
+    11,538,782,970 cycles                    #    0.000 GHz                    
+     9,790,333,834 instructions              #    0.85  insns per cycle        
+        14,599,981 cache-misses                                                
+
+       4.837844749 seconds time elapsed

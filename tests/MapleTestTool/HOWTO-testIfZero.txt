@@ -1,0 +1,35 @@
+HOWTO: MapleTestTool::testIfZero
+
+1/ Compile MapleTestTool
+	1.1/ Go to Main/tests/MapleTestTool and "make"
+
+2/ #include "MapleTestTool.hpp" in your test file.
+
+3/ Create a toExpressionTree method for your data type.
+	3.1/ See Main/src/RationalNumberPolynomial/MRPolynomial/mrpolynomial-singlelinked.cpp for an example of SMQP to expression tree as "toExpressionTree"
+	3.2/ See Main/tests/SMPOperations/test-singlelinked.cpp for an example of SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> to expression tree in "SUPtoExpressionTree".
+
+4/ Get a handle on the maple test kernel 
+	4.1/ "MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();"
+
+5/ Create an expression tree which should expand to 0
+	5.1/ Ex. pTree expands to zero: 
+		ExpressionTree pTree = p.toExpressionTree();
+	    ExpressionTree qTree = q.toExpressionTree();
+	    ExpressionTree sumTree = sum.toExpressionTree();
+	    pTree += qTree;
+	    pTree -= sumTree;
+
+6/ Pass to maple and test result
+	6.1/ MapleTestTool::testIfZero returns true iff the expression tree evauates to 0. If it does not evaluate ot zero, retErr is set to be the string which the expression tree expanded to. 
+	6.2/ Ex:
+		std::string retErr;
+	    if (mapleTest->testIfZero(pTree, &retErr) == 0) {
+	        std::cerr << "SMQP smqp addition test: FAILED" << std::endl; 
+	        std::cerr << "Expected 0 but got: " << retErr << std::endl;
+	    }
+
+Notes: 
+	- Memory can quickly blow up (due to leaks in Maple, etc.). It is best practice to call MapleTestTool::restartMapleKernel() between each call to the MapleTestTool
+	- You can view more detailed examples in Main/tests/SMPOperations/test-singlelinked.cpp
+	- Feel free to expand the enums and operators of ExpressionTree to handle any specifics needed by your data types. 

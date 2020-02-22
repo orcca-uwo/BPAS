@@ -1,0 +1,15 @@
+* Try to project on (x1, x2, x3) by eliminating the last
+* three variables using cddlib "fourier" or "projection" programs.
+* The correct result is project1res.ine.  
+H-representation
+begin
+8 6  integer
+0 -52 95 61 -55 -9
+-97 86 16 -33 -16 -69 
+88 17 -67 -50 45 -83 
+-3 82 -15 -98 85 -96 
+62 -23 -51 44 -62 6
+-41 54 -75 -22 -13 20 
+-61 -84 82 60 -15 94 
+47 27 56 -36 56 85
+end
