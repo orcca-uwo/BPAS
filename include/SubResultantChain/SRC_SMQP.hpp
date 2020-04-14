@@ -34,14 +34,14 @@ public:
 	 *
 	 **/
 	SubResultantChain() {}
-	
+
 	/**
 	 * Constructor: creates an empty subresultant chain with identified variable.
 	 *
 	 * @param v: variableName
 	 **/
 	SubResultantChain(const Symbol& v) : var(v) {}
-	
+
 	/**
 	 * Default constructor: creates a subresultant chain from the input polynomials and their leading variable.
 	 *
@@ -53,13 +53,13 @@ public:
 
 	//TODO remove this one, it's so awkward.
 	SubResultantChain(const SMQP& a, const SMQP& b, const Symbol& v, std::vector<Symbol> vars);
-	
+
 	/**
 	 * Copy constructor.
 	 *
 	 * @param a: A subresultant chain
 	 **/
-	SubResultantChain(const SMQPSubResultantChain& a) : 
+	SubResultantChain(const SMQPSubResultantChain& a) :
 		P(a.P),
 		Q(a.Q),
 		chain(a.chain),
@@ -69,13 +69,13 @@ public:
 		var(a.var) {
 
 	}
-	
+
 	/**
 	 * Move constructor.
 	 *
 	 * @param a: An r-value subresultant chain
 	 **/
-	SubResultantChain(SMQPSubResultantChain&& a) : 
+	SubResultantChain(SMQPSubResultantChain&& a) :
 		P(std::move(a.P)),
 		Q(std::move(a.Q)),
 		chain(std::move(a.chain)),
@@ -85,13 +85,13 @@ public:
 		var(std::move(a.var)) {
 
 	}
-	
+
 	/**
 	 * Deconstructor.
 	 *
 	 **/
 	~SubResultantChain() {}
-	
+
 	/**
 	 * Assignment operator =.
 	 *
@@ -105,8 +105,9 @@ public:
 		chainCoefs = a.chainCoefs;
 		validCoefs = a.validCoefs;
 		var = a.var;
+		return *this;
 	}
-	
+
 	/**
 	 * Move assignment operator =.
 	 *
@@ -119,9 +120,10 @@ public:
 		valid = std::move(a.valid);
 		chainCoefs = std::move(a.chainCoefs);
 		validCoefs = std::move(a.validCoefs);
-		var = std::move(a.var);	
+		var = std::move(a.var);
+		return *this;
 	}
-	
+
 	/**
 	 * Identity operator ==.
 	 *
@@ -137,7 +139,7 @@ public:
 	inline bool operator!=(SMQPSubResultantChain& a) {
 		return !(*this == a);
 	}
-	
+
 	/**
 	 * Get the size of the subresultant chain.
 	 *
@@ -149,7 +151,7 @@ public:
 	inline bool isEmpty() const {
 		return chain.size() == 0;
 	}
-	
+
 	/**
 	 * Get the variable name.
 	 *
@@ -157,7 +159,7 @@ public:
 	inline Symbol variableName() const {
 		return var;
 	}
-	
+
 	/**
 	 * Get the polynomials in the subresultant chain.
 	 *
@@ -171,7 +173,7 @@ public:
 	 * @param i: index of the desired subresultant
 	 */
 	SMQP subResultantOfIndex(size_t i, bool lazy = 1) const;
-	
+
 	/**
 	 * Return the first polynomial in the chain.
 	 *
@@ -179,14 +181,14 @@ public:
 	inline SMQP firstPolynomial() const {
 		return P;
 	}
-	
+
 	/**
 	 * Return the second polynomial in the chain.
 	 *
 	 **/
 	inline SMQP secondPolynomial() const {
 		return Q;
-	}	
+	}
 
 	/**
 	 * Get the resultant of the subresultant chain.
@@ -222,7 +224,7 @@ public:
     friend std::ostream& operator<< (std::ostream& ostream, const SMQPSubResultantChain& d) {
     	d.print(ostream);
         return ostream;
-    }  
+    }
 
 	/**
 	 * Overload stream operator <<.
@@ -239,7 +241,7 @@ public:
 	 * Convert subresultant chain to an expression tree.
 	 *
 	 **/
-	ExpressionTree convertToExpressionTree() const;	
+	ExpressionTree convertToExpressionTree() const;
 };
 
 

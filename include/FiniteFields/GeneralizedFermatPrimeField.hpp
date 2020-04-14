@@ -42,7 +42,6 @@ public:
 	usfixn64 *x;
 	// number = xk-1*r^k-1 + xk-2*r^k-2 + ... + x1*r + x0
 	static mpz_class characteristic;
-	static RingProperties properties;
 
 	static usfixn64 r;
 	static int k;
@@ -89,10 +88,14 @@ public:
 
 	static void setPrime (mpz_class p,usfixn64 R, int K){
 		prime = p;
-	//   characteristic = p;
+		characteristic = p;
 		r = R;
 		k = K;
 	}
+
+    mpz_class getCharacteristic() const override {
+    	return characteristic;
+    }
 
 	void setX (mpz_class a);
 
@@ -141,10 +144,10 @@ public:
 
 		srand (time(NULL));
 
-		while(i < 20){   
-	//	std::cout << "i " << i <<  std::endl; 	
+		while(i < 20){
+	//	std::cout << "i " << i <<  std::endl;
 			c =  rand();
-	//	cout << "c " << c << endl;	
+	//	cout << "c " << c << endl;
 			if (power(c,test) == p1) {
 				flag = true;
 				return  power(c,q);
@@ -412,7 +415,7 @@ public:
 		return *this;
 	}
 
-	// using GMP multiplication 
+	// using GMP multiplication
 	inline GeneralizedFermatPrimeField& operator*= (const GeneralizedFermatPrimeField& c){
 		mpz_class xi = number();
 		mpz_class yi = c.number();
@@ -531,7 +534,7 @@ public:
 		*this /= b;
 		return *this;
 	}
-	
+
 	inline GeneralizedFermatPrimeField operator% (const GeneralizedFermatPrimeField& c) const {
 		return 0;
 	}
@@ -546,7 +549,7 @@ public:
 		exit(1);
 		return GeneralizedFermatPrimeField();
 	}
-	
+
 	/**
 	 * Compute squarefree factorization of *this
 	 */
@@ -556,31 +559,31 @@ public:
 		return ret;
 	}
 
-	/** 
+	/**
 	 * Get the euclidean size of *this.
 	 */
-	inline GeneralizedFermatPrimeField euclideanSize() const {
-		return (*this).number();
+	inline Integer euclideanSize() const {
+		return Integer(1);
 	}
-	
+
 	/**
-	 * Perform the eucldiean division of *this and b. Returns the 
-	 * remainder. If q is not NULL, then returns the quotient in q. 
-	 */ 
+	 * Perform the eucldiean division of *this and b. Returns the
+	 * remainder. If q is not NULL, then returns the quotient in q.
+	 */
 	GeneralizedFermatPrimeField euclideanDivision(const GeneralizedFermatPrimeField& b, GeneralizedFermatPrimeField* q = NULL) const;
 
 	/**
-	 * Perform the extended euclidean division on *this and b. 
+	 * Perform the extended euclidean division on *this and b.
 	 * Returns the GCD. If s and t are not NULL, returns the bezout coefficients in them.
 	 */
 	GeneralizedFermatPrimeField extendedEuclidean(const GeneralizedFermatPrimeField& b, GeneralizedFermatPrimeField* s = NULL, GeneralizedFermatPrimeField* t = NULL) const;
-	
+
 	/**
 	 * Get the quotient of *this and b.
 	 */
 	GeneralizedFermatPrimeField quotient(const GeneralizedFermatPrimeField& b) const;
 
-	/** 
+	/**
 	 * Get the remainder of *this and b.
 	 */
 	GeneralizedFermatPrimeField remainder(const GeneralizedFermatPrimeField& b) const;

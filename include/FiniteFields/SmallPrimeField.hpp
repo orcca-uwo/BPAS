@@ -21,7 +21,7 @@ class DenseUnivariateRationalPolynomial;
 template <class Ring>
 class SparseUnivariatePolynomial;
 
-//NOTE the below code is not properly formatted with the corresponding 
+//NOTE the below code is not properly formatted with the corresponding
 //implementation file. Only the montegomery version is setup properly.
 #if ( 0 )
 // simple small prime field using long long int to represent the number
@@ -31,14 +31,14 @@ private:
 
  	static long int prime;
  	long long int a;
- 	
+
 public:
 
 	static mpz_class characteristic;
 	static bool isPrimeField;
 	static bool isSmallPrimeField;
 	static bool isComplexField;
-	
+
 
   	SmallPrimeField () : a(0) {}
   	SmallPrimeField (long long int _a) {
@@ -61,7 +61,7 @@ public:
 	//SmallPrimeField (SparseUnivariatePolynomial<ComplexRationalNumber> c);
 	//template <class Ring>
 	//SmallPrimeField (SparseUnivariatePolynomial<Ring> c);
-	
+
 	SmallPrimeField* SPFpointer(SmallPrimeField* b) {
 		return b;
 	}
@@ -77,18 +77,18 @@ public:
 		std::cout << "BPAS error, try to cast pointer to GeneralizedFermatPrimeField to pointer to SmallPrimeField" << std::endl;
 		exit(1);
 	}
-	
+
   	static void setPrime(long int p){
-  		
+
   		prime = p;
   		//using string for mpz_class assignment
   		std::ostringstream ss;
 		ss << p;
 		std::string sp = ss.str();
-		
+
 		//mpz_t z;
 		//mpz_init(z
-		
+
 		mpz_class w(sp);
 	//	mpz_class w(p);
   		characteristic = w;
@@ -97,6 +97,7 @@ public:
   	long int Prime(){
   		return prime;
   	}
+
 
   	void whichprimefield(){
 		cout << "SmallPrimeField" << endl;
@@ -253,7 +254,7 @@ public:
     	a = (a + c.a)%prime;
     	return *this;
   	}
- 
+
   	inline SmallPrimeField operator- (SmallPrimeField& c) {
     	SmallPrimeField r (*this);
     	return (r -= c);
@@ -431,9 +432,9 @@ public:
     }
     return r;
   }
-  
 
-  inline friend std::ostream& operator<< (std::ostream &out, SmallPrimeField c){			
+
+  inline friend std::ostream& operator<< (std::ostream &out, SmallPrimeField c){
   	out << c.a;
   	return out;
   }
@@ -451,7 +452,7 @@ class SmallPrimeField : public BPASFiniteField<SmallPrimeField> {
 private:
 
 	long long int a;
-	static long long int prime; 	
+	static long long int prime;
 	//static long long int R;
 	static unsigned long long int Pp;
 
@@ -463,7 +464,6 @@ private:
 
 public:
 
-	static RingProperties properties;
 	static mpz_class characteristic;
 // static bool isPrimeField;
 // static bool isSmallPrimeField;
@@ -545,7 +545,7 @@ public:
        // "movq %%rsi,%%rax\n\t"
        // "movq %%rdx,%0\n\t"
        // "movq %%rax,%1\n\t"
-        : "=&d" (v),"=&a" (q) 
+        : "=&d" (v),"=&a" (q)
         : "b"(prime)
         :"rsi","rdi");
     A = 1;
@@ -596,6 +596,10 @@ public:
     }
 
 	}
+
+  mpz_class getCharacteristic() const override {
+    return characteristic;
+  }
 
 	long long int Prime();
 
@@ -951,7 +955,7 @@ public:
 		}
 		return b;
 	}
-	
+
 	/**
 	 * Compute squarefree factorization of *this
 	 */
@@ -961,31 +965,31 @@ public:
 		return ret;
 	}
 
-	/** 
+	/**
 	 * Get the euclidean size of *this.
 	 */
-	inline SmallPrimeField euclideanSize() const {
-		return (*this).number();
+	inline Integer euclideanSize() const {
+		return Integer(1);
 	}
-	
+
 	/**
-	 * Perform the eucldiean division of *this and b. Returns the 
-	 * remainder. If q is not NULL, then returns the quotient in q. 
-	 */ 
+	 * Perform the eucldiean division of *this and b. Returns the
+	 * remainder. If q is not NULL, then returns the quotient in q.
+	 */
 	SmallPrimeField euclideanDivision(const SmallPrimeField& b, SmallPrimeField* q = NULL) const;
 
 	/**
-	 * Perform the extended euclidean division on *this and b. 
+	 * Perform the extended euclidean division on *this and b.
 	 * Returns the GCD. If s and t are not NULL, returns the bezout coefficients in them.
 	 */
 	SmallPrimeField extendedEuclidean(const SmallPrimeField& b, SmallPrimeField* s = NULL, SmallPrimeField* t = NULL) const;
-	
+
 	/**
 	 * Get the quotient of *this and b.
 	 */
 	SmallPrimeField quotient(const SmallPrimeField& b) const;
 
-	/** 
+	/**
 	 * Get the remainder of *this and b.
 	 */
 	SmallPrimeField remainder(const SmallPrimeField& b) const;

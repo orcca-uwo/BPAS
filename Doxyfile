@@ -38,7 +38,7 @@ PROJECT_NAME           = "Basic Polynomial Algebra Subprograms (BPAS)"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = "v. 1.700"
+PROJECT_NUMBER         = "v. 1.722"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -800,7 +800,7 @@ FILE_PATTERNS          = BPASEuclideanDomain.hpp \
 						 BPASField.hpp \
 						 BPASFiniteField.hpp \
 						 BPASFieldOfFractions.hpp \
-						 BPASGCDDomain.hpp \ 
+						 BPASGCDDomain.hpp \
 						 BPASIntegralDomain.hpp \
 						 BPASRing.hpp \
 						 ComplexRationalNumber.hpp \
@@ -817,7 +817,18 @@ FILE_PATTERNS          = BPASEuclideanDomain.hpp \
 						 Symbol.hpp \
 						 TemplateHelpers.hpp \
 						 ring.h \
-                         polynomial.h \
+						 BPASEuclideanPolynomial.hpp \
+						 BPASGCDPolynomial.hpp \
+						 BPASIntegralPolynomial.hpp \
+						 BPASMultivarPolynomial.hpp \
+						 BPASPolynomial.hpp \
+						 BPASPolynomialTesters.hpp \
+						 BPASRecursivePolynomial.hpp \
+						 BPASUnivarPolynomial.hpp \
+						 BPASRationalFunction.hpp \
+						 BPASRegularChain.hpp \
+						 BPASZeroDimRegularChain.hpp \
+						 BPASTriangularSet.hpp \
                          Factors.hpp \
                          uzpolynomial.h \
                          mzpolynomial.hpp \

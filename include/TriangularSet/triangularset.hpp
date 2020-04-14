@@ -2,10 +2,10 @@
 #define _TRIANGULARSET_H_
 
 //#include "Polynomial/mpolynomial.h"
-#include "../polynomial.h"
 #include "../ring.h"
 #include "../Utils/TemplateHelpers.hpp"
 #include "../Utils/SymbolHelpers.hpp"
+#include "BPASTriangularSet.hpp"
 //#include "../RegularChain/regularchain.hpp"
 //#include "../RegularChain/zerodimensionalregularchain.hpp"
 #include <iostream>
@@ -25,7 +25,7 @@ extern float tsCopyTime;
 
 //template <class Field, class RecursivePoly> RegularChain;
 
-/** 
+/**
  * An enumeration which describes the mode of the triangular set.
  * TS_FIXED is the ALGEBRAIC case, forces a fixed list of variables, determinining the maximum size of the TS.
  * TS_VARIABLE is the DIFFERENTIAL case, allows the list of variables, hence size of the TS, to change.
@@ -35,7 +35,7 @@ typedef enum TriangularSetMode {
 	TS_VARIABLE = 0x1
 } TriangularSetMode;
 
-/** 
+/**
  * A triangular set templated by a multivariate polynomial over a field.
  * The field should be a BPASField and the multivariate polynomial should
  * be recursively viewed, as in BPASRecursivelyViewedPolynomial.
@@ -54,23 +54,23 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		Symbol sNMaxVar;					// max variable of largest strongly normalized subset of the TS
 		// TODO: remove stronglyNormalized attribute and compute it when needed using sNMaxVar
 		bool stronglyNormalized;			// flag whether the TS is strongly normalized
-		
+
 		/**
-		 * Determine whether the triangular set is strongly normalized and the maximum variable 
+		 * Determine whether the triangular set is strongly normalized and the maximum variable
 		 * of the largest strongly normalized subset of the triangular set.
 		 *
 		 * @param
 		 **/
 		void updateTriangularSetStates();
-		
+
 		/**
-		 * Determine whether after adding p the triangular set is strongly normalized and update the maximum variable 
+		 * Determine whether after adding p the triangular set is strongly normalized and update the maximum variable
 		 * of the largest strongly normalized subset of the triangular set.
 		 *
 		 * @param p: a recursively viewed polynomial that has just been added to the set
 		 **/
 		void updateTriangularSetStates(const RecursivePoly& p);
-		
+
 		/**
 		 * Return the index of the input symbol in the array of (potentially algebraic) variables of the triangular set.
 		 *
@@ -87,24 +87,24 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param
 		 **/
 		TriangularSet<Field,RecursivePoly> ();
-		
+
 		/**
-		 * Construct an empty triangular set of fixed size in the s decreasingly ordered 
+		 * Construct an empty triangular set of fixed size in the s decreasingly ordered
 		 * variables given by xs with empty list of transcendentals.
 		 *
 		 * @param xs: The variable names
 		 **/
 		TriangularSet<Field,RecursivePoly> (const std::vector<Symbol>& xs);
-		
+
 		/**
-		 * Construct an empty triangular set of fixed size in the s decreasingly ordered 
+		 * Construct an empty triangular set of fixed size in the s decreasingly ordered
 		 * variables given by xs and list of transcendentals given by ts.
 		 *
 		 * @param xs: The variable names
 		 * @param ts: The transcendental variable names
 		 **/
 		TriangularSet<Field,RecursivePoly> (const std::vector<Symbol>& xs, const std::vector<Symbol>& ts);
-		
+
 		/**
 		 * Construct a variable triangular set containing p, such that the variables of p are treated as (potentially algebraic) variables,
 		 * with empty list of transcendentals.
@@ -112,7 +112,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param p: The recursively viewed polynomial to add
 		 **/
 		TriangularSet<Field,RecursivePoly> (const RecursivePoly& p);
-		
+
 		/**
 		 * Construct a variable triangular set containing p, such that the variables in ts are
 		 * treated as transcendental, while any remaining variables of p are treated as (potentially algebraic) variables.
@@ -121,49 +121,49 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param ts: The transcendental variable names
 		 **/
 		TriangularSet<Field,RecursivePoly> (const RecursivePoly& p, const std::vector<Symbol>& ts);
-		
+
 		/**
 		 * Copy constructor.
 		 *
 		 * @param a: A triangular set
 		 **/
 		TriangularSet<Field,RecursivePoly> (const TriangularSet<Field,RecursivePoly>& a);
-		
+
 //		/**
 //		 * Copy constructor
 //		 *
 //		 * @param a: A regular chain
 //		 **/
 //		TriangularSet<Field,RecursivePoly> (const RegularChain<Field,RecursivePoly>& a);
-		
+
 //		/**
 //		 * Copy constructor
 //		 *
 //		 * @param a: A zero dimensional regular chain
 //		 **/
 //		TriangularSet<Field,RecursivePoly> (const ZeroDimensionalRegularChain<Field,RecursivePoly>& a);
-		
+
 		/**
 		 * Move constructor.
 		 *
 		 * @param a: An r-value triangular set
 		 **/
 		TriangularSet<Field,RecursivePoly> (TriangularSet<Field,RecursivePoly>&& a);
-		
+
 //		/**
 //		 * Move constructor
 //		 *
 //		 * @param a: An r-value regular chain
 //		 **/
 //		TriangularSet<Field,RecursivePoly> (RegularChain<Field,RecursivePoly>&& a);
-		
+
 //		/**
 //		 * Move constructor
 //		 *
 //		 * @param a: An r-value zero dimensional regular chain
 //		 **/
 //		TriangularSet<Field,RecursivePoly> (ZeroDimensionalRegularChain<Field,RecursivePoly>&& a);
-		
+
 		/**
 		 * Computational constructor: creates a triangular set given all the data.
 		 *
@@ -175,7 +175,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param c: characteristic of the triangular set
 		 **/
 		TriangularSet<Field,RecursivePoly> (const std::vector<Symbol>&& vs, const std::vector<Symbol>&& avs, const std::vector<Symbol>&& tvs, const std::vector<RecursivePoly>&& ts, TriangularSetMode tsm, const mpz_class& c);
-		
+
 		/**
 		 * Deconstructor.
 		 *
@@ -193,14 +193,14 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 //				*this = *dynamic_cast<const TriangularSet<Field,RecursivePoly>*>(&ts);
 //			else throw (std::invalid_argument("BPAS: Cannot cast BPASTriangularSet to TriangularSet."));
 //		}
-		
+
 		/**
 		 * Tests if the TriangularSet is empty.
 		 *
 		 * @param
 		 **/
 		bool isEmpty() const;
-		
+
 		/**
 		 * Tests if the polynomial is constant relative to the TriangularSet, i.e., whether it is and element of
 		 * the Field or its only variables are transcendental.
@@ -208,35 +208,35 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param p: a recursively viewed polynomial
 		 **/
 		bool isConstantPolynomial(const RecursivePoly& p) const;
-		
+
 		/**
 		 * Assignment operator =.
 		 *
 		 * @param a: A triangular set
 		 **/
 		TriangularSet<Field,RecursivePoly>& operator= (const TriangularSet<Field,RecursivePoly>& a);
-		
+
 		/**
 		 * Assignment operator =.
 		 *
 		 * @param a: A triangular set
 		 **/
 		BPASTriangularSet<Field,RecursivePoly>& operator= (const BPASTriangularSet<Field,RecursivePoly>& a) override;
-		
+
 		/**
 		 * Move assignment operator =.
 		 *
 		 * @param a: A triangular set
 		 **/
 		TriangularSet<Field,RecursivePoly>& operator= (TriangularSet<Field,RecursivePoly>&& a);
-		
+
 		/**
 		 * Move assignment operator =.
 		 *
 		 * @param a: A triangular set
 		 **/
 		BPASTriangularSet<Field,RecursivePoly>& operator= (BPASTriangularSet<Field,RecursivePoly>&& a) override;
-		
+
 		/**
 		 * Add operator +.
 		 * Adds a polynomial to a triangular set and returns a new triangular set.
@@ -244,7 +244,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param p: A recursively viewed polynomial
 		 **/
 		TriangularSet<Field,RecursivePoly> operator+ (const RecursivePoly& p);
-		
+
 		/**
 		 * Add assignment operator +=.
 		 * Adds a polynomial to a triangular set.
@@ -252,7 +252,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param p: A recursively viewed polynomial
 		 **/
 		TriangularSet<Field,RecursivePoly>& operator+= (const RecursivePoly& p);
-		
+
 		/**
 		 * Identity operator ==.
 		 *
@@ -266,7 +266,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param a: A triangular set
 		 **/
 		bool operator!= (const TriangularSet<Field,RecursivePoly>& a) const;
-		
+
 		/**
 		 * Get the number of variables.
 		 *
@@ -275,7 +275,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline int numberOfVariables() const {
 			return vars.size();
 		}
-		
+
 		/**
 		 * Get the size of the triangular set.
 		 *
@@ -284,7 +284,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline int size() const {
 			return algVars.size();
 		}
-		
+
 		/**
 		 * Get the number of algebraic variables.
 		 *
@@ -293,7 +293,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline int numberOfAlgebraicVariables() const {
 			return algVars.size();
 		}
-		
+
 		/**
 		 * Get the number of transcendental variables.
 		 *
@@ -302,7 +302,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline int numberOfTranscendentalVariables() const {
 			return trcVars.size();
 		}
-		
+
 		/**
 		 * Get the variable names in decreasing order.
 		 *
@@ -311,7 +311,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline std::vector<Symbol> variables() const {
 			return vars;
 		}
-		
+
 		/**
 		 * Get the algebraic variables.
 		 *
@@ -320,7 +320,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline std::vector<Symbol> mainVariables() const {
 			return algVars;
 		}
-		
+
 		/**
 		 * Get the transcendentalVariables variables.
 		 *
@@ -329,17 +329,17 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline std::vector<Symbol> transcendentalVariables() const {
 			return trcVars;
 		}
-		
+
 		/**
 		 * Get the list of variables followed by the transcendental variables.
 		 *
 		 * @param
 		 **/
 		std::vector<Symbol> allVariables() const;
-		
-		
+
+
 		/**
-		 * Determine if the input variable s is algebraic, i.e., if the triangular set 
+		 * Determine if the input variable s is algebraic, i.e., if the triangular set
 		 * contains a polynomial with s its as leading variable.
 		 *
 		 * @param s: the input variable
@@ -350,7 +350,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 			else
 				return false;
 		}
-		
+
 		/**
 		 * Return true if the triangular set is strongly normalized, i.e., the initals of all polynomials
 		 * are in the Field; return false otherwise.
@@ -360,7 +360,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline bool isStronglyNormalized() const {
 			return stronglyNormalized;
 		}
-		
+
 		/**
 		 * Get the vector of polynoials in the triangular set.
 		 *
@@ -369,7 +369,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline std::vector<RecursivePoly> polynomials() const {
 			return set;
 		}
-		
+
 		/**
 		 * Return the dimension of the triangular set (understood in terms of the space of (potentially algebraic) variables).
 		 *
@@ -378,7 +378,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline int dimension() const {
 			return (vars.size() - algVars.size());
 		}
-		
+
 		/**
 		 * Return the dimension of the triangular set lower(v) (understood in terms of the space of (potentially algebraic) variables).
 		 *
@@ -396,7 +396,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 			}
 			return (varsSize - algVarsSize);
 		}
-		
+
 		/**
 		 * Return the codimension of the triangular set (understood in terms of the space of (potentially algebraic) variables).
 		 *
@@ -405,24 +405,24 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		inline int codimension() const {
 			return algVars.size();
 		}
-		
+
 		/**
-		 * Test to determine whether the triangular set can be treated as zero dimensional, i.e., whether the triangular set 
-		 * becomes zero dimensional when all non-algebraic variables are removed and whether the polynomial p contains only 
+		 * Test to determine whether the triangular set can be treated as zero dimensional, i.e., whether the triangular set
+		 * becomes zero dimensional when all non-algebraic variables are removed and whether the polynomial p contains only
 		 * algebraic variables.
 		 *
 		 * @param p: a recursively viewed polynomial
 		 * @param p: (optional) flag to exclude the main variable of p when determining whether it contains only algebraic variables (default false)
 		 **/
 		bool canComputeInDimensionZero(const RecursivePoly& p, bool excludeMainVariable = false) const;
-		
+
 		/**
 		 * Test to determine if only algebraic variables (aside from transcendentals) appear in the polynomials of the triangular set.
 		 *
 		 * @param
 		 **/
 		bool isZeroDimensionalMathematically() const;
-		
+
 		/**
 		 * Select a polynomial given the leading variable;
 		 * if no such polynomial, 0 is returned.
@@ -430,23 +430,23 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param x: The leading variable name
 		 **/
 		RecursivePoly select(const Symbol& s) const;
-		
+
 		/**
 		 * Replace each polynomial of the triangular set with its primitive part.
 		 *
 		 * @param
 		 **/
 		void makePrimitive();
-		
+
 		/**
-		 * Returns the triangular set consisting of polynomials with 
+		 * Returns the triangular set consisting of polynomials with
 		 * main variable strictly less than s.
 		 *
 		 * @param s: symbol of the main variable of specified element of the triangular set
 		 * @param ts: The returned triangular set
 		 **/
 		void lower(const Symbol& s, BPASTriangularSet<Field,RecursivePoly>& ts) const;
-		
+
 		/**
 		 * Returns the triangular set consisting of polynomials with
 		 * main variable strictly greater than s.
@@ -455,7 +455,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param ts: The returned triangular set
 		 **/
 		void upper(const Symbol& s, BPASTriangularSet<Field,RecursivePoly>& ts) const;
-		
+
 		/**
 		 * Cut an input triangular set at the symbol v, returning the subchain below v, the polynomial with main variable v and the subchain above v.
 		 *
@@ -466,7 +466,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param Tgv: the subchain of T above v
 		 **/
 		void cutChain(const TriangularSet<Field,RecursivePoly>& T, const Symbol& v, TriangularSet<Field,RecursivePoly>& Tlv, RecursivePoly& Tv, TriangularSet<Field,RecursivePoly>& Tgv) const;
-		
+
 		/**
 		 * Cut the current object at the symbol v, returning the polynomial with main variable v and the subchain above v.
 		 *
@@ -475,7 +475,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param Tgv: the subchain of the current object above v
 		 **/
 		void cutChain(const Symbol& v, RecursivePoly& Tv, TriangularSet<Field,RecursivePoly>& Tgv) const;
-		
+
 		/**
 		 * Cut the current object at the symbol v, returning the subchain below v and the polynomial with main variable v.
 		 *
@@ -484,7 +484,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param Tv: the recursively viewed polynomial with main variable v, if it exists
 		 **/
 		void cutChain(const Symbol& v, TriangularSet<Field,RecursivePoly>& Tlv, RecursivePoly& Tv) const;
-		
+
 		/**
 		 * Pseudo division: return the pseudo-remainder, the pseudo-quotients and
 		 * c such that c*p = ∑(q_i T_i) + r.
@@ -494,7 +494,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param c: (optional) the constant multiplied to the input polynomial
 		 **/
 		RecursivePoly pseudoDivide (const RecursivePoly& p, std::vector<RecursivePoly>* quo=NULL, RecursivePoly* c=NULL) const;
-		
+
 		/**
 		 * Return the normalForm of the input polynomial modulo the triangular set in the sense of Groebner basis
 		 *
@@ -502,14 +502,14 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param Q: (optional) the array of quotient
 		 **/
 		RecursivePoly normalForm(const RecursivePoly& p, std::vector<RecursivePoly>* Q=NULL) const;
-		
+
 		/**
 		 * Reduce the input polynomial modulo the triangular set.
 		 *
 		 * @param p: input recursively viewed polynomial
 		 **/
 		RecursivePoly reduce(const RecursivePoly& p) const;
-		
+
 		/**
 		 * returns r such that c*r = p modulo sat(T) such that
 		 * c has no algebraic variables, and c is returned as an input parameter.
@@ -572,7 +572,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 		 * @param includeNeg: whether to include negative coefficients
 		 **/
 		void randomStronglyNormalizedTriangularSet(int nVars, int nAlgVars, int nTrcVars, int nTerms, unsigned long int coefBound, int pSparsity, bool includeNeg);
-		
+
 		/**
 		 * Display the triangular set.
 		 *
@@ -599,7 +599,7 @@ class TriangularSet : public virtual BPASTriangularSet<Field,RecursivePoly>
 			out << "]";
 			return out;
 		}
-	   
+
 	   /**
 	    * Convert a triangular set to an expression tree (array of its polynomials).
 	    *

@@ -3,7 +3,6 @@
 #include <mps/mpc.h>
 #include <complex>
 #include <algorithm>
-#include "../../include/polynomial.h"
 #include "../../include/ring.h"
 #include "../../include/RationalNumberPolynomial/urpolynomial.h"
 #include "../../include/RingPolynomial/upolynomial.h"
@@ -27,7 +26,7 @@ template<typename A, typename B>
 std::multimap<B,A> flip_map(const std::map<A,B> &src)
 {
     std::multimap<B,A> dst;
-    std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()), 
+    std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()),
                    flip_pair<A,B>);
     return dst;
 }
@@ -42,10 +41,10 @@ void _computePartialDerivatives(std::vector<SparseUnivariatePolynomial<Univariat
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING)
 		startTimer(&start);
-	
+
 	for (int i=0; i < U.size(); i++){
 		uporfTemp = U.at(i);
 		uporfTemp.differentiate(1);
@@ -69,12 +68,12 @@ void _computePartialDerivatives(std::vector<SparseUnivariatePolynomial<Univariat
 		d2Sdxdt.push_back(supTemp);
 //		std::cout << "d2Sdxdt = " << supTemp << std::endl;
 	}
-	
+
 	*dSdx_out = dSdx;
 	*dSdt_out = dSdt;
 	*d2Sdxdt_out = d2Sdxdt;
 	*dU_out = dU;
-		
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*ea_total += elapsed;
@@ -90,14 +89,14 @@ void _errorAnalysisLRT_rootfinding(UnivariatePolynomialOverRealField &H, int pre
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		*outStr << "------------------------------\n";
 		*outStr << "\tError Analysis\n";
 		*outStr << "\t------------------------------\n";
 		startTimer(&start);
 	}
-			
+
 	U2.push_back(H);
 	roots = _rootsMultiprecision<UnivariatePolynomialOverRealField,RealField>(U2,prec);
 	*denomRoots = roots.at(0);
@@ -145,7 +144,7 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 	//std::map<int, ComplexRationalNumber> rootIndexResidueMap;
 	residueRootIndexMap resRoot;
 	//std::vector<ComplexRationalNumber> res;
-		
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
@@ -157,16 +156,16 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 	//   means of computing the updated precision to ensure the residue error is less than eps.
 	// Given that the error in the roots is typically MANY orders of magnitude smaller than eps, this does
 	//   not appear to be a practical issue at this point.
-	
+
 	_errorAnalysisLRT_rootfinding<UnivariatePolynomialOverRealField,RealField>(H,localPrec,denomRoots,ea_total,outStr,PROFILING,PFD);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	// sort the roots of H(x)
 	sort(denomRoots->begin(),denomRoots->end(),ComplexRationalNumberOrdering(localPrec));
-	
+
 	// remove conjugate with positive imaginary part, gives us residues with positive imaginary part.
 	for (i=denomRoots->size()-1; i>0; --i) {
 		if (denomRoots->at(i).imaginaryPart() != 0) {
@@ -185,17 +184,17 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 		}
 		startTimer(&start);
 	}
-	
+
 	*dH = H;
 	dH->differentiate(1);
-	
+
 	// fill array of roots
 	int size = denomRoots->size();
 	//ComplexRationalNumber* rootArray = new ComplexRationalNumber[size];
 	//for (i=0; i<size; ++i) {
 	//	rootArray[i] = denomRoots->at(i);
 	//}
-	
+
 	ComplexRationalNumber* residueArray = new ComplexRationalNumber[size];
 
 	// compute residues accurately in parallel
@@ -207,7 +206,7 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 		c /= dH->template evaluate<ComplexRationalNumber>(root);
 		residueArray[k] = c;
 	}
-	
+
 	ComplexRationalNumber a;
 	a.zero();
 	for (i=0; i<size; i++) {
@@ -218,7 +217,7 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 	}
 	//for (i=0; i<residues->size(); ++i)
 	//	std::cout << "residues[" << i << "] = (" << residues->at(i).realPart().get_d() << "," << residues->at(i).imaginaryPart().get_d() << ")" << std::endl;
-	
+
 	delete [] residueArray;
 	//delete [] rootArray;
 
@@ -233,7 +232,7 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 		}
 		startTimer(&start);
 	}
-	
+
 	for (i=0; i<residues->size(); ++i) {
 		rrim->insert(std::make_pair(residues->at(i),i));
 	}
@@ -249,17 +248,17 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 		}
 		startTimer(&start);
 	}
-	
-	
-	
+
+
+
 	/*if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	complexMPF* resArray = new complexMPF[size];
 	mpq_t zero;
 	mpq_init(zero);
-	
+
 	SparseUnivariateMPComplexPolynomial nG(G,53);
 	SparseUnivariateMPComplexPolynomial nH(H,53);
 	SparseUnivariateMPComplexPolynomial ndH(*dH,53);
@@ -274,10 +273,10 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 		//mpc_div(c.c,c.c,ndH.evaluate(root,53).c);
 		resArray[m] = c;
 	}
-	
-	
-		
-		
+
+
+
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*ea_total += elapsed;
@@ -288,7 +287,7 @@ void _errorAnalysisLRT_rootsAndResidues(UnivariatePolynomialOverRealField &G, Un
 			*outStr << "\t\tnumerical residues\t" << elapsed << std::endl;
 		}
 	}
-	
+
 	for (int k=0; k<size; ++k) {
 		*outStr << "resArray[" << k << "] = (" << mpc_Re(resArray[k].c) << "," << mpc_Im(resArray[k].c) << ")" << std::endl;
 	}
@@ -299,7 +298,7 @@ template <class UnivariatePolynomialOverRealField, class RealField>
 void _errorAnalysisLRT_computeNumericalPolynomial(std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > &A, std::vector< std::vector< std::complex<double> > > &roots, std::vector< std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > >  *A_a) {
 
 	std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > sunpVec;
-	
+
 	for (int i=0; i<roots.size(); i++) {
 		sunpVec.clear();
 		for (int j=0; j<roots.at(i).size(); j++) {
@@ -314,7 +313,7 @@ template <class UnivariatePolynomialOverRealField, class RealField>
 void _errorAnalysisLRT_computeNumericalPolynomial(std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > &A, std::vector< std::vector<ComplexRationalNumber> > &roots, std::vector< std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > >  *A_a) {
 
 	std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > sunpVec;
-	
+
 	for (int i=0; i<roots.size(); i++) {
 		sunpVec.clear();
 		for (int j=0; j<roots.at(i).size(); j++) {
@@ -331,7 +330,7 @@ void _errorAnalysisLRT_computeNumericalPolynomial(std::vector<UnivariatePolynomi
 
 	std::vector< std::complex<double> > cdVec;
 	std::complex<double> cdTemp;
-	
+
 	for (int i=0; i<roots.size(); i++) {
 		SparseUnivariateDoublePolynomial< std::complex<double> > sunp(A.at(i));
 		cdVec.clear();
@@ -346,11 +345,11 @@ void _errorAnalysisLRT_computeNumericalPolynomial(std::vector<UnivariatePolynomi
 
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _errorAnalysisLRT_computeNumericalPolynomials(std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > &Stx, std::vector<UnivariatePolynomialOverRealField> &U, std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > &dSdx, std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > &dSdt, std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > &d2Sdxdt, std::vector<UnivariatePolynomialOverRealField> &dU, std::vector< std::vector<ComplexRationalNumber> > &resultantRoots, std::vector< std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > >  *S_t, std::vector< std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > > *dSdx_t, std::vector< std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > > *dSdt_t, std::vector< std::vector< SparseUnivariateDoublePolynomial< std::complex<double> > > > *d2Sdxdt_t, std::vector< std::vector< std::complex<double> > > *t, std::vector< std::vector< std::complex<double> > > *dt, std::ostringstream *outStr, bool PROFILING){
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
@@ -358,15 +357,15 @@ void _errorAnalysisLRT_computeNumericalPolynomials(std::vector< SparseUnivariate
 	// this computation can be split up and done in parallel, and maybe with exact computation
 	// to a UPoF before conversion to SUNP
 	std::vector< std::complex<double> > tVec,dtVec;
-	
+
 	int size(0),startIndex(0);
 	for (int i=0; i<resultantRoots.size(); ++i) {
 		size += resultantRoots.at(i).size();
 	}
-	
+
 	std::complex<double>* tArray = new std::complex<double>[size];
 	std::complex<double>* dtArray = new std::complex<double>[size];
-	
+
 	cilk_for (int l=0; l<size; ++l) {
 	//for (int l=0; l<size; ++l) {
 		int i=0;
@@ -404,12 +403,12 @@ void _errorAnalysisLRT_computeNumericalPolynomials(std::vector< SparseUnivariate
 	_errorAnalysisLRT_computeNumericalPolynomial<UnivariatePolynomialOverRealField,RealField>(dSdx,*t,dSdx_t);
 	_errorAnalysisLRT_computeNumericalPolynomial<UnivariatePolynomialOverRealField,RealField>(dSdt,*t,dSdt_t);
 	_errorAnalysisLRT_computeNumericalPolynomial<UnivariatePolynomialOverRealField,RealField>(d2Sdxdt,*t,d2Sdxdt_t);
-		
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*outStr << "\t\t\tNumerical polys\t" << elapsed << "\n";
-	}	
-	
+	}
+
 	/*for (int i=0; i<t->size(); i++) {
 		for (int j=0; j<t->at(i).size(); j++) {
 			*outStr << "t[" << i << "][" << j << "] = " << t->at(i).at(j) << " +/ " << dt->at(i).at(j) << std::endl;
@@ -420,37 +419,37 @@ void _errorAnalysisLRT_computeNumericalPolynomials(std::vector< SparseUnivariate
 void _errorAnalysisLRT_computeIntegralTermRootMap(std::vector<ComplexRationalNumber>& denomRoots, std::vector< std::vector<ComplexRationalNumber> > &resultantRoots, int prec, residueRootIndexMap *rrim, std::vector<ComplexRationalNumber> *residues, std::vector<int> *realRootIndices, std::vector<int> *complexRootIndices, IntegralTermRootMap* itrm_real, IntegralTermRootMap* itrm_complex, std::ostringstream *outStr, bool PROFILING){
 	// This function establishes a correspondence between the terms of the integral, expressed as an IntegralTerm
 	// object, and the roots of H(x).
-	
+
 	int i,j,k,l;
 	RootIntegralTermMap residueITM,rootITM;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	realRootIndices->clear();
 	complexRootIndices->clear();
-	
-	// find indices of real and complex roots of H(x)	
+
+	// find indices of real and complex roots of H(x)
 	for (i=0; i<denomRoots.size(); i++) {
 		if (denomRoots.at(i).imaginaryPart() == 0)
 			realRootIndices->push_back(i);
 		else
 			complexRootIndices->push_back(i);
 	}
-	
+
 	IntegralTermRootMap itrm2;
-	
+
 	// temporary recomputing of residues vector
 	for (i=0; i<residues->size(); i++) {
 		if (residues->at(i).imaginaryPart() < 0)
 			residues->at(i) = residues->at(i).conjugate();
 	}
-	
+
 	// create arrays for parallel computation
 	int size(0),startIndex(0),r2size(residues->size());
 	for (i=0; i<resultantRoots.size(); ++i) {
@@ -459,7 +458,7 @@ void _errorAnalysisLRT_computeIntegralTermRootMap(std::vector<ComplexRationalNum
 	std::vector< std::pair<IntegralTerm,int> >* pii = new std::vector< std::pair<IntegralTerm,int> >[size];
 	ComplexRationalNumber* resroot = new ComplexRationalNumber[r2size];
 	std::pair<ComplexRationalNumber,IntegralTerm>* ci = new std::pair<ComplexRationalNumber,IntegralTerm>[size];
-	
+
 	// compute correspondence between computed residues and term of integral
 	for (i=0; i<resultantRoots.size(); ++i) {
 		for (j=0; j<resultantRoots.at(i).size(); j++) {
@@ -471,7 +470,7 @@ void _errorAnalysisLRT_computeIntegralTermRootMap(std::vector<ComplexRationalNum
 		}
 		startIndex += resultantRoots.at(i).size();
 	}
-	
+
 	// test for equality of computed residues and roots of resultant and compute integral term-root correspondence
 	cilk_for (int l=0; l<size; ++l) {
 	//for (int l=0; l<size; ++l) {
@@ -486,18 +485,18 @@ void _errorAnalysisLRT_computeIntegralTermRootMap(std::vector<ComplexRationalNum
 		}
 		pii[l] = p;
 	}
-	
+
 	// fill IntegralTermRootMap object
 	for (j=0; j<size; ++j) {
 		for (k=0; k<pii[j].size(); ++k)
 			itrm2.insert(pii[j].at(k));
 	}
-	
+
 	delete [] pii;
 	delete [] ci;
-	
+
 	IntegralTermRootMap realITRM,complexITRM;
-	
+
 	ITRMIter it2;
 	for (it2 = itrm2.begin(); it2 != itrm2.end(); ++it2) {
 		if (std::binary_search(realRootIndices->begin(), realRootIndices->end(), (*it2).second))
@@ -514,29 +513,29 @@ void _errorAnalysisLRT_computeIntegralTermRootMap(std::vector<ComplexRationalNum
 	for (it2 = complexITRM.begin(); it2 != complexITRM.end(); ++it2) {
 		*outStr << "complexITRM" << (*it2).first << " = " << (*it2).second << std::endl;
 	}*/
-	
+
 	*itrm_real = realITRM;
 	*itrm_complex = complexITRM;
-	
-		
+
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*outStr << "\t\t\tterm-root map\t" << elapsed << "\n";
-	}	
-	
+	}
+
 }
 
 template <class UnivariatePolynomialOverRealField, class RealField>
 SparseUnivariatePolynomial<ComplexRationalNumber> _evaluateCoefficients(SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> &A, ComplexRationalNumber c) {
 	SparseUnivariatePolynomial<ComplexRationalNumber> out;
 	ComplexRationalNumber crnTemp;
-	
+
 	for (int i=0; i<=A.degree(); ++i) {
 		if (!A.coefficient(i).isZero()) {
 			crnTemp = A.coefficient(i).template evaluate(c);
 			out.setCoefficient(i,crnTemp);
 		}
-	}	
+	}
 	return out;
 }
 
@@ -544,13 +543,13 @@ template <class UnivariatePolynomialOverRealField, class RealField>
 SparseUnivariatePolynomial<RationalNumber> _evaluateCoefficients(SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> &A, RationalNumber c) {
 	SparseUnivariatePolynomial<RationalNumber> out;
 	RationalNumber rnTemp;
-	
+
 	for (int i=0; i<=A.degree(); ++i) {
 		if (!A.coefficient(i).isZero()) {
 			rnTemp = A.coefficient(i).evaluate(c);
 			out.setCoefficient(i,rnTemp);
 		}
-	}	
+	}
 	return out;
 }
 
@@ -597,7 +596,7 @@ void _computeForwardErrorTerm(std::complex<double> S_tx, std::complex<double> dS
 			*fwdErrTerm += dErrTerm;
 		}
 		dErrTerm = -4.0*b*(A*(dB*da + dA*db))/C;
-		*fwdErrTerm += dErrTerm;			
+		*fwdErrTerm += dErrTerm;
 	}
 }
 
@@ -635,7 +634,7 @@ void _computeForwardErrorTerm(std::complex<double> x, std::complex<double> dx, s
 		}
 		dErrTerm = (da*log(logArg) + 2*a*alphaMinusX/logArg)*dalpha;
 		dErrTerm += (-db*log(logArg) + 2*a*beta/logArg)*dbeta;
-		*fwdErrTerm += dErrTerm;			
+		*fwdErrTerm += dErrTerm;
 	}
 }
 
@@ -645,15 +644,15 @@ void _errorAnalysisLRT_realRoots(std::vector< SparseUnivariatePolynomial<Univari
 	double S_tx,dSdx_tx,dSdt_tx,d2Sdxdt_tx,t,deltat,dBwdErrTerm,dFwdErrTerm;
 	ITRMIter it;
 	int iTemp,iTemp2,corr;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	SparseUnivariatePolynomial<RationalNumber> uS,udSdx,udSdt,ud2Sdxdt;
 	it = itrm.begin();
 	int i(0),j(0),icurr(0),l(0);
@@ -740,12 +739,12 @@ void _errorAnalysisLRT_realRoots(std::vector< SparseUnivariatePolynomial<Univari
 		FEBoundaryError->push_back(dFwdErrTerm);
 		++it;
 	}
-	
-		
+
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*outStr << "\t\t\tReal roots\t" << elapsed << "\n";
-	}	
+	}
 }
 
 template <class UnivariatePolynomialOverRealField, class RealField>
@@ -753,18 +752,18 @@ void _errorAnalysisLRT_complexRoots(std::vector< SparseUnivariatePolynomial<Univ
 	ComplexRationalNumber crnTemp;
 	std::complex<double> S_t_x,dSdx_t_x,dSdt_t_x,d2Sdxdt_t_x,tt,dtt,cdErrTerm;
 	double a,b,x,da,db,A,B,C,dA,dB,bwdErr,fwdErr,dErrTerm;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	*maxBwdErrVal = 0.0;
 	*maxFwdErrVal = 0.0;
-	
+
 	for (int i=0; i<complexRootIndices.size(); i++) {
 		crnTemp = denomRoots.at(complexRootIndices.at(i));
 		x = crnTemp.realPart().get_d();
@@ -794,7 +793,7 @@ void _errorAnalysisLRT_complexRoots(std::vector< SparseUnivariatePolynomial<Univ
 		if (fwdErr > *maxFwdErrVal)
 			*maxFwdErrVal = fwdErr;
 	}
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*outStr << "\t\t\tComplex roots\t" << elapsed << "\n";
@@ -808,15 +807,15 @@ void _errorAnalysisPFD_realRoots(std::vector< std::complex<double> > &r, std::ve
 	//int iTemp,iTemp2,corr;
 	double eps,dist,alpha,dalpha;
 	int index;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-		
+
 	for (int i=0; i<realRootIndices.size(); ++i) {
 		index = realRootIndices.at(i);
 		alpha = x.at(index).real();
@@ -833,12 +832,12 @@ void _errorAnalysisPFD_realRoots(std::vector< std::complex<double> > &r, std::ve
 		dist = sqrt(dist);
 		BEIntervalWidths->push_back(dist);
 		BEBoundaryError->push_back(eps);
-	}	
-		
+	}
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*outStr << "\t\t\tReal roots\t" << elapsed << "\n";
-	}	
+	}
 }
 
 void _errorAnalysisPFD_complexRoots(std::vector< std::complex<double> > &r, std::vector< std::complex<double> > &dr, std::vector< std::complex<double> > &x, std::vector< std::complex<double> > &dx, std::vector<int> &complexRootIndices, double *maxBwdErrVal, double *maxFwdErrVal, std::ostringstream *outStr, bool PROFILING) {
@@ -846,18 +845,18 @@ void _errorAnalysisPFD_complexRoots(std::vector< std::complex<double> > &r, std:
 	std::complex<double> root,cdErrTerm;
 	//double a,b,x,da,db,A,B,C,dA,dB,bwdErr,fwdErr,dErrTerm;
 	double bwdErr,fwdErr,xVal;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	*maxBwdErrVal = 0.0;
 	*maxFwdErrVal = 0.0;
-	
+
 	for (int i=0; i<complexRootIndices.size(); i++) {
 		root = x.at(complexRootIndices.at(i));
 		xVal = root.real();
@@ -879,7 +878,7 @@ void _errorAnalysisPFD_complexRoots(std::vector< std::complex<double> > &r, std:
 		if (fwdErr > *maxFwdErrVal)
 			*maxFwdErrVal = fwdErr;
 	}
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*outStr << "\t\t\tComplex roots\t" << elapsed << "\n";
@@ -898,48 +897,48 @@ void _errorAnalysisLRT(std::vector< SparseUnivariatePolynomial<UnivariatePolynom
 	double* maxErr;
 	double dTemp(0);
 	int size_of_t(0),nworkers(1),dataLength(0);
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		*outStr << "\t\tLRT EA\n";
 		*outStr << "\t\t------------------------------\n";
 		startTimer(&start);
 	}
-	
+
 	// Two branches here:
 	//   1) compute the numerical polynomials for all the residues and resultant root error
 	//   2) compute the integralTerm and denomRoot index correspondence
 	// The resutant root error is currently the major bottleneck
-	
+
 	cilk_spawn
 		_errorAnalysisLRT_computeNumericalPolynomials<UnivariatePolynomialOverRealField,RealField>(Stx,U,dSdx,dSdt,d2Sdxdt,dU,resultantRoots,&S_t,&dSdx_t,&dSdt_t,&d2Sdxdt_t,&t,&dt,outStr,PROFILING);
-	
+
 	std::vector<int> realRootIndices,complexRootIndices;
 	IntegralTermRootMap realITRM,complexITRM;
 	_errorAnalysisLRT_computeIntegralTermRootMap(denomRoots,resultantRoots,prec,rrim,residues,&realRootIndices,&complexRootIndices,
 	&realITRM,&complexITRM,outStr,PROFILING);
-		
+
 	cilk_sync;
-	
+
 	// Two branches here, but their cost is low:
 	//   1) compute the error bound over the complex roots
 	//   2) compute the interval bounds where the error exceeds the tolerance (real singularities)
-	 
+
 	if (complexRootIndices.size() > 0) {
 		//cilk_spawn
 			_errorAnalysisLRT_complexRoots<UnivariatePolynomialOverRealField,RealField>(Stx,dSdx,dSdt,d2Sdxdt,S_t,dSdx_t,dSdt_t,d2Sdxdt_t,t,dt,denomRoots,resultantRoots,realITRM,complexITRM, complexRootIndices,maxBwdErr,maxFwdErr,outStr,PROFILING);
 	}
-	
+
 	if (realRootIndices.size() > 0)
 		_errorAnalysisLRT_realRoots<UnivariatePolynomialOverRealField,RealField>(Stx,dSdx,dSdt,d2Sdxdt,dt,denomRoots,resultantRoots,realITRM,prec,realSingIndices,BEIntervalWidths,FEIntervalWidths, BEBoundaryError,FEBoundaryError,outStr,PROFILING);
-	
+
 	//if (complexRootIndices.size() > 0)
 	//	cilk_sync;
-	
-		
+
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*ea_total += elapsed;
@@ -950,33 +949,33 @@ void _errorAnalysisLRT(std::vector< SparseUnivariatePolynomial<UnivariatePolynom
 
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _errorAnalysisPFD_computeNumericalValues(UnivariatePolynomialOverRealField &G_in, UnivariatePolynomialOverRealField &H_in, UnivariatePolynomialOverRealField &dH_in, std::vector<ComplexRationalNumber> &denomRoots, std::vector<ComplexRationalNumber> &residues, residueRootIndexMap& rrim_in, std::vector< std::complex<double> > *r_out, std::vector< std::complex<double> > *dr_out, std::vector< std::complex<double> > *x_out, std::vector< std::complex<double> > *dx_out, std::ostringstream *outStr, bool PROFILING){
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	UnivariatePolynomialOverRealField G(G_in),H(H_in),dH(dH_in);
 	std::complex<double> dTemp,xVal,dHVal;
 	std::vector< std::complex<double> > r,dr,x,dx;
 	residueRootIndexMap rrim(rrim_in);
-	
+
 	UnivariatePolynomialOverRealField dG(G),ddH(dH);
 	dG.differentiate(1);
 	ddH.differentiate(1);
-	
+
 	// this all can be made more efficient when there is residue structure by only computing
 	// the residues and residue error for each one that is repeated. The rest of the error
 	// analysis would need to change accordingly.
 	int size(denomRoots.size());
-	
+
 	std::complex<double>* rArray = new std::complex<double>[size];
 	std::complex<double>* xArray = new std::complex<double>[size];
 	std::complex<double>* dxArray = new std::complex<double>[size];
-	
+
 	cilk_for (int i=0; i<size; ++i) {
 		ComplexRationalNumber crn(denomRoots[i]);
 		std::complex<double> cd(crn.realPart().get_d(),crn.imaginaryPart().get_d());
@@ -986,21 +985,21 @@ void _errorAnalysisPFD_computeNumericalValues(UnivariatePolynomialOverRealField 
 		cd = std::complex<double>(crn2.realPart().get_d(),crn2.imaginaryPart().get_d());
 		dxArray[i] = cd;
 	}
-	
+
 	RRIMIter it;
 	for (it=rrim.begin(); it!=rrim.end(); ++it) {
 		ComplexRationalNumber crn((*it).first);
 		std::complex<double> cd(crn.realPart().get_d(),crn.imaginaryPart().get_d());
 		rArray[(*it).second] = cd;
 	}
-	
+
 	for (int i=0; i<denomRoots.size(); ++i) {
 		x.push_back(xArray[i]);
 		dx.push_back(dxArray[i]);
 		r.push_back(rArray[i]);
 	}
 	SparseUnivariateDoublePolynomial<double> uG(G),udG(dG),udH(dH),uddH(ddH);
-	
+
 	for (int i=0; i<denomRoots.size(); ++i) {
 		xVal = x[i];
 		dHVal = udH.evaluate(xVal);
@@ -1010,17 +1009,17 @@ void _errorAnalysisPFD_computeNumericalValues(UnivariatePolynomialOverRealField 
 		dTemp /= dHVal;
 		dr.push_back(dTemp);
 	}
-	
+
 	delete [] rArray;
 	delete [] xArray;
 	delete [] dxArray;
-	
+
 	*r_out = r;
 	*dr_out = dr;
 	*x_out = x;
 	*dx_out = dx;
-	
-	
+
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*outStr << "\t\t\tnumerical vals\t" << elapsed << "\n";
@@ -1030,27 +1029,27 @@ void _errorAnalysisPFD_computeNumericalValues(UnivariatePolynomialOverRealField 
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _errorAnalysisPFD(UnivariatePolynomialOverRealField &G, UnivariatePolynomialOverRealField &H, UnivariatePolynomialOverRealField &dH, std::vector<ComplexRationalNumber> &denomRoots, std::vector<ComplexRationalNumber> &residues, int prec, std::vector<int> &realRootIndices, std::vector<int> &complexRootIndices, residueRootIndexMap& rrim, double *maxBwdErrVal, double *maxFwdErrVal, std::vector<double> *BEIntervalWidths, std::vector<double> *FEIntervalWidths, std::vector<double> *BEBoundaryError, std::vector<double> *FEBoundaryError, float *ea_total, std::ostringstream *outStr, bool PROFILING){
 	std::vector< std::complex<double> > r,dr,x,dx;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		*outStr << "\t\tPFD EA\n";
 		*outStr << "\t\t------------------------------\n";
 		startTimer(&start);
 	}
-	
+
 	_errorAnalysisPFD_computeNumericalValues<UnivariatePolynomialOverRealField,RealField>(G,H,dH,denomRoots,residues,rrim,&r,&dr,&x,&dx,outStr,PROFILING);
 	/*for (int i=0; i<denomRoots.size(); ++i) {
 		*outStr << "x = " << x.at(i) << " +/- " << dx.at(i) << std::endl;
 		*outStr << "r = " << r.at(i) << ", dr = " << dr.at(i) << std::endl;
 	}*/
-	
+
 	_errorAnalysisPFD_complexRoots(r,dr,x,dx,complexRootIndices,maxBwdErrVal,maxFwdErrVal,outStr,PROFILING);
 	_errorAnalysisPFD_realRoots(r,dr,x,dx,realRootIndices,prec,BEIntervalWidths,FEIntervalWidths,BEBoundaryError,  FEBoundaryError,outStr,PROFILING);
-	
-		
+
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		*ea_total += elapsed;
@@ -1090,11 +1089,11 @@ void reverseVariableOrder(SparseUnivariatePolynomial<UnivariatePolynomialOverRea
 
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomialOverRealField &D, UnivariatePolynomialOverRealField *P, std::vector<UnivariatePolynomialOverRealField> *G, std::vector<RealField> *lg, std::vector<UnivariatePolynomialOverRealField> *Lg, std::vector<RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn, int prec, bool PROFILING, bool PFD_LOG_PART, bool ERROR_ANALYSIS){
-	
+
 	UnivariatePolynomialOverRealField Num(A);
 	UnivariatePolynomialOverRealField Den(D);
 	SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> supTemp;
-	
+
 	std::vector<UnivariatePolynomialOverRealField> U,dU;
 	std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > Stx,Sxt,dSdx,dSdt,d2Sdxdt;
 	std::vector< std::vector<ComplexRationalNumber> > resultantRoots;
@@ -1105,113 +1104,113 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 	std::vector<int> realSingIndices;
 	double maxBwdErr,maxFwdErr;
 	residueRootIndexMap rrim;
-	
+
 	// variable checking and canonicalization
 	_initializeRationalIntegration<UnivariatePolynomialOverRealField,RealField>(A,D,PROFILING);
-	
+
 	// set main variable
 	Symbol mainVariable;
 	mainVariable = A.variable();
-	
+
 	// Profiling variables
 	unsigned long long start, start2, start3;
 	float elapsed(0), elapsed2(0), elapsed3(0), ea_total(0);
 	std::ostringstream outStr;
-	
-	// compute the rational part of the integral of R/D by Hermite reduction, which is 
-	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the 
-	// derivative of the rest of the integral, viz., the integrand of the logarithmic 
-	// part, which is returned as a single rational function as a pair of polynomials 
+
+	// compute the rational part of the integral of R/D by Hermite reduction, which is
+	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the
+	// derivative of the rest of the integral, viz., the integrand of the logarithmic
+	// part, which is returned as a single rational function as a pair of polynomials
 	// R and H
-	
+
 	UnivariatePolynomialOverRealField R;  // stores numerator of log part of integral of A/D
 	UnivariatePolynomialOverRealField H;  // stores squarefee denominator of the log part
 	UnivariatePolynomialOverRealField dH; // stores derivative of H
 	R.setVariableName(mainVariable);
 	H.setVariableName(mainVariable);
-	
+
 	if (PROFILING) {
 		std::cout << "\tRational function rational part" << std::endl;
 		std::cout << "\t------------------------------" << std::endl;
 		startTimer(&start);
 	}
-		
+
 	_integrateRationalFunctionRationalPart<UnivariatePolynomialOverRealField,RealField>(A,D,P,G,&R,&H,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	// compute integral of R/H
-	
+
 	if (!R.isZero()) {
-		
+
 		if (ERROR_ANALYSIS) {
-			
+
 			cilk_spawn
 				_errorAnalysisLRT_rootsAndResidues<UnivariatePolynomialOverRealField,RealField>(R,H,prec,&dH,&denomRoots,&residues,&rrim,&ea_total,&outStr,PROFILING,false);
-				
+
 		}
-		
+
 		if (PROFILING){
 			std::cout << "\tRational function log part" << std::endl;
 			std::cout << "\t------------------------------" << std::endl;
 			startTimer(&start);
 		}
-		
+
 		_integrateRationalFunctionLogPart<UnivariatePolynomialOverRealField,RealField>(&Stx,&U,R,H,PROFILING);
-		
+
 		if (PROFILING){
 			stopTimer(&start,&elapsed);
 			std::cout << "\t------------------------------" << std::endl;
 			std::cout << "\t\t\t" << elapsed << std::endl;
 		}
 	}
-	
+
 	if (ERROR_ANALYSIS){
-		cilk_spawn 
+		cilk_spawn
 			_computePartialDerivatives<UnivariatePolynomialOverRealField,RealField>(Stx,U,&dSdx,&dSdt,&d2Sdxdt,&dU,&ea_total,&outStr,PROFILING);
 	}
 
-	
+
 	if (PROFILING)
 		startTimer(&start);
-	
+
 	resultantRoots = _rootsMultiprecision<UnivariatePolynomialOverRealField,RealField>(U,prec);
-	
+
 	for (int i=0; i<resultantRoots.size(); i++)
 		sort(resultantRoots.at(i).begin(),resultantRoots.at(i).end(),ComplexRationalNumberOrdering(prec));
-	
+
 	std::vector< std::vector<ComplexRationalNumber> > resultantRootsTemp(resultantRoots);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\tRoots\t\t" << elapsed << std::endl;
 	}
-		
+
 	// This needs to be moved to the optimal position
 	if (ERROR_ANALYSIS){
 		cilk_sync;
 		cilk_spawn
 			_errorAnalysisLRT<UnivariatePolynomialOverRealField,RealField>(Stx,U,dSdx,dSdt,d2Sdxdt,dU,resultantRootsTemp,denomRoots,prec,&rrim,&residues,&realSingIndices, &BEIntervalWidths,&FEIntervalWidths,&BEBoundaryError,&FEBoundaryError,&maxBwdErr,&maxFwdErr, &ea_total,&outStr,PROFILING);
 	}
-	
+
 	if (PROFILING){
 		std::cout << "\tLog to real" << std::endl;
 		std::cout << "\t--------------------------------------" << std::endl;
 		startTimer(&start);
 	}
-	
+
 	_logToReal<UnivariatePolynomialOverRealField,RealField>(resultantRoots,Stx,lg,Lg,atn,Atn,prec,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t--------------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	if (ERROR_ANALYSIS) {
 		cilk_sync;
 		if (PROFILING){
@@ -1220,7 +1219,7 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 			outStr << "\t\tBackward error away from sings = " << maxBwdErr << std::endl;
 			if (BEIntervalWidths.size() > 0) {
 				outStr << "\t\tBackward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << BEIntervalWidths.at(i).get_d() << "  (" << BEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -1228,7 +1227,7 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 			outStr << "\t\tForward Error away from sings = " << maxFwdErr << std::endl;
 			if (FEIntervalWidths.size() > 0) {
 				outStr << "\t\tForward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << FEIntervalWidths.at(i).get_d() << "  (" << FEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -1242,16 +1241,16 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 	//	lg.at(i) /= D.degree();
 	//for (int i=0; i<atn.size(); i++)
 	//	atn.at(i) /= D.degree();
-	
+
 }
 
 //template <class UnivariatePolynomialOverRealField, class RealField>
 //void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomialOverRealField &D, UnivariatePolynomialOverRealField *P, std::vector<UnivariatePolynomialOverRealField> *G, std::vector<RealField> *lg, std::vector<UnivariatePolynomialOverRealField> *Lg, std::vector<RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vector<UnivariatePolynomialOverRealField> *Atn2, int prec, bool PROFILING, bool PFD_LOG_PART, bool ERROR_ANALYSIS){
-//	
+//
 //	UnivariatePolynomialOverRealField Num(A);
 //	UnivariatePolynomialOverRealField Den(D);
 //	SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> supTemp;
-//	
+//
 //	std::vector<UnivariatePolynomialOverRealField> U,dU;
 //	std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > Stx,Sxt,dSdx,dSdt,d2Sdxdt;
 //	std::vector< std::vector<ComplexRationalNumber> > resultantRoots;
@@ -1262,106 +1261,106 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 //	std::vector<int> realSingIndices;
 //	double maxBwdErr,maxFwdErr;
 //	residueRootIndexMap rrim;
-//	
+//
 //	// variable checking and canonicalization
 //	_initializeRationalIntegration<UnivariatePolynomialOverRealField,RealField>(A,D,PROFILING);
-//	
+//
 //	// set main variable
 //	Symbol mainVariable;
 //	mainVariable = A.variable();
-//	
+//
 //	// Profiling variables
 //	unsigned long long start, start2, start3;
 //	float elapsed(0), elapsed2(0), elapsed3(0), ea_total(0);
 //	std::ostringstream outStr;
-//	
-//	// compute the rational part of the integral of R/D by Hermite reduction, which is 
-//	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the 
-//	// derivative of the rest of the integral, viz., the integrand of the logarithmic 
-//	// part, which is returned as a single rational function as a pair of polynomials 
+//
+//	// compute the rational part of the integral of R/D by Hermite reduction, which is
+//	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the
+//	// derivative of the rest of the integral, viz., the integrand of the logarithmic
+//	// part, which is returned as a single rational function as a pair of polynomials
 //	// R and H
-//	
+//
 //	UnivariatePolynomialOverRealField R;  // stores numerator of log part of integral of A/D
 //	UnivariatePolynomialOverRealField H;  // stores squarefee denominator of the log part
 //	UnivariatePolynomialOverRealField dH; // stores derivative of H
 //	R.setVariableName(mainVariable);
 //	H.setVariableName(mainVariable);
-//	
+//
 //	if (PROFILING) {
 //		std::cout << "\tRational function rational part" << std::endl;
 //		std::cout << "\t------------------------------" << std::endl;
 //		startTimer(&start);
 //	}
-//		
+//
 //	_integrateRationalFunctionRationalPart<UnivariatePolynomialOverRealField,RealField>(A,D,P,G,&R,&H,PROFILING);
-//	
+//
 //	if (PROFILING){
 //		stopTimer(&start,&elapsed);
 //		std::cout << "\t------------------------------" << std::endl;
 //		std::cout << "\t\t\t" << elapsed << std::endl;
 //	}
-//	
+//
 //	// compute integral of R/H
-//	
+//
 //	if (!R.isZero()) {
-//			
+//
 //		cilk_spawn
 //			_errorAnalysisLRT_rootsAndResidues<UnivariatePolynomialOverRealField,RealField>(R,H,prec,&dH,&denomRoots,&residues,&rrim,&ea_total,&outStr,PROFILING,false);
-//			
-//		
+//
+//
 //		if (PROFILING){
 //			std::cout << "\tRational function log part" << std::endl;
 //			std::cout << "\t------------------------------" << std::endl;
 //			startTimer(&start);
 //		}
-//		
+//
 //		_integrateRationalFunctionLogPart<UnivariatePolynomialOverRealField,RealField>(&Stx,&U,R,H,PROFILING);
-//		
+//
 //		if (PROFILING){
 //			stopTimer(&start,&elapsed);
 //			std::cout << "\t------------------------------" << std::endl;
 //			std::cout << "\t\t\t" << elapsed << std::endl;
 //		}
 //	}
-//	
-//	cilk_spawn 
+//
+//	cilk_spawn
 //		_computePartialDerivatives<UnivariatePolynomialOverRealField,RealField>(Stx,U,&dSdx,&dSdt,&d2Sdxdt,&dU,&ea_total,&outStr,PROFILING);
 
-//	
+//
 //	if (PROFILING)
 //		startTimer(&start);
-//	
+//
 //	resultantRoots = _rootsMultiprecision<UnivariatePolynomialOverRealField,RealField>(U,prec);
-//	
+//
 //	for (int i=0; i<resultantRoots.size(); i++)
 //		sort(resultantRoots.at(i).begin(),resultantRoots.at(i).end(),ComplexRationalNumberOrdering(prec));
-//	
+//
 //	std::vector< std::vector<ComplexRationalNumber> > resultantRootsTemp(resultantRoots);
-//	
+//
 //	if (PROFILING){
 //		stopTimer(&start,&elapsed);
 //		std::cout << "\tRoots\t\t" << elapsed << std::endl;
 //	}
-//		
+//
 //	// This may need to be moved to an optimal position
 //	cilk_sync;
 //	cilk_spawn
 //		_errorAnalysisLRT<UnivariatePolynomialOverRealField,RealField>(Stx,U,dSdx,dSdt,d2Sdxdt,dU,resultantRootsTemp,denomRoots,prec,&rrim,&residues,&realSingIndices, &BEIntervalWidths,&FEIntervalWidths,&BEBoundaryError,&FEBoundaryError,&maxBwdErr,&maxFwdErr, &ea_total,&outStr,PROFILING);
-//	
+//
 //	if (PROFILING){
 //		std::cout << "\tLog to real" << std::endl;
 //		std::cout << "\t--------------------------------------" << std::endl;
 //		startTimer(&start);
 //	}
-//	
+//
 //	_logToReal<UnivariatePolynomialOverRealField,RealField>(resultantRoots,Stx,lg,Lg,atn,Atn1,prec,PROFILING);
-//	
+//
 //	if (PROFILING){
 //		stopTimer(&start,&elapsed);
 //		std::cout << "\t--------------------------------------" << std::endl;
 //		std::cout << "\t\t\t" << elapsed << std::endl;
 //	}
-//	
+//
 //	cilk_sync;
 //	if (PROFILING){
 //		outStr << "\t------------------------------\n";
@@ -1369,7 +1368,7 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 //		outStr << "\t\tBackward error away from sings = " << maxBwdErr << std::endl;
 //		if (BEIntervalWidths.size() > 0) {
 //			outStr << "\t\tBackward error exceeds tolerance for x =" << std::endl;
-//		
+//
 //			for (int i=0; i<BEIntervalWidths.size(); i++) {
 //				outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << BEIntervalWidths.at(i).get_d() << "  (" << BEBoundaryError.at(i) << ")" << std::endl;
 //			}
@@ -1377,7 +1376,7 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 //		outStr << "\t\tForward Error away from sings = " << maxFwdErr << std::endl;
 //		if (FEIntervalWidths.size() > 0) {
 //			outStr << "\t\tForward error exceeds tolerance for x =" << std::endl;
-//		
+//
 //			for (int i=0; i<BEIntervalWidths.size(); i++) {
 //				outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << FEIntervalWidths.at(i).get_d() << "  (" << FEBoundaryError.at(i) << ")" << std::endl;
 //			}
@@ -1390,16 +1389,16 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 //	//	lg.at(i) /= D.degree();
 //	//for (int i=0; i<atn.size(); i++)
 //	//	atn.at(i) /= D.degree();
-//	
+//
 //}
 
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomialOverRealField &D, UnivariatePolynomialOverRealField *P, std::vector<UnivariatePolynomialOverRealField> *G, std::vector<RealField> *lg, std::vector<UnivariatePolynomialOverRealField> *Lg, std::vector<RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vector<UnivariatePolynomialOverRealField> *Atn2, int prec, bool PROFILING, bool PFD_LOG_PART, bool ERROR_ANALYSIS){
-	
+
 	UnivariatePolynomialOverRealField Num(A);
 	UnivariatePolynomialOverRealField Den(D);
 	SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> supTemp;
-	
+
 	std::vector<UnivariatePolynomialOverRealField> U,dU;
 	std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > Stx,Sxt,dSdx,dSdt,d2Sdxdt;
 	std::vector< std::vector<ComplexRationalNumber> > resultantRoots;
@@ -1410,113 +1409,113 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 	std::vector<int> realSingIndices;
 	double maxBwdErr,maxFwdErr;
 	residueRootIndexMap rrim;
-	
+
 	// variable checking and canonicalization
 	_initializeRationalIntegration<UnivariatePolynomialOverRealField,RealField>(A,D,PROFILING);
-	
+
 	// set main variable
 	Symbol mainVariable;
 	mainVariable = A.variable();
-	
+
 	// Profiling variables
 	unsigned long long start, start2, start3;
 	float elapsed(0), elapsed2(0), elapsed3(0), ea_total(0);
 	std::ostringstream outStr;
-	
-	// compute the rational part of the integral of R/D by Hermite reduction, which is 
-	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the 
-	// derivative of the rest of the integral, viz., the integrand of the logarithmic 
-	// part, which is returned as a single rational function as a pair of polynomials 
+
+	// compute the rational part of the integral of R/D by Hermite reduction, which is
+	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the
+	// derivative of the rest of the integral, viz., the integrand of the logarithmic
+	// part, which is returned as a single rational function as a pair of polynomials
 	// R and H
-	
+
 	UnivariatePolynomialOverRealField R;  // stores numerator of log part of integral of A/D
 	UnivariatePolynomialOverRealField H;  // stores squarefee denominator of the log part
 	UnivariatePolynomialOverRealField dH; // stores derivative of H
 	R.setVariableName(mainVariable);
 	H.setVariableName(mainVariable);
-	
+
 	if (PROFILING) {
 		std::cout << "\tRational function rational part" << std::endl;
 		std::cout << "\t------------------------------" << std::endl;
 		startTimer(&start);
 	}
-		
+
 	_integrateRationalFunctionRationalPart<UnivariatePolynomialOverRealField,RealField>(A,D,P,G,&R,&H,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	// compute integral of R/H
-	
+
 	if (!R.isZero()) {
-		
+
 		if (ERROR_ANALYSIS) {
-			
+
 			cilk_spawn
 				_errorAnalysisLRT_rootsAndResidues<UnivariatePolynomialOverRealField,RealField>(R,H,prec,&dH,&denomRoots,&residues,&rrim,&ea_total,&outStr,PROFILING,false);
-				
+
 		}
-		
+
 		if (PROFILING){
 			std::cout << "\tRational function log part" << std::endl;
 			std::cout << "\t------------------------------" << std::endl;
 			startTimer(&start);
 		}
-		
+
 		_integrateRationalFunctionLogPart<UnivariatePolynomialOverRealField,RealField>(&Stx,&U,R,H,PROFILING);
-		
+
 		if (PROFILING){
 			stopTimer(&start,&elapsed);
 			std::cout << "\t------------------------------" << std::endl;
 			std::cout << "\t\t\t" << elapsed << std::endl;
 		}
 	}
-	
+
 	if (ERROR_ANALYSIS){
-		cilk_spawn 
+		cilk_spawn
 			_computePartialDerivatives<UnivariatePolynomialOverRealField,RealField>(Stx,U,&dSdx,&dSdt,&d2Sdxdt,&dU,&ea_total,&outStr,PROFILING);
 	}
 
-	
+
 	if (PROFILING)
 		startTimer(&start);
-	
+
 	resultantRoots = _rootsMultiprecision<UnivariatePolynomialOverRealField,RealField>(U,prec);
-	
+
 	for (int i=0; i<resultantRoots.size(); i++)
 		sort(resultantRoots.at(i).begin(),resultantRoots.at(i).end(),ComplexRationalNumberOrdering(prec));
-	
+
 	std::vector< std::vector<ComplexRationalNumber> > resultantRootsTemp(resultantRoots);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\tRoots\t\t" << elapsed << std::endl;
 	}
-		
+
 	// This needs to be moved to the optimal position
 	if (ERROR_ANALYSIS){
 		cilk_sync;
 		cilk_spawn
 			_errorAnalysisLRT<UnivariatePolynomialOverRealField,RealField>(Stx,U,dSdx,dSdt,d2Sdxdt,dU,resultantRootsTemp,denomRoots,prec,&rrim,&residues,&realSingIndices, &BEIntervalWidths,&FEIntervalWidths,&BEBoundaryError,&FEBoundaryError,&maxBwdErr,&maxFwdErr, &ea_total,&outStr,PROFILING);
 	}
-	
+
 	if (PROFILING){
 		std::cout << "\tLog to real" << std::endl;
 		std::cout << "\t--------------------------------------" << std::endl;
 		startTimer(&start);
 	}
-	
+
 	_logToReal<UnivariatePolynomialOverRealField,RealField>(resultantRoots,Stx,lg,Lg,atn,Atn1,prec,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t--------------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	if (ERROR_ANALYSIS) {
 		cilk_sync;
 		if (PROFILING){
@@ -1525,7 +1524,7 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 			outStr << "\t\tBackward error away from sings = " << maxBwdErr << std::endl;
 			if (BEIntervalWidths.size() > 0) {
 				outStr << "\t\tBackward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << BEIntervalWidths.at(i).get_d() << "  (" << BEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -1533,7 +1532,7 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 			outStr << "\t\tForward Error away from sings = " << maxFwdErr << std::endl;
 			if (FEIntervalWidths.size() > 0) {
 				outStr << "\t\tForward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << FEIntervalWidths.at(i).get_d() << "  (" << FEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -1547,7 +1546,7 @@ void _realSNIntegrate(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 	//	lg.at(i) /= D.degree();
 	//for (int i=0; i<atn.size(); i++)
 	//	atn.at(i) /= D.degree();
-	
+
 }
 
 SparseUnivariatePolynomial<RationalNumber> _realPart(SparseUnivariatePolynomial<ComplexRationalNumber> &A){
@@ -1611,7 +1610,7 @@ void _computeIntegralTerm(std::vector<ComplexRationalNumber> &denomRoots, Comple
 	logTerm.one();
 	arctanTerm1.one();
 	arctanTerm2.one();
-	
+
 	for (int i=0; i<rootIndices.size(); ++i) {
 		root = denomRoots.at(rootIndices.at(i));
 		if (root.imaginaryPart() == 0) {
@@ -1655,7 +1654,7 @@ void _computeIntegralTerm(std::vector<ComplexRationalNumber> &denomRoots, Comple
 			}
 		}
 	}
-	
+
 	// The rounding is turned off, since it can give incorrect results on some problems.
 	// To incorporate it there must be checking that the rounding will not significantly affect the error.
 	if (logTerm.degree() > 0) {
@@ -1689,22 +1688,22 @@ void _computeIntegralTerm(std::vector<ComplexRationalNumber> &denomRoots, Comple
 
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, residueRootIndexMap &rrim, Symbol mainVariable, int prec, std::vector<RealField> *lg, std::vector<UnivariatePolynomialOverRealField> *Lg, std::vector<RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vector<UnivariatePolynomialOverRealField> *Atn2, bool PROFILING){
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
 
 	RRIMIter it;
-	
+
 	std::vector<ComplexRationalNumber> residues;
 	std::vector< std::vector<int> > residueRootIndices;
 	std::vector<int> ind;
 	//TermRootMap resRootCor; // correspondence between residue and roots
-	
+
 	it=rrim.begin();
 	residues.push_back((*it).first);
 	//resRootCor.insert(std::make_pair(0,(*it).second));
@@ -1720,15 +1719,15 @@ void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, res
 		ind.push_back((*it).second);
 	}
 	residueRootIndices.push_back(ind);
-	
+
 	int size(residues.size());
-	
+
 	RealField* lgArray = new RealField[size];
 	RealField* atnArray = new RealField[size];
 	UnivariatePolynomialOverRealField* LgArray = new UnivariatePolynomialOverRealField[size];
 	UnivariatePolynomialOverRealField* Atn1Array = new UnivariatePolynomialOverRealField[size];
 	UnivariatePolynomialOverRealField* Atn2Array = new UnivariatePolynomialOverRealField[size];
-	
+
 	cilk_for (int i=0; i<size; ++i) {
 		RealField log,arctan;
 		UnivariatePolynomialOverRealField Log,Arctan1,Arctan2;
@@ -1739,7 +1738,7 @@ void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, res
 		Atn1Array[i] = Arctan1;
 		Atn2Array[i] = Arctan2;
 	}
-	
+
 	for (int i=0; i<size; ++i) {
 		if (LgArray[i].degree() > 0) {
 			lg->push_back(lgArray[i]);
@@ -1751,13 +1750,13 @@ void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, res
 			Atn2->push_back(Atn2Array[i]);
 		}
 	}
-	
+
 	delete [] lgArray;
 	delete [] LgArray;
 	delete [] atnArray;
 	delete [] Atn1Array;
 	delete [] Atn2Array;
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t\tstruc integrate\t\t" << elapsed << "\n";
@@ -1766,11 +1765,11 @@ void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, res
 
 /*template <class UnivariatePolynomialOverRealField, class RealField>
 void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, residueRootIndexMap &rrim, std::string mainVariable, int prec, std::vector<RealField> *lg, std::vector<UnivariatePolynomialOverRealField> *Lg, std::vector<RealField> *atnTemp, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vector<UnivariatePolynomialOverRealField> *Atn2, TermRootMap *logMap, TermRootMap *arctanMap, bool PROFILING){
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed(0);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
@@ -1789,8 +1788,8 @@ void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, res
 	RRIMIter it,itTemp,itEnd;
 	itEnd = rrim.end();
 	--itEnd;
-	
-	
+
+
 	// this code should probably be rewritten to precompute residue multiplicity
 	for (it=rrim.begin(); it!=rrim.end(); ++it){
 		root = denomRoots.at((*it).second);
@@ -1879,7 +1878,7 @@ void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, res
 			}
 		}
 	}
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t\tstruc integrate\t\t" << elapsed << "\n";
@@ -1888,11 +1887,11 @@ void _PFDStructuredIntegrate(std::vector<ComplexRationalNumber> &denomRoots, res
 
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _realSNIntegratePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynomialOverRealField &D, UnivariatePolynomialOverRealField *P, std::vector<UnivariatePolynomialOverRealField> *G, std::vector<RealField> *lg, std::vector<UnivariatePolynomialOverRealField> *Lg, std::vector<RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn, int prec, bool PROFILING, bool PFD_LOG_PART, bool ERROR_ANALYSIS){
-	
+
 	UnivariatePolynomialOverRealField Num(A);
 	UnivariatePolynomialOverRealField Den(D);
 	SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> supTemp;
-	
+
 	std::vector<RealField> atnTemp;
 	std::vector<UnivariatePolynomialOverRealField> U,dU,Atn1,Atn2;
 	std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > Stx,Sxt,dSdx,dSdt,d2Sdxdt;
@@ -1904,61 +1903,61 @@ void _realSNIntegratePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynom
 	std::vector<int> realRootIndices,complexRootIndices;
 	double maxBwdErr,maxFwdErr;
 	residueRootIndexMap rrim;
-	
+
 	// variable checking and canonicalization
 	_initializeRationalIntegration<UnivariatePolynomialOverRealField,RealField>(A,D,PROFILING);
-	
+
 	// set main variable
 	Symbol mainVariable;
 	mainVariable = A.variable();
-	
+
 	// Profiling variables
 	unsigned long long start, start2, start3;
 	float elapsed(0), elapsed2(0), elapsed3(0), ea_total(0);
 	std::ostringstream outStr;
-	
-	// compute the rational part of the integral of R/D by Hermite reduction, which is 
-	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the 
-	// derivative of the rest of the integral, viz., the integrand of the logarithmic 
-	// part, which is returned as a single rational function as a pair of polynomials 
+
+	// compute the rational part of the integral of R/D by Hermite reduction, which is
+	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the
+	// derivative of the rest of the integral, viz., the integrand of the logarithmic
+	// part, which is returned as a single rational function as a pair of polynomials
 	// R and H
-	
+
 	UnivariatePolynomialOverRealField R;  // stores numerator of log part of integral of A/D
 	UnivariatePolynomialOverRealField H;  // stores squarefee denominator of the log part
 	UnivariatePolynomialOverRealField dH; // stores derivative of H
 	R.setVariableName(mainVariable);
 	H.setVariableName(mainVariable);
-	
+
 	if (PROFILING) {
 		std::cout << "\tRational function rational part" << std::endl;
 		std::cout << "\t------------------------------" << std::endl;
 		startTimer(&start);
 	}
-		
+
 	_integrateRationalFunctionRationalPart<UnivariatePolynomialOverRealField,RealField>(A,D,P,G,&R,&H,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	// compute integral of R/H
-	
+
 	if (!R.isZero()) {
-		
+
 		if (PROFILING){
 			std::cout << "\tRational function trancendental part" << std::endl;
 			std::cout << "\t------------------------------" << std::endl;
 			startTimer(&start);
 		}
-		
+
 		// if I keep this routine here, I need to change the name of it to _rootsAndResidues
 		_errorAnalysisLRT_rootsAndResidues<UnivariatePolynomialOverRealField,RealField>(R,H,prec,&dH,&denomRoots,&residues,&rrim,&ea_total,&outStr,PROFILING,true);
-		
-		if (ERROR_ANALYSIS) {	
-			
-			// find indices of real and complex roots of H(x)	
+
+		if (ERROR_ANALYSIS) {
+
+			// find indices of real and complex roots of H(x)
 			for (int i=0; i<denomRoots.size(); i++) {
 				if (denomRoots.at(i).imaginaryPart() == 0)
 					realRootIndices.push_back(i);
@@ -1968,7 +1967,7 @@ void _realSNIntegratePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynom
 			cilk_spawn
 				_errorAnalysisPFD<UnivariatePolynomialOverRealField,RealField>(R,H,dH,denomRoots,residues,prec,realRootIndices,complexRootIndices,rrim,&maxBwdErr,&maxFwdErr, &BEIntervalWidths,&FEIntervalWidths,&BEBoundaryError,&FEBoundaryError,&ea_total,&outStr,PROFILING);
 		}
-		
+
 		// this needs to also yield the needed permutation of the roots
 		/*typedef std::pair<ComplexRationalNumber,ComplexRationalNumber> ResidueRootPair;
 		std::vector<ResidueRootPair> rrp;
@@ -1978,31 +1977,31 @@ void _realSNIntegratePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynom
 		}
 		sort(rrp.begin(),rrp.end(),CompareByRealThenReverseImaginary());*/
 		//sort(residues.begin(),residues.end(),CompareByRealThenReverseImaginary());
-		
+
 		_PFDStructuredIntegrate<UnivariatePolynomialOverRealField,RealField>(denomRoots,rrim,mainVariable,prec,lg,Lg,&atnTemp,&Atn1,&Atn2,PROFILING);
-		
+
 		if (PROFILING){
 			stopTimer(&start,&elapsed);
 			std::cout << "\t------------------------------" << std::endl;
 			std::cout << "\t\t\t" << elapsed << std::endl;
 			startTimer(&start);
 		}
-		
+
 		// postprocessing, using Rioboo's method to remove spurious discontinuities
 		for (int i=0; i<Atn1.size(); ++i) {
 			_arctan2ToArctan<UnivariatePolynomialOverRealField,RealField>(Atn1.at(i),Atn2.at(i),atnTemp.at(i),atn,Atn);
 		}
-		
+
 		if (PROFILING){
 			stopTimer(&start,&elapsed);
 			std::cout << "\t------------------------------" << std::endl;
 			std::cout << "\tPost processing\t" << elapsed << std::endl;
 		}
-		
+
 		if (ERROR_ANALYSIS)
 			cilk_sync;
 	}
-		
+
 	if (ERROR_ANALYSIS) {
 		//cilk_sync;
 		if (PROFILING){
@@ -2011,7 +2010,7 @@ void _realSNIntegratePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynom
 			outStr << "\t\tBackward error away from sings = " << maxBwdErr << std::endl;
 			if (BEIntervalWidths.size() > 0) {
 				outStr << "\t\tBackward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realRootIndices.at(i)).realPart().get_d() << " +/- " << BEIntervalWidths.at(i) << "  (" << BEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -2019,7 +2018,7 @@ void _realSNIntegratePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynom
 			outStr << "\t\tForward Error away from sings = " << maxFwdErr << std::endl;
 			if (FEIntervalWidths.size() > 0) {
 				outStr << "\t\tForward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realRootIndices.at(i)).realPart().get_d() << " +/- " << FEIntervalWidths.at(i) << "  (" << FEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -2027,18 +2026,18 @@ void _realSNIntegratePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynom
 			std::cout << outStr.str();
 		}
 	}
-	
+
 }
 
 // keeping this in case it is worth having a non-structure-preserving version, though I think not
 // once the mpc computations are working
 template <class UnivariatePolynomialOverRealField, class RealField>
 void _realSNIntegrateSimplePFD(UnivariatePolynomialOverRealField &A, UnivariatePolynomialOverRealField &D, UnivariatePolynomialOverRealField *P, std::vector<UnivariatePolynomialOverRealField> *G, std::vector<RealField> *lg, std::vector<UnivariatePolynomialOverRealField> *Lg, std::vector<RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn, int prec, bool PROFILING, bool PFD_LOG_PART, bool ERROR_ANALYSIS){
-	
+
 	UnivariatePolynomialOverRealField Num(A);
 	UnivariatePolynomialOverRealField Den(D);
 	SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> supTemp;
-	
+
 	std::vector<UnivariatePolynomialOverRealField> U,dU;
 	std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverRealField> > Stx,Sxt,dSdx,dSdt,d2Sdxdt;
 	std::vector< std::vector<ComplexRationalNumber> > resultantRoots;
@@ -2049,60 +2048,60 @@ void _realSNIntegrateSimplePFD(UnivariatePolynomialOverRealField &A, UnivariateP
 	std::vector<int> realSingIndices;
 	double maxBwdErr,maxFwdErr;
 	residueRootIndexMap rrim;
-	
+
 	// variable checking and canonicalization
 	_initializeRationalIntegration<UnivariatePolynomialOverRealField,RealField>(A,D,PROFILING);
-	
+
 	// set main variable
 	Symbol mainVariable;
 	mainVariable = A.variable();
-	
+
 	// Profiling variables
 	unsigned long long start, start2, start3;
 	float elapsed(0), elapsed2(0), elapsed3(0), ea_total(0);
 	std::ostringstream outStr;
-	
-	// compute the rational part of the integral of R/D by Hermite reduction, which is 
-	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the 
-	// derivative of the rest of the integral, viz., the integrand of the logarithmic 
-	// part, which is returned as a single rational function as a pair of polynomials 
+
+	// compute the rational part of the integral of R/D by Hermite reduction, which is
+	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the
+	// derivative of the rest of the integral, viz., the integrand of the logarithmic
+	// part, which is returned as a single rational function as a pair of polynomials
 	// R and H
-	
+
 	UnivariatePolynomialOverRealField R;  // stores numerator of log part of integral of A/D
 	UnivariatePolynomialOverRealField H;  // stores squarefee denominator of the log part
 	UnivariatePolynomialOverRealField dH; // stores derivative of H
 	R.setVariableName(mainVariable);
 	H.setVariableName(mainVariable);
-	
+
 	if (PROFILING) {
 		std::cout << "\tRational function rational part" << std::endl;
 		std::cout << "\t------------------------------" << std::endl;
 		startTimer(&start);
 	}
-		
+
 	_integrateRationalFunctionRationalPart<UnivariatePolynomialOverRealField,RealField>(A,D,P,G,&R,&H,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	// compute integral of R/H
-	
+
 	if (!R.isZero()) {
-		
+
 		if (PROFILING){
 			std::cout << "\tRational function trancendental part" << std::endl;
 			std::cout << "\t------------------------------" << std::endl;
 			startTimer(&start);
 		}
-		
+
 		// if I keep this routine here, I need to change the name of it to _rootsAndResidues
 		_errorAnalysisLRT_rootsAndResidues<UnivariatePolynomialOverRealField,RealField>(R,H,prec,&dH,&denomRoots,&residues,&rrim,&ea_total,&outStr,PROFILING,true);
-		
+
 		// There are some 0 residues that are included in the list. This is only supposed to happen for non-zero
-		// rational part, but they are also popping up in example 2. Genuine ones need to be removed from the list 
+		// rational part, but they are also popping up in example 2. Genuine ones need to be removed from the list
 		// because they do not contribute to the integral, and the spurious ones should not be there at all.
 		ComplexRationalNumber c,root,residue;
 		RealField one(RationalNumber(1));
@@ -2111,7 +2110,7 @@ void _realSNIntegrateSimplePFD(UnivariatePolynomialOverRealField &A, UnivariateP
 		LinPoly.setVariableName(mainVariable);
 		LinPoly = (LinPoly + one << 1);
 		//LinPoly.setCoefficient(1,r);
-		
+
 		for (int i=0; i<denomRoots.size(); i++){
 			root = denomRoots.at(i);
 			residue = residues.at(i);
@@ -2150,36 +2149,36 @@ void _realSNIntegrateSimplePFD(UnivariatePolynomialOverRealField &A, UnivariateP
 				}
 			}
 		}
-		
+
 		if (PROFILING){
 			stopTimer(&start,&elapsed);
 			std::cout << "\t------------------------------" << std::endl;
 			std::cout << "\t\t\t" << elapsed << std::endl;
 		}
 	}
-		
+
 	// This needs to be moved to the optimal position
 	/*if (ERROR_ANALYSIS){
 		// to be replaced with _errorAnalysisPFD
 		cilk_spawn
 			_errorAnalysisLRT<UnivariatePolynomialOverRealField,RealField>(Stx,U,dSdx,dSdt,d2Sdxdt,dU,resultantRootsTemp,denomRoots,prec,&rrim,&residues,&realSingIndices, &BEIntervalWidths,&FEIntervalWidths,&BEBoundaryError,&FEBoundaryError,&maxBwdErr,&maxFwdErr, &ea_total,&outStr,PROFILING);
 	}*/
-	
+
 	/*if (PROFILING){
 		std::cout << "\tLog to real" << std::endl;
 		std::cout << "\t--------------------------------------" << std::endl;
 		startTimer(&start);
 	}
-	
+
 	// this needs to be replaced with the PFD integration method
 	//_logToReal<UnivariatePolynomialOverRealField,RealField>(resultantRoots,Stx,lg,Lg,atn,Atn,prec,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t--------------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}*/
-	
+
 	/*if (ERROR_ANALYSIS) {
 		//cilk_sync;
 		if (PROFILING){
@@ -2188,7 +2187,7 @@ void _realSNIntegrateSimplePFD(UnivariatePolynomialOverRealField &A, UnivariateP
 			outStr << "\t\tBackward error away from sings = " << maxBwdErr << std::endl;
 			if (BEIntervalWidths.size() > 0) {
 				outStr << "\t\tBackward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << BEIntervalWidths.at(i).get_d() << "  (" << BEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -2196,7 +2195,7 @@ void _realSNIntegrateSimplePFD(UnivariatePolynomialOverRealField &A, UnivariateP
 			outStr << "\t\tForward Error away from sings = " << maxFwdErr << std::endl;
 			if (FEIntervalWidths.size() > 0) {
 				outStr << "\t\tForward error exceeds tolerance for x =" << std::endl;
-			
+
 				for (int i=0; i<BEIntervalWidths.size(); i++) {
 					outStr << "\t\t\t" << denomRoots.at(realSingIndices.at(i)).realPart().get_d() << " +/- " << FEIntervalWidths.at(i).get_d() << "  (" << FEBoundaryError.at(i) << ")" << std::endl;
 				}
@@ -2204,7 +2203,7 @@ void _realSNIntegrateSimplePFD(UnivariatePolynomialOverRealField &A, UnivariateP
 	//		std::cout << outStr.str();
 	//	}
 	//}
-	
+
 }
 
 // to avoid linking errors

@@ -122,29 +122,26 @@ private:
 
 
 public:
-	mpz_class characteristic;
 	/**
 	* Construct the zero fraction function
 	*
 	* @param
-	**/ 
+	**/
 	SmartFraction<Domain>(){
 		num;
 		den;
 		Domain c;
-		characteristic = c.characteristic;
 	}
 
 	/**
 	* Copy constructor
 	*
 	* @param b: A rational function
-	**/ 
+	**/
 	SmartFraction<Domain>(const SmartFraction<Domain> &b){
 		num = b.num;
 		den = b.den;
 		Domain c;
-		characteristic = c.characteristic;
 	}
 
 	/**
@@ -157,7 +154,6 @@ public:
 		num = a;
 		den = b;
 		Domain c;
-		characteristic = c.characteristic;
 	}
 
 	SmartFraction<Domain>(Domain a, Domain b){
@@ -170,7 +166,7 @@ public:
 		num = extractFactors(a);
 		den = extractFactors(b);
 
-		//cout << "const : num size " << num.size() << endl;	
+		//cout << "const : num size " << num.size() << endl;
 		//cout << "const : den size " << den.size() << endl;
 
 		//cout << "num contain:" << endl;
@@ -180,7 +176,6 @@ public:
 
 
 		Domain c;
-		characteristic = c.characteristic;
 	}
 
 	~SmartFraction<Domain>(){};
@@ -227,7 +222,7 @@ public:
 	Factors<SmartFraction<Domain>> squareFree() const{
 		std::cerr << "SmartFraction<Domain>::squareFree NOT YET IMPLEMENTED" << std::endl;
 		//TODO
-		return Factors<SmartFraction<Domain>>(*this); 
+		return Factors<SmartFraction<Domain>>(*this);
 	}
 	ExpressionTree convertToExpressionTree() const{
 			std::cerr << "SmartFraction<Domain>::convertToExpressionTree NOT YET IMPLEMENTED" << std::endl;
@@ -238,7 +233,7 @@ public:
 
 	void print(std::ostream& ostream) const;
 	SmartFraction<Domain> gcd(const SmartFraction<Domain>& b ) const;
-	SmartFraction<Domain> euclideanSize() const;
+	Integer euclideanSize() const;
 	SmartFraction<Domain> euclideanDivision(const SmartFraction<Domain>&b, SmartFraction<Domain>* q = NULL) const;
 	SmartFraction<Domain> quotient(const SmartFraction<Domain>& b) const;
 	SmartFraction<Domain> remainder(const SmartFraction<Domain>&b) const;
@@ -300,7 +295,7 @@ public:
 
 
 
-	
+
 
 
 #endif

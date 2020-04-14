@@ -22,7 +22,7 @@ class SparseUnivariatePolynomial;
 
 // prime field with big number, using GMP functions
 /**
- * A prime field whose prime can be arbitrarily large. 
+ * A prime field whose prime can be arbitrarily large.
  */
 class BigPrimeField : public BPASFiniteField<BigPrimeField> {
 
@@ -34,7 +34,6 @@ private:
 public:
 
 	static mpz_class characteristic;
-    static RingProperties properties;        
 	// static bool isPrimeField;
 	// static bool isSmallPrimeField;
 	// static bool isComplexField;
@@ -80,8 +79,13 @@ public:
 
 	static void setPrime(mpz_class p){
 		prime = p;
-	//	characteristic = p;
+		characteristic = p;
 	}
+
+    mpz_class getCharacteristic() const override {
+    	return characteristic;
+    }
+
 
 	mpz_class Prime() const;
 
@@ -256,7 +260,7 @@ public:
 		BigPrimeField r (*this);
 		return (r -= c);
 	}
-	
+
 	inline BigPrimeField operator- (long int c) const {
 		BigPrimeField r (*this);
 		BigPrimeField b (c);
@@ -268,7 +272,7 @@ public:
 		BigPrimeField b(c);
 		return (r += b);
 	}
-	
+
 	inline BigPrimeField& operator-= (const BigPrimeField& c) {
 		if ((a - c.a)<0){
 			a = prime+(a - c.a);
@@ -284,7 +288,7 @@ public:
 		BigPrimeField b (c);
 		return (r += b);
 	}
-	
+
 	inline BigPrimeField operator-= (const mpz_class& c) {
 		BigPrimeField r (*this);
 		BigPrimeField b(c);
@@ -420,7 +424,7 @@ public:
 		BigPrimeField b (c);
 		return (*this /= b);
 	}
-	
+
 	inline BigPrimeField operator% (const BigPrimeField& c) const {
 		return 0;
 	}
@@ -468,31 +472,31 @@ public:
 		return ret;
 	}
 
-	/** 
+	/**
 	 * Get the euclidean size of *this.
 	 */
-	inline BigPrimeField euclideanSize() const {
-		return (*this).number();
+	inline Integer euclideanSize() const {
+		return Integer(1);
 	}
-	
+
 	/**
-	 * Perform the eucldiean division of *this and b. Returns the 
-	 * remainder. If q is not NULL, then returns the quotient in q. 
-	 */ 
+	 * Perform the eucldiean division of *this and b. Returns the
+	 * remainder. If q is not NULL, then returns the quotient in q.
+	 */
 	BigPrimeField euclideanDivision(const BigPrimeField& b, BigPrimeField* q = NULL) const;
 
 	/**
-	 * Perform the extended euclidean division on *this and b. 
+	 * Perform the extended euclidean division on *this and b.
 	 * Returns the GCD. If s and t are not NULL, returns the bezout coefficients in them.
 	 */
 	BigPrimeField extendedEuclidean(const BigPrimeField& b, BigPrimeField* s = NULL, BigPrimeField* t = NULL) const;
-	
+
 	/**
 	 * Get the quotient of *this and b.
 	 */
 	BigPrimeField quotient(const BigPrimeField& b) const;
 
-	/** 
+	/**
 	 * Get the remainder of *this and b.
 	 */
 	BigPrimeField remainder(const BigPrimeField& b) const;
@@ -511,4 +515,4 @@ public:
 
 };
 
-#endif 
+#endif

@@ -1,4 +1,5 @@
 target_sources(${BPAS_LIB_TARGET} PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/src/RationalFunction/urationalfunction.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/RationalFunction/complexdouble.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/RationalFunction/rationalfunction_euclideanmethods.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/RationalFunction/rationalfunction_symbolicintegration.cpp

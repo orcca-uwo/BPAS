@@ -1,4 +1,3 @@
-#include "../../include/polynomial.h"
 #include "../../include/ring.h"
 #include "../../include/RationalNumberPolynomial/urpolynomial.h"
 #include "../../include/RingPolynomial/upolynomial.h"
@@ -26,7 +25,7 @@ UnivariatePolynomialOverRealField _realEvaluateCoefficients(SparseUnivariatePoly
 	RealField fTemp;
 	UnivariatePolynomialOverRealField upofTemp,output;
 	output.setVariableName(P.variable());
-	
+
 	upofTemp = P.coefficient(P.degree().get_si());
 	fTemp = upofTemp.evaluate(c);
 	output = output + fTemp << P.degree().get_si();
@@ -47,7 +46,7 @@ SparseUnivariatePolynomial<RationalNumber> _realEvaluateCoefficients(SparseUniva
 	UnivariatePolynomialOverField upofTemp;
 	SparseUnivariatePolynomial<RationalNumber> output;
 	output.setVariableName(P.variable());
-	
+
 	for (i=0;i<=P.degree();i++) {
 		if (!P.coefficient(i).isZero()) {
 			upofTemp = P.coefficient(i);
@@ -65,7 +64,7 @@ SparseUnivariatePolynomial<ComplexRationalNumber> _complexEvaluateCoefficients(S
 	UnivariatePolynomialOverRealField upofTemp;
 	SparseUnivariatePolynomial<ComplexRationalNumber> output;
 	output.setVariableName(P.variable());
-	
+
 	for (i=0;i<=P.degree().get_si();i++) {
 		if (!P.coefficient(i).isZero()) {
 			upofTemp = P.coefficient(i);
@@ -159,7 +158,7 @@ UnivariatePolynomialOverRealField _realSUPToUPoF(SparseUnivariatePolynomial<Rati
 	RealField fTemp,zero;
 	UnivariatePolynomialOverRealField output;
 	output.setVariableName(A.variable());
-	
+
 	fTemp = A.coefficient(A.degree().get_si());
 	output = output + fTemp << A.degree().get_si();
 	for (int i=0; i<A.degree().get_si(); i++){
@@ -176,13 +175,13 @@ void _arctan2ToArctan(UnivariatePolynomialOverRealField &A, UnivariatePolynomial
 	/* Convert two argument arctangent coef*arctan(A,B) to a     */
 	/* series of one argument arctangent terms of the form       */
 	/* atn[i]*arctan(Atn[i]) using Rioboo's recursive algorithm. */
-	
+
 	UnivariatePolynomialOverRealField upofTemp,upofTemp2,C,D,G;
 	upofTemp.setVariableName(A.variable());
 	C.setVariableName(A.variable());
 	D.setVariableName(A.variable());
 	G.setVariableName(A.variable());
-	
+
 	_remainder<UnivariatePolynomialOverRealField,RealField>(A,B,&upofTemp);
 	if (upofTemp.isZero()){
 		if (A.degree() > B.degree()){
@@ -226,7 +225,7 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn, int prec, 
 	/* logToReal(E,S,lg,Lg,atn,Atn,prec):                       */
 	/* Convert formal sums to log and one argument arctan terms */
 	/*                                                          */
-	
+
 	double precision = pow(2.0,-prec);
 	RealField a,b,fTemp;
 	UnivariatePolynomialOverRealField A,B;
@@ -235,11 +234,11 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn, int prec, 
 	SparseUnivariatePolynomial<RationalNumber> realSupTemp;
 	std::vector<ComplexRationalNumber> r;
 	ComplexRationalNumber ComplexRationalNumberTemp;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed_a(0), elapsed_b(0), elapsed_c(0), elapsed_d(0);
-	
+
 	for (int k=0; k<E.size(); k++){
 		r = E.at(k);
 		sort(r.begin(),r.end(),ComplexRationalNumberOrdering(prec));
@@ -249,21 +248,21 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn, int prec, 
 			b = r.at(j).imaginaryPart();
 			if (b == 0){
 				if (a != 0){
-					A = _realEvaluateCoefficients<UnivariatePolynomialOverRealField,RealField>(upofTemp,a);	
+					A = _realEvaluateCoefficients<UnivariatePolynomialOverRealField,RealField>(upofTemp,a);
 									// note that this code may have to be edited
 									// to avoid generating large coefficients
 					fTemp = A.leadingCoefficient();
-					
+
 					if (PROFILING){
 						startTimer(&start);
 					}
-						
+
 					A /= fTemp;
-					
+
 					if (PROFILING){
 						stopTimerAddElapsed(&start,&elapsed_d);
 					}
-					
+
 					//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&A,precision);
 					lg->push_back(a);
 					Lg->push_back(A);
@@ -273,112 +272,112 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn, int prec, 
 				if (PROFILING){
 					startTimer(&start);
 				}
-					
+
 					complexSupTemp = _complexEvaluateCoefficients<UnivariatePolynomialOverRealField>(upofTemp,r.at(j));
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_a);
 					startTimer(&start);
 				}
-				
+
 				realSupTemp = CRNPolyRealPart(complexSupTemp);
 				A = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				realSupTemp = CRNPolyImaginaryPart(complexSupTemp);
 				B = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				fTemp = (abs(A.leadingCoefficient())+abs(B.leadingCoefficient()))/2;
 				//cout << "fTemp = " << fTemp << endl;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_b);
 					startTimer(&start);
 				}
-					
+
 				A /= fTemp;
 				B /= fTemp;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_d);
 				}
-				
+
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&A,precision);
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&B,precision);
 				fTemp = 2*b;
-				
+
 				if (PROFILING){
 					startTimer(&start);
 				}
-					
+
 				_arctan2ToArctan<UnivariatePolynomialOverRealField,RealField>(A,B,fTemp,atn,Atn);
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_c);
 				}
-				
+
 				j++;
 			}
 			else {
-				
+
 				if (PROFILING){
 					startTimer(&start);
 				}
-					
+
 					complexSupTemp = _complexEvaluateCoefficients<UnivariatePolynomialOverRealField>(upofTemp,r.at(j));
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_a);
 					startTimer(&start);
 				}
-				
+
 				realSupTemp = CRNPolyRealPart(complexSupTemp);
 				A = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				realSupTemp = CRNPolyImaginaryPart(complexSupTemp);
 				B = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				fTemp = (abs(A.leadingCoefficient())+abs(B.leadingCoefficient()))/2;
 				//cout << "fTemp = " << fTemp << endl;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_b);
 					startTimer(&start);
 				}
-					
+
 				A /= fTemp;
 				B /= fTemp;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_d);
 				}
-				
+
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&A,precision);
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&B,precision);
 				fTemp = 2*b;
-				
+
 				if (PROFILING){
 					startTimer(&start);
 				}
-					
+
 				_arctan2ToArctan<UnivariatePolynomialOverRealField,RealField>(A,B,fTemp,atn,Atn);
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_c);
 					startTimer(&start);
 				}
-				
+
 				A *= A;
 				B *= B;
 				A += B;
 				A /= A.leadingCoefficient();
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_d);
 				}
-				
+
 				lg->push_back(a);
 				Lg->push_back(A);
 				j++;
 			}
 		}
 	}
-	
+
 	if (PROFILING){
 		std::cout << "\t\tComplex subs\t" << elapsed_a << std::endl;
 		std::cout << "\t\tRe and Im parts\t" << elapsed_b << std::endl;
@@ -393,7 +392,7 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vect
 	/* logToReal(E,S,lg,Lg,atn,Atn,prec):                       */
 	/* Convert formal sums to log and one argument arctan terms */
 	/*                                                          */
-	
+
 	double precision = pow(2.0,-prec);
 	RealField a,b,fTemp;
 	UnivariatePolynomialOverRealField A,B;
@@ -402,11 +401,11 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vect
 	SparseUnivariatePolynomial<RationalNumber> realSupTemp;
 	std::vector<ComplexRationalNumber> r;
 	ComplexRationalNumber ComplexRationalNumberTemp;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed_a = 0, elapsed_b = 0, elapsed_d = 0;
-	
+
 	for (int k=0; k<E.size(); k++){
 		r = E.at(k);
 		sort(r.begin(),r.end(),ComplexRationalNumberOrdering(prec));
@@ -416,21 +415,21 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vect
 			b = r.at(j).imaginaryPart();
 			if (b == 0){
 				if (a != 0){
-					A = _realEvaluateCoefficients<UnivariatePolynomialOverRealField,RealField>(upofTemp,a);	
+					A = _realEvaluateCoefficients<UnivariatePolynomialOverRealField,RealField>(upofTemp,a);
 									// note that this code may have to be edited
 									// to avoid generating large coefficients
 					fTemp = A.leadingCoefficient();
-					
+
 					if (PROFILING){
 						startTimer(&start);
 					}
-						
+
 					A /= fTemp;
-					
+
 					if (PROFILING){
 						stopTimerAddElapsed(&start,&elapsed_d);
 					}
-					
+
 					//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&A,precision);
 					lg->push_back(a);
 					Lg->push_back(A);
@@ -440,104 +439,104 @@ RealField> *atn, std::vector<UnivariatePolynomialOverRealField> *Atn1, std::vect
 				if (PROFILING){
 					startTimer(&start);
 				}
-					
+
 					complexSupTemp = _complexEvaluateCoefficients<UnivariatePolynomialOverRealField>(upofTemp,r.at(j));
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_a);
 					startTimer(&start);
 				}
-				
+
 				realSupTemp = CRNPolyRealPart(complexSupTemp);
 				A = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				realSupTemp = CRNPolyImaginaryPart(complexSupTemp);
 				B = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				fTemp = (abs(A.leadingCoefficient())+abs(B.leadingCoefficient()))/2;
 				//cout << "fTemp = " << fTemp << endl;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_b);
 				}
-				
+
 				if (PROFILING){
 					startTimer(&start);
 				}
-					
+
 				A /= fTemp;
 				B /= fTemp;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_d);
 				}
-				
+
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&A,precision);
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&B,precision);
 				fTemp = 2*b;
 				atn->push_back(fTemp);
 				Atn1->push_back(A);
 				Atn2->push_back(B);
-				
+
 				j++;
 			}
 			else {
-				
+
 				if (PROFILING){
 					startTimer(&start);
 				}
-					
+
 					complexSupTemp = _complexEvaluateCoefficients<UnivariatePolynomialOverRealField>(upofTemp,r.at(j));
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_a);
 					startTimer(&start);
 				}
-				
+
 				realSupTemp = CRNPolyRealPart(complexSupTemp);
 				A = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				realSupTemp = CRNPolyImaginaryPart(complexSupTemp);
 				B = _realSUPToUPoF<UnivariatePolynomialOverRealField,RealField>(realSupTemp);
 				fTemp = (abs(A.leadingCoefficient())+abs(B.leadingCoefficient()))/2;
 				//cout << "fTemp = " << fTemp << endl;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_b);
 					startTimer(&start);
 				}
-					
+
 				A /= fTemp;
 				B /= fTemp;
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_d);
 				}
-				
+
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&A,precision);
 				//_fixZeros<UnivariatePolynomialOverRealField,RealField>(&B,precision);
 				fTemp = 2*b;
 				atn->push_back(fTemp);
 				Atn1->push_back(A);
 				Atn2->push_back(B);
-				
+
 				if (PROFILING){
 					startTimer(&start);
 				}
-				
+
 				A *= A;
 				B *= B;
 				A += B;
 				A /= A.leadingCoefficient();
-				
+
 				if (PROFILING){
 					stopTimerAddElapsed(&start,&elapsed_d);
 				}
-				
+
 				lg->push_back(a);
 				Lg->push_back(A);
 				j++;
 			}
 		}
 	}
-	
+
 	if (PROFILING){
 		std::cout << "\tComplex subs\t" << elapsed_a << std::endl;
 		std::cout << "\tRe and Im parts\t" << elapsed_b << std::endl;

@@ -7,10 +7,7 @@
 #include "FiniteFields/GeneralizedFermatPrimeField.hpp"
 #include "IntegerPolynomial/uzpolynomial.h"
 #include "RationalNumberPolynomial/urpolynomial.h"
-#include "RingPolynomial/upolynomial.h" 
-
-mpz_class ComplexRationalNumber::characteristic(0);
-RingProperties ComplexRationalNumber::properties = COMPLEX_FIELD;
+#include "RingPolynomial/upolynomial.h"
 
 // bool ComplexRationalNumber::isPrimeField = 0;
 // bool ComplexRationalNumber::isSmallPrimeField = 0;

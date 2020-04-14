@@ -5,7 +5,7 @@
 
 # echo "Dot hack!"
 
-LABELS_TO_FILTER="Derived_from.* std::conditional.* BPASIntegralPolynomial[^,]* BPASGCDPolynomial[^,]*"
+LABELS_TO_FILTER="Derived_from.* std::conditional.*"
 
 ARGS=$@
 

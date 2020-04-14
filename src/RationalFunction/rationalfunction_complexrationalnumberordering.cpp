@@ -1,4 +1,3 @@
-#include "../../include/polynomial.h"
 #include "../../include/ring.h"
 #include "RationalFunction/rationalfunction_complexrationalnumberordering.h"
 #include <complex>
@@ -36,7 +35,7 @@ bool ComplexRationalNumberOrdering::complexRationalNumberOrdering(ComplexRationa
 			return (A.imaginaryPart() > B.imaginaryPart());
 	}
 }
-		
+
 // bool ComplexRationalNumberOrdering::epsilonEqual(mpq_class a, mpq_class b, int &prec){
 // 	mpq_class t,s;
 // 	t = a - b;
@@ -73,7 +72,7 @@ bool ComplexDoubleOrdering::complexDoubleOrdering(std::complex<double> &A, std::
 			return (A.imag() > B.imag());
 	}
 }
-		
+
 bool ComplexDoubleOrdering::epsilonEqual(double a, double b, int &prec){
 	double t,s;
 	t = a - b;
@@ -85,5 +84,5 @@ bool ComplexDoubleOrdering::epsilonEqual(double a, double b, int &prec){
 	else
 		return false;
 }
-	
+
 

@@ -62,7 +62,7 @@ Fraction<Domain>& Fraction<Domain>::operator+=(const Fraction<Domain> &b){
 	g /= r2; // g = g';
 	den *= g;
 	num = r1;
-	
+
 	canonicalize();
 
 	normalize();
@@ -124,7 +124,7 @@ Fraction<Domain>& Fraction<Domain>::operator*=(const Fraction<Domain> &b){
 	normalize();
 
 
-	return *this;  
+	return *this;
 }
 
 template <class Domain>
@@ -175,7 +175,7 @@ Fraction<Domain> Fraction<Domain>::operator^(long long int e) const{
 		res.one();
 	else
 	{
-		
+
 		res = *this;
 	}
 	return res;
@@ -216,9 +216,7 @@ bool Fraction<Domain>::isOne() const {
 	{
 		return true;
 	}
-	else{
 		return false;
-	}
 }
 
 template <class Domain>
@@ -273,7 +271,6 @@ Fraction<Domain>& Fraction<Domain>::operator=(const Fraction<Domain>& b){
 	if(this!=&b){
 		num = b.num;
 		den = b.den;
-		characteristic = b.characteristic;
 	}
 	return *this;
 }
@@ -281,7 +278,7 @@ Fraction<Domain>& Fraction<Domain>::operator=(const Fraction<Domain>& b){
 
 template <class Domain>
 void Fraction<Domain>::print(std::ostream& ostream) const {
-	ostream << "(" << num << ")/(" << den << ")"; 
+	ostream << "(" << num << ")/(" << den << ")";
 }
 
 template <class Domain>
@@ -319,7 +316,7 @@ void Fraction<Domain>::canonicalize(){
 template <class Domain>
 void Fraction<Domain>::normalize(){
 
-	Domain u, v; 
+	Domain u, v;
 	Domain C = den.unitCanonical(&u,&v);
 	num *= v;
 	den = C;
@@ -335,14 +332,14 @@ void Fraction<Domain>::differentiate(){
 	dD.differentiate(1);
 	temp = D.gcd(dD);
 	D /= temp;
-	dD /= temp;	
+	dD /= temp;
 	temp = -num;
 	temp *= dD;
 	dD = num;
 	dD.differentiate(1);
 	dD *= D;
 	temp += dD;
-	D *= den; 
+	D *= den;
 	num = temp;
 	den = D;
 	canonicalize();

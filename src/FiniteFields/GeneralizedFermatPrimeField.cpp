@@ -7,7 +7,7 @@
 #include "FiniteFields/GeneralizedFermatPrimeField.hpp"
 #include "IntegerPolynomial/uzpolynomial.h"
 #include "RationalNumberPolynomial/urpolynomial.h"
-#include "RingPolynomial/upolynomial.h" 
+#include "RingPolynomial/upolynomial.h"
 
 #include <iostream>
 
@@ -16,7 +16,6 @@ using std::cout;
 
 //mpz_class GeneralizedFermatPrimeField::prime ("52374250506775412587080182017685909013279339260195121351951847958786555732255090462694066661827009813312276859354987266719224819790981416185422168457217",10);
 mpz_class GeneralizedFermatPrimeField::characteristic ("52374250506775412587080182017685909013279339260195121351951847958786555732255090462694066661827009813312276859354987266719224819790981416185422168457217",10);
-RingProperties GeneralizedFermatPrimeField::properties = PRIME_FIELD;
 
 
 // bool GeneralizedFermatPrimeField::isPrimeField = 1;
@@ -361,7 +360,7 @@ void GeneralizedFermatPrimeField::oneShiftRight (usfixn64 * xs){
 	usfixn64 tmp;
 	short i;
 //	for (j = 0; j < shiftNo; j++)
-	
+
 	tmp = xs[k-1];
 //#pragma unroll 7
 	for (i = k - 1; i > 0; i--){

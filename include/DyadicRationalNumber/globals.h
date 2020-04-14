@@ -2,7 +2,6 @@
 #define _QLOCAL_GLOBALS_H_
 
 #include "rational.h"		// Alternative class for mpq_class
-#include "../polynomial.h"
 
 typedef mpz_class lfixz;
 typedef mpq_class lfixq;
@@ -45,7 +44,7 @@ class RationalNumberTerm {
         public:
                 lfixq coef;     // Coefficient
                 int v;          // Number of variables
-                int* degs;      // Degrees, in the ascending order of 
+                int* degs;      // Degrees, in the ascending order of
                                 // the weight of variates
                                 // Such that degs[0] < .. < degs[v-1]
 

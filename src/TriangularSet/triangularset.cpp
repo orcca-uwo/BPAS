@@ -18,14 +18,14 @@ void TriangularSet<Field,RecursivePoly>::updateTriangularSetStates(const Recursi
 	int vIndex = std::find(algVars.begin(),algVars.end(),v) - algVars.begin();
 	int sNIndex = std::find(algVars.begin(),algVars.end(),sNMaxVar) - algVars.begin();
 	bool vIsAtEnd,initIsConstant;
-	
+
 	if (vIndex == algVars.size()-1)
 		vIsAtEnd = true;
 	else
 		vIsAtEnd = false;
-	
+
 	initIsConstant = isConstantPolynomial(init);
-		
+
 	if (stronglyNormalized){
 		if (!initIsConstant) {	// ts no longer stronglyNormalized
 			stronglyNormalized = false;
@@ -48,7 +48,7 @@ void TriangularSet<Field,RecursivePoly>::updateTriangularSetStates(const Recursi
 //		}
 //	}
 	updateTriangularSetStates();
-	
+
 	//Check whether or not by adding p to ts, ts remains strongly normalized
 //	RecursivePoly init = p.initial();
 //	std::vector<Symbol> initVars = init.variables();
@@ -140,7 +140,7 @@ void TriangularSet<Field,RecursivePoly>::updateTriangularSetStates() {
 //	}
 }
 
-template <class Field, class RecursivePoly>	
+template <class Field, class RecursivePoly>
 int TriangularSet<Field,RecursivePoly>::variableIndex(const Symbol& s) const {
 	int a = std::find(vars.begin(),vars.end(),s) - vars.begin();
 	return a;
@@ -158,11 +158,11 @@ int TriangularSet<Field,RecursivePoly>::variableIndex(const Symbol& s) const {
 template <class Field, class RecursivePoly>
 TriangularSet<Field,RecursivePoly>::TriangularSet () : mode(TS_VARIABLE), characteristic(), stronglyNormalized(true), sNMaxVar("") {
 	Field f;
-	characteristic = f.characteristic;
+	characteristic = f.getCharacteristic();
 }
 
 /**
- * Construct an empty triangular set of fixed size in the s decreasingly ordered 
+ * Construct an empty triangular set of fixed size in the s decreasingly ordered
  * variables given by xs with empty list of transcendentals
  *
  * @param s: The number of polynomials
@@ -175,7 +175,7 @@ TriangularSet<Field,RecursivePoly>::TriangularSet (const std::vector<Symbol>& xs
 			exit(1);
 	}
 	Field f;
-	characteristic = f.characteristic;
+	characteristic = f.getCharacteristic();
 	vars = xs;
 	set.reserve(xs.size());
 	set.clear();
@@ -185,7 +185,7 @@ TriangularSet<Field,RecursivePoly>::TriangularSet (const std::vector<Symbol>& xs
 }
 
 /**
- * Construct an empty triangular set of fixed size in the s decreasingly ordered 
+ * Construct an empty triangular set of fixed size in the s decreasingly ordered
  * variables given by xs and list of transcendentals given by ts
  *
  * @param s: The number of polynomials
@@ -199,7 +199,7 @@ TriangularSet<Field,RecursivePoly>::TriangularSet (const std::vector<Symbol>& xs
 			exit(1);
 	}
 	Field f;
-	characteristic = f.characteristic;
+	characteristic = f.getCharacteristic();
 	vars = xs;
 	trcVars = ps;
 	set.reserve(xs.size());
@@ -222,7 +222,7 @@ TriangularSet<Field,RecursivePoly>::TriangularSet (const RecursivePoly& p) : mod
 			exit(1);
 	}
 	Field f;
-	characteristic = f.characteristic;
+	characteristic = f.getCharacteristic();
 	vars = p.variables();
 	set.reserve(vars.size());
 	set.clear();
@@ -262,7 +262,7 @@ TriangularSet<Field,RecursivePoly>::TriangularSet (const RecursivePoly& p, const
 			exit(1);
 	}
 	Field f;
-	characteristic = f.characteristic;
+	characteristic = f.getCharacteristic();
 	trcVars = ps;
 	vars = orderPreservingSetDifference(p.variables(),ps);
 	set.reserve(vars.size());
@@ -425,7 +425,7 @@ template <class Field, class RecursivePoly>
 TriangularSet<Field,RecursivePoly>::~TriangularSet() {}
 
 /// Member Functions ///
-		
+
 /**
  * Tests if the TriangularSet is empty
  *
@@ -435,7 +435,7 @@ template <class Field, class RecursivePoly>
 bool TriangularSet<Field,RecursivePoly>::isEmpty() const {
 	return algVars.empty();
 }
-		
+
 /**
  * Tests if the polynomial is constant relative to the TriangularSet
  *
@@ -449,10 +449,10 @@ bool TriangularSet<Field,RecursivePoly>::isConstantPolynomial(const RecursivePol
 	vs = setDifference(p.variables(),trcVars);
 	if (vs.empty())
 		return true;
-	else 
+	else
 		return false;
 }
-		
+
 /**
  * Assignment operator =
  *
@@ -472,7 +472,7 @@ TriangularSet<Field,RecursivePoly>& TriangularSet<Field,RecursivePoly>::operator
 	}
 	return *this;
 }
-		
+
 /**
  * Assignment operator =
  *
@@ -485,7 +485,7 @@ BPASTriangularSet<Field,RecursivePoly>& TriangularSet<Field,RecursivePoly>::oper
 	else throw (std::invalid_argument("BPAS: Cannot cast BPASTriangularSet to TriangularSet."));
 	return *this;
 }
-		
+
 /**
  * Move assignment operator =
  *
@@ -529,7 +529,7 @@ BPASTriangularSet<Field,RecursivePoly>& TriangularSet<Field,RecursivePoly>::oper
 	else throw (std::invalid_argument("BPAS: Cannot cast BPASTriangularSet to TriangularSet."));
 	return *this;
 }
-		
+
 /**
  * Overload operator +
  * Adds a polynomial to a triangular set and returns a new triangular set
@@ -572,7 +572,7 @@ TriangularSet<Field,RecursivePoly>& TriangularSet<Field,RecursivePoly>::operator
 //		std::cerr << "p.ringVars:" << std::endl;
 //		printVariables(rp.ringVariables());
 	#endif
-	
+
 	SparseMultivariateRationalPolynomial p = rp;
 	p.setRingVariables(p.variables());
 
@@ -630,7 +630,7 @@ TriangularSet<Field,RecursivePoly>& TriangularSet<Field,RecursivePoly>::operator
 	algVars.push_back(lv);
 	algVars = orderPreservingSetIntersection(vars,algVars);
 	updateTriangularSetStates(p);
-	
+
 	return *this;
 }
 
@@ -685,7 +685,7 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::select(const Symbol& s) const 
 	else
 		return RecursivePoly();
 }
-		
+
 /**
  * Replace each polynomial of the regular chain with its integer primitive part
  *
@@ -708,7 +708,7 @@ void TriangularSet<Field,RecursivePoly>::makePrimitive() {
 }
 
 /**
- * Returns the ts consisting of polynomials with 
+ * Returns the ts consisting of polynomials with
  * main variable strictly less than s
  *
  * @param s: Symbol of the main variable of specified element of the triangular set
@@ -719,7 +719,7 @@ void TriangularSet<Field,RecursivePoly>::lower(const Symbol& s, BPASTriangularSe
 	std::vector<RecursivePoly> polys;
 	bool isNotAVariable = std::find(vars.begin(),vars.end(),s) == vars.end();
 	int index = variableIndex(s);
-	
+
 	if (isNotAVariable || index == vars.size()-1) {
 		if (isNotAVariable) {
 			std::cerr << "BPAS: warning, Symbol s in lower(s,ts) is not a variable!" << std::endl;
@@ -738,12 +738,12 @@ void TriangularSet<Field,RecursivePoly>::lower(const Symbol& s, BPASTriangularSe
 		ts = TriangularSet<Field,RecursivePoly>(std::vector<Symbol>(vars),std::vector<Symbol>(),std::vector<Symbol>(trcVars),std::move(polys),mode,characteristic);
 		return;
 	}
-	
+
 	int size = vars.size()-index-1;
 	std::vector<Symbol> avs(vars.begin()+index+1,vars.end());
 //	std::vector<Symbol> avs;
 	avs = orderPreservingSetIntersection(avs,algVars);
-	
+
 	polys.reserve(set.size());
 	for (int i=0; i<index+1; ++i)
 		polys.emplace_back();
@@ -766,7 +766,7 @@ void TriangularSet<Field,RecursivePoly>::upper(const Symbol& s, BPASTriangularSe
 	std::vector<RecursivePoly> polys;
 	bool isNotAVariable = std::find(vars.begin(),vars.end(),s) == vars.end();
 	int index = variableIndex(s);
-	
+
 	if (isNotAVariable || index == 0) {
 		if (isNotAVariable) {
 			std::cerr << "BPAS: warning, Symbol s in upper(s,ts) is not a variable!" << std::endl;
@@ -789,7 +789,7 @@ void TriangularSet<Field,RecursivePoly>::upper(const Symbol& s, BPASTriangularSe
 //	std::vector<Symbol> avs;
 	avs = orderPreservingSetIntersection(avs,algVars);
 //	std::vector<Symbol> tvs(trcVars);
-	
+
 	polys.reserve(set.size());
 	for (int i=0; i<index; ++i)
 		polys.emplace_back(set[i]);
@@ -820,7 +820,7 @@ void TriangularSet<Field,RecursivePoly>::cutChain(const Symbol& v, TriangularSet
 /**
  * Pseudo division
  * Return the pseudo-remainder, the pseudo-quotients and
- * c such that c*p = ∑(q_i T_i) + r 
+ * c such that c*p = ∑(q_i T_i) + r
  * @param p: An input polynomial
  * @param quo: The array of quotients
  * @param c: The constant multiplied to the input polynomial
@@ -828,7 +828,7 @@ void TriangularSet<Field,RecursivePoly>::cutChain(const Symbol& v, TriangularSet
 template <class Field, class RecursivePoly>
 RecursivePoly TriangularSet<Field,RecursivePoly>::pseudoDivide(const RecursivePoly& p, std::vector<RecursivePoly>* q, RecursivePoly* c) const {
 
-	
+
 	bool qflag = false;
 	bool cflag = false;
 	if (q == NULL) {
@@ -866,7 +866,7 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::pseudoDivide(const RecursivePo
 // 	}
 //	return r;
 	// End naive pseudoDivide code //
-	/// /// /// /// /// /// /// /// /// 
+	/// /// /// /// /// /// /// /// ///
 
 	// triangularSetPseudoDivide code //
 	RecursivePoly r;
@@ -874,9 +874,9 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::pseudoDivide(const RecursivePo
 		std::cerr << "ts = " << *this << std::endl;
 		std::cerr << "p = " << p << std::endl;
 	#endif
-	
+
 	r = p.triangularSetPseudoDivide(*this, q, c);
-	
+
 	#ifdef TRIANGULARSET_DEBUG
 		std::cerr << "r = " << r << std::endl;
 		if (c == NULL) {
@@ -885,7 +885,7 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::pseudoDivide(const RecursivePo
 			std::cerr << "c = " << *c << std::endl;
 		}
 	#endif
-	/// /// /// /// /// /// /// /// /// 
+	/// /// /// /// /// /// /// /// ///
 
 	if (qflag)
 		delete q;
@@ -898,14 +898,14 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::pseudoDivide(const RecursivePo
  * normalForm in the sense of Groebner basis
  *
  * @param p: Input polynomial
- * 
+ *
  **/
 
 template <class Field, class RecursivePoly>
 RecursivePoly TriangularSet<Field,RecursivePoly>::normalForm(const RecursivePoly& p, std::vector<RecursivePoly>* q) const {
 	if(!stronglyNormalized){
 		std::cerr<< "BPAS: error, The triangular set must be strongly normalized to compute a normal form" << std::endl;
-		exit(1); 
+		exit(1);
 	}
 	bool qflag = false;
 	if (q == NULL) {
@@ -916,7 +916,7 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::normalForm(const RecursivePoly
 	q->clear();
 //	std::vector<RecursivePoly> q;
 	RecursivePoly r;
-	
+
 //	RecursivePoly P(p);
 //	for (int i=set.size()-1; i>-1; --i)
 //		s.push_back(set[i]);
@@ -934,17 +934,17 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::normalForm(const RecursivePoly
 	#endif
 
 	r = p.triangularSetNormalForm(*this,q);
-		
+
 	#ifdef TRIANGULARSET_DEBUG
 		std::cerr << "calling reverse..." << std::endl;
 	#endif
-	
+
 	if (!qflag) {
 		std::reverse(q->begin(),q->end());
 	}
 	else
 		delete q;
-	
+
 	#ifdef TRIANGULARSET_DEBUG
 		std::cerr << "leaving normalForm..." << std::endl;
 	#endif
@@ -986,13 +986,13 @@ bool TriangularSet<Field,RecursivePoly>::canComputeInDimensionZero(const Recursi
 	#endif
 	return (variablesConsistent && isZeroDimensionalMathematically());
 }
-		
+
 /**
  * returns (c, r) such that c*r = p modulo sat(T) such that
  * c has no algebraic variables
  *
  * @param p: Input polynomial
- * 
+ *
  **/
 template <class Field, class RecursivePoly>
 RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p, RecursivePoly& c, bool takeMainPrimitivePart, bool onlyInDimZero) const {
@@ -1008,7 +1008,7 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p,
 		#endif
 		return p;
 	}
-	
+
 	int index;
 	Symbol v = sNMaxVar;
 	RecursivePoly d,q;
@@ -1016,7 +1016,7 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p,
 	if (!takeMainPrimitivePart)
 		nonAlgVars = setDifference(nonAlgVars,mainVariables());
 //	printVariables(nonAlgVars,"nonAlgVars");
-	
+
 	if (takeMainPrimitivePart) {
 		#ifdef REGULARCHAIN_PROFILING
 			startTimer(&rcProfilingStart);
@@ -1052,10 +1052,10 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p,
 	#ifdef REGULARCHAIN_PROFILING
 		stopTimerAddElapsed(&rcProfilingStart,&primitivePartTime);
 	#endif
-	
+
 	// Clarify the reason for having this here.
 //	if (onlyInDimZero && canComputeInDimensionZero(p)) {
-//		if (stronglyNormalized) {	
+//		if (stronglyNormalized) {
 //			q = normalForm(q);
 //		}
 //		else {
@@ -1063,9 +1063,9 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p,
 //		}
 //		return q;
 //	}
-	
+
 	index = std::find(algVars.begin(),algVars.end(),v) - algVars.begin();
-	
+
 	if (index < 2) {
 		TriangularSet<Field,RecursivePoly> Tlev;
 		if (index == 1) {
@@ -1092,13 +1092,13 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p,
 		#endif
 		if (takeMainPrimitivePart)
 			q = q.mainPrimitivePart(d);
-		else 
+		else
 			q = q.primitivePart(nonAlgVars,d);
 		#ifdef REGULARCHAIN_PROFILING
 			stopTimerAddElapsed(&rcProfilingStart,&primitivePartTime);
 		#endif
 		c *= d;
-		
+
 		if (index == 1) {
 			#ifdef REGULARCHAIN_PROFILING
 				startTimer(&rcProfilingStart);
@@ -1110,7 +1110,7 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p,
 			#endif
 			if (takeMainPrimitivePart)
 				q = q.mainPrimitivePart(d);
-			else 
+			else
 				q = q.primitivePart(nonAlgVars,d);
 			#ifdef REGULARCHAIN_PROFILING
 				stopTimerAddElapsed(&rcProfilingStart,&primitivePartTime);
@@ -1167,12 +1167,12 @@ RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p,
 		return q;
 	}
 }
-		
+
 /**
  * reduce the polynomial p modulo the triangular set
  *
  * @param p: Input polynomial
- * 
+ *
  **/
 template <class Field, class RecursivePoly>
 RecursivePoly TriangularSet<Field,RecursivePoly>::reduce(const RecursivePoly& p) const {

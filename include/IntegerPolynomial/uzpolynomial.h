@@ -2,12 +2,13 @@
 #define _UZPOLYNOMIAL_H_
 
 
-#include "../polynomial.h"
+#include "../Polynomial/BPASUnivarPolynomial.hpp"
 #include "modpoly.h"
+#include "../ring.h"
 
 /**
  * A univariate polynomial with Integer coefficients using a dense representation.
- * This representation stores all possible coefficients, up to a maximum degree, 
+ * This representation stores all possible coefficients, up to a maximum degree,
  * even if they are zero.
  */
 class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer,DenseUnivariateIntegerPolynomial> {
@@ -39,7 +40,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Construct a polynomial
 		 *
 		 * @param d
-		 **/ 
+		 **/
 		DenseUnivariateIntegerPolynomial () : curd(0), n(1), name("%") {
 			coef = new mpz_class[1];
 			coef[0] = 0;
@@ -81,7 +82,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Copy constructor
 		 *
 		 * @param b: A densed univariate rationl polynomial
-		 **/ 
+		 **/
 		DenseUnivariateIntegerPolynomial(const DenseUnivariateIntegerPolynomial& b) : curd(b.curd), name(b.name) {
 			n = curd + 1;
 			coef = new mpz_class[n];
@@ -177,8 +178,8 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		inline void setCoefficient(int k, const int value) {
 			setCoefficient(k, mpz_class(value));
 		}
-		
-		
+
+
 		/**
 		 * Set a coefficient of the polynomial
 		 *
@@ -199,7 +200,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Set variable's name
 		 *
 		 * @param x: Varable's name
-		 **/ 
+		 **/
 		inline void setVariableName (const Symbol& x) {
 			name = x;
 		}
@@ -224,7 +225,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			*this = DenseUnivariateIntegerPolynomial(i);
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator !=
 		 *
@@ -233,12 +234,12 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		inline bool operator!= (const DenseUnivariateIntegerPolynomial& b) const {
 			return !(isEqual(b));
 		}
-		
+
 		/**
 		 * Overload operator ==
 		 *
 		 * @param b: A univariate integer polynoial
-		 **/ 
+		 **/
 		inline bool operator== (const DenseUnivariateIntegerPolynomial& b) const {
 			return isEqual(b);
 		}
@@ -253,7 +254,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 				return (coef[0] == 0);
 			return 0;
 		}
-		
+
 		/**
 		 * Zero polynomial
 		 *
@@ -263,7 +264,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			curd = 0;
 			zeros();
 		}
-		
+
 		/**
 		 * Is polynomial a constatn 1
 		 *
@@ -274,7 +275,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 				return (coef[0] == 1);
 			return 0;
 		}
-		
+
 		/**
 		 * Set polynomial to 1
 		 *
@@ -286,7 +287,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			for (int i = 1; i < n; ++i)
 				coef[i] = 0;
 		}
-		
+
 		/**
 		 * Is polynomial a constatn -1
 		 *
@@ -297,7 +298,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 				return (coef[0] == -1);
 			return 0;
 		}
-		
+
 		/**
 		 * Set polynomial to -1
 		 *
@@ -309,7 +310,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			for (int i = 1; i < n; ++i)
 				coef[i] = 0;
 		}
-		
+
 		/**
 		 * Is a constant
 		 *
@@ -320,10 +321,10 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			else if (coef[0] >= 0) { return 1; }
 			else { return -1; }
 		}
-		
+
 		/**
-	     * Obtain the unit normal (a.k.a canonical associate) of an element. 
-	     * If either parameters u, v, are non-NULL then the units are returned such that 
+	     * Obtain the unit normal (a.k.a canonical associate) of an element.
+	     * If either parameters u, v, are non-NULL then the units are returned such that
 	     * b = ua, v = u^-1. Where b is the unit normal of a, and is the returned value.
 	     */
 	    inline DenseUnivariateIntegerPolynomial unitCanonical(DenseUnivariateIntegerPolynomial* u = NULL, DenseUnivariateIntegerPolynomial* v = NULL) const {
@@ -332,14 +333,14 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 	    	lead.unitCanonical(&unit, &uInv);
 	    	if (unit != 1) {
 	    		if (u != NULL) {
-	    			*u = unit; 
+	    			*u = unit;
 	    		}
 	    		if (v != NULL) {
 	    			*v = uInv;
 	    		}
 
 	    		return *this * unit;
-	    		
+
 	    	}
 
 	    	if (u != NULL) {
@@ -357,7 +358,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Content of the polynomial
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline Integer content() const {
 			mpz_class c = coef[0];
 			for (int i = 1; i <= curd; ++i) {
@@ -375,7 +376,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			std::cerr << "BPAS ERROR: DUZP::primitivePart NOT YET IMPLEMENTED" << std::endl;
 			return *this;
 		}
-		
+
 		/**
 		 * Is the least signficant coefficient zero
 		 *
@@ -409,7 +410,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * replace by muplitying x^k
 		 *
 		 * @param k: The exponent of variable, k > 0
-		 **/ 
+		 **/
     	DenseUnivariateIntegerPolynomial operator<< (int k) const;
 
 		/**
@@ -450,12 +451,12 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * @param b: A univariate integer polynomial
 		 **/
     	DenseUnivariateIntegerPolynomial operator+ (const DenseUnivariateIntegerPolynomial& b) const;
-	
+
 		/**
 		 * Overload Operator +=
 		 *
 		 * @param b: A univariate integer polynomial
-		 **/ 
+		 **/
 		inline DenseUnivariateIntegerPolynomial& operator+= (const DenseUnivariateIntegerPolynomial& b) {
 			if (curd >= b.curd)
 				add(b);
@@ -463,19 +464,19 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 				*this = *this + b;
 			return *this;
 		}
-	
+
 		/**
 		 * Add another polynomial to itself
 		 *
 		 * @param b: A univariate integer polynomial
-		 **/ 
+		 **/
     	void add(const DenseUnivariateIntegerPolynomial& b);
 
 		/**
 		 * Overload Operator +
 		 *
 		 * @param c: An integer
-		 **/ 
+		 **/
 		inline DenseUnivariateIntegerPolynomial operator+ (const Integer& c) const {
 			DenseUnivariateIntegerPolynomial r (*this);
 			return (r += c);
@@ -550,7 +551,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Compute -f(x)
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline void negate() {
 			for (int i = 0; i <= curd; ++i) {
 				coef[i] = -coef[i];
@@ -561,9 +562,9 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Subtract another polynomial from itself
 		 *
 		 * @param b: A univariate integer polynomial
-		 **/ 
+		 **/
     	void subtract(const DenseUnivariateIntegerPolynomial& b);
-	
+
 		/**
 		 *  Overload operator -
 		 *
@@ -573,12 +574,12 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			DenseUnivariateIntegerPolynomial r (*this);
 			return (r -= c);
 		}
-	
+
 		inline DenseUnivariateIntegerPolynomial operator- (const mpz_class& c) const {
 			DenseUnivariateIntegerPolynomial r (*this);
 			return (r -= c);
 		}
-	
+
 		inline DenseUnivariateIntegerPolynomial operator- (int c) const {
             DenseUnivariateIntegerPolynomial r (*this);
             return (r -= c);
@@ -696,7 +697,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * ExactDivision
 		 *
 		 * @param b: A univariate integer polynomial
-		 **/ 
+		 **/
 		inline DenseUnivariateIntegerPolynomial operator/ (const DenseUnivariateIntegerPolynomial& b) const {
 			DenseUnivariateIntegerPolynomial rem(*this);
 			return (rem /= b);
@@ -714,7 +715,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Overload operator /
 		 *
 		 * @param e: An integer
-		 **/ 
+		 **/
 		inline DenseUnivariateIntegerPolynomial operator/ (const Integer& e) const {
 			DenseUnivariateIntegerPolynomial r (*this);
 			return (r /= e);
@@ -734,7 +735,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Overload operator /=
 		 *
 		 * @param e: An integer
-		 **/ 
+		 **/
 		inline DenseUnivariateIntegerPolynomial& operator/= (const Integer& e) {
 			mpz_class c = e.get_mpz();
 			return (*this /= c);
@@ -747,15 +748,15 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		}
 
     	friend DenseUnivariateIntegerPolynomial operator/ (const mpz_class& e, const DenseUnivariateIntegerPolynomial& p);
-		
+
 		/**
 		 * Monic division
 		 * Return quotient and itself become the remainder
 		 *
 		 * @param b: The dividend polynomial
-		 **/ 
+		 **/
     	DenseUnivariateIntegerPolynomial monicDivide(const DenseUnivariateIntegerPolynomial& b);
-	
+
 		/**
 		 * Monic division
 		 * Return quotient
@@ -767,7 +768,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 			*rem = *this;
 			return rem->monicDivide(b);
 		}
-	
+
 		/**
 		 * Lazy pseudo dividsion
 		 * Return the quotient and itself becomes remainder
@@ -812,7 +813,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * @param rem: The remainder polynomial
 		 * @param d: The leading coefficient of b
 		 *           to the power deg(a) - deg(b) + 1
-		 **/ 
+		 **/
     	DenseUnivariateIntegerPolynomial pseudoDivide (const DenseUnivariateIntegerPolynomial& b, DenseUnivariateIntegerPolynomial* rem, Integer* d) const;
 
 		/**
@@ -830,13 +831,13 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Convert current object to its k-th derivative
 		 *
 		 * @param k: Order of the derivative, k > 0
-		 **/ 
+		 **/
     	void differentiate(int k);
 
 		/**
 		 * Convert current object to its derivative
 		 *
-		 **/ 
+		 **/
     	inline void differentiate() {
     		this->differentiate(1);
     	}
@@ -845,7 +846,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		 * Return k-th derivative
 		 *
 		 * @param k: Order of the k-th derivative, k > 0
-		 **/ 
+		 **/
     	 inline DenseUnivariateIntegerPolynomial derivative(int k) const {
     	 	DenseUnivariateIntegerPolynomial a(*this);
     	 	a.differentiate(k);
@@ -855,7 +856,7 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		/**
 		 * Compute derivative
 		 *
-		 **/ 
+		 **/
     	inline DenseUnivariateIntegerPolynomial derivative() const {
     	 	return this->derivative(1);
     	 }
@@ -863,13 +864,13 @@ class DenseUnivariateIntegerPolynomial : public BPASUnivariatePolynomial<Integer
 		/**
 		 * Convert current object to its integral with constant of integration 0
 		 *
-		 **/ 
+		 **/
     	void integrate();
 
 		/**
 		 * Compute integral with constant of integration 0
 		 *
-		 **/ 
+		 **/
     	inline DenseUnivariateIntegerPolynomial integral() {
     	 	DenseUnivariateIntegerPolynomial a(*this);
     	 	a.integrate();

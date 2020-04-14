@@ -1,4 +1,4 @@
-<0> Basic Polynomial Algebra Subprogram
+<0> Basic Polynomial Algebra Subprogram v1.722
 
   The Basic Polynomial Algebra Subprograms (BPAS) library provides
   support for arithmetic operations with polynomials on modern 
@@ -38,6 +38,10 @@
     through linking with Maple's C interface. If you have Maple
     installed it is advisable to build with maple via "BPAS_WITH_MAPLE"
     build option.
+  - Documentation can be built using doxygen, latex, tcl, and dot.
+    In the build directory simply make the doc target:
+
+        make doc
 
 <A> Optional Library Extensions: 
 

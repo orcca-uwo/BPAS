@@ -24,10 +24,8 @@ class SparseMultivariateRationalPolynomial;
 class RationalNumber : public BPASField<RationalNumber> {
 	private:
 	 	mpq_class _m;
-	
+
 	public:
-		static mpz_class characteristic;
-    	static RingProperties properties;
 
 		// static bool isPrimeField;
 		// static bool isSmallPrimeField;
@@ -36,8 +34,8 @@ class RationalNumber : public BPASField<RationalNumber> {
 		RationalNumber ();
 
 		RationalNumber (int a, int b = 1);
-		
-		RationalNumber (const std::string& digits, int base = 10); 
+
+		RationalNumber (const std::string& digits, int base = 10);
 
 		RationalNumber (const mpq_t& q);
 
@@ -54,7 +52,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 		explicit RationalNumber (const SmallPrimeField& a);
 
 		explicit RationalNumber (const BigPrimeField& a);
-		
+
 		explicit RationalNumber (const GeneralizedFermatPrimeField& a);
 
 		explicit RationalNumber (const DenseUnivariateIntegerPolynomial& a);
@@ -127,11 +125,11 @@ class RationalNumber : public BPASField<RationalNumber> {
 		 * Assign to zero
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline void zero() {
 			_m = 0;
 		}
-	
+
 		/**
 		 * Is a 1
 		 *
@@ -140,16 +138,16 @@ class RationalNumber : public BPASField<RationalNumber> {
 		inline bool isOne() const {
 			return (_m == 1);
 		}
-	
+
 		/**
 		 * Assign to one
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline void one() {
 			_m = 1;
 		}
-	
+
 		/**
 		 * Is a -1
 		 *
@@ -158,7 +156,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 		inline bool isNegativeOne() const {
 			return (_m == -1);
 		}
-	
+
 		/**
 		 * Assign to negative one
 		 *
@@ -167,7 +165,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 		inline void negativeOne() {
 			_m = -1;
 		}
-	
+
 		/**
  		 * Is a constant
  		 *
@@ -180,8 +178,8 @@ class RationalNumber : public BPASField<RationalNumber> {
 		}
 
 		/**
-	     * Obtain the unit normal (a.k.a canonical associate) of an element. 
-	     * If either parameters u, v, are non-NULL then the units are returned such that 
+	     * Obtain the unit normal (a.k.a canonical associate) of an element.
+	     * If either parameters u, v, are non-NULL then the units are returned such that
 	     * b = ua, v = u^-1. Where b is the unit normal of a, and is the returned value.
 	     */
 	    RationalNumber unitCanonical(RationalNumber* u = NULL, RationalNumber* v = NULL) const;
@@ -207,7 +205,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 	    	_m += i._m;
 	    	return *this;
 	    }
-	    
+
 	    /**
 	     * Subtraction.
 	     */
@@ -216,7 +214,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 	    	ret -= i;
 	    	return ret;
 	    }
-	    
+
 	    /**
 	     * Subtraction assignment.
 	     */
@@ -250,14 +248,14 @@ class RationalNumber : public BPASField<RationalNumber> {
 	    	_m *= i._m;
 	    	return *this;
 	    }
-	    
+
 	    /**
 	     * Equality test,
 	     *
 	     * returns true iff equal
 	     */
 	    inline bool operator== (const RationalNumber& i) const {
-	    	return (_m == i._m); 
+	    	return (_m == i._m);
 	    }
 
 	    /**
@@ -266,7 +264,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 	     * returns true iff not equal.
 	     */
 	    inline bool operator!= (const RationalNumber& i) const {
-	    	return (_m != i._m); 
+	    	return (_m != i._m);
 	    }
 
 	    inline ExpressionTree convertToExpressionTree() const {
@@ -320,7 +318,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 				c = 1;
 			return c;
 		}
-		
+
 		/**
 		 * Compute squarefree factorization of *this
 		 */
@@ -329,34 +327,32 @@ class RationalNumber : public BPASField<RationalNumber> {
 			ret.push_back(*this);
 			return ret;
 		}
-	
-		/** 
+
+		/**
 		 * Get the euclidean size of *this.
 		 */
-		inline RationalNumber euclideanSize() const {
-			std::cerr << "RationalNumber::euclideanSize NOT YET IMPLMENETED" << std::endl;
-			exit(1);
-			return *this;
+		inline Integer euclideanSize() const {
+			return Integer(1);
 		}
-		
+
 		/**
-		 * Perform the eucldiean division of *this and b. Returns the 
-		 * remainder. If q is not NULL, then returns the quotient in q. 
-		 */ 
+		 * Perform the eucldiean division of *this and b. Returns the
+		 * remainder. If q is not NULL, then returns the quotient in q.
+		 */
 		RationalNumber euclideanDivision(const RationalNumber& b, RationalNumber* q = NULL) const;
 
 		/**
-		 * Perform the extended euclidean division on *this and b. 
+		 * Perform the extended euclidean division on *this and b.
 		 * Returns the GCD. If s and t are not NULL, returns the bezout coefficients in them.
 		 */
 		RationalNumber extendedEuclidean(const RationalNumber& b, RationalNumber* s = NULL, RationalNumber* t = NULL) const;
-		
+
 		/**
 		 * Get the quotient of *this and b.
 		 */
 		RationalNumber quotient(const RationalNumber& b) const;
 
-		/** 
+		/**
 		 * Get the remainder of *this and b.
 		 */
 		RationalNumber remainder(const RationalNumber& b) const;
@@ -379,7 +375,7 @@ class RationalNumber : public BPASField<RationalNumber> {
 			*this = *this ^ e;
 			return *this;
 		}
-		
+
 		inline RationalNumber operator% (const RationalNumber& r) const {
 			return 0;
 		}

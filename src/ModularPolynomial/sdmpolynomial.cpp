@@ -1,6 +1,6 @@
 #include "ModularPolynomial/sdmpolynomial.h"
 
-
+mpz_class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial::characteristic(101);
 
 void SmallPrimeFieldDistributedDenseMultivariateModularPolynomial::zeros() {
 	for (int i = 0; i < n; ++i)
@@ -333,7 +333,7 @@ SmallPrimeFieldDistributedDenseMultivariateModularPolynomial SmallPrimeFieldDist
 	if (!isComputed) {
 		plain_multiplication(&res, *this, b);
 	}
-	
+
 	delete [] ds;
 	return res;
 }

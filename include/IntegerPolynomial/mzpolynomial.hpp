@@ -2,7 +2,7 @@
 #define _SMZPALTARRAY_H_
 
 #include "../Ring/Integer.hpp"
-#include "../polynomial.h"
+#include "../Polynomial/BPASRecursivePolynomial.hpp"
 #include "uzpolynomial.h"
 #include "../RingPolynomial/upolynomial.h"
 #include "../RationalNumberPolynomial/mrpolynomial.h"
@@ -68,8 +68,8 @@ class SLPZRepresentation {
 		}
 };
 
-/** 
- * A multivariate polynomial with Integer coefficients using a 
+/**
+ * A multivariate polynomial with Integer coefficients using a
  * sparse representation. Only non-zero coefficients are encoded.
  */
 class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomial<Integer,SparseMultivariateIntegerPolynomial> {
@@ -77,7 +77,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 	private:
 		mutable AltArrZ_t* poly;
 		int nvar;   		  //number of variables
-		Symbol* names;   //list of strings representing the variables. 
+		Symbol* names;   //list of strings representing the variables.
 							  //names[0] is 1 if "system-generated" variables
 							  //names[0] is 9 if "user-specified" variables
 
@@ -101,7 +101,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 */
 		bool isOrderedRing(const SparseMultivariateIntegerPolynomial& b, std::vector<int>& xs) const;
 
-		/** 
+		/**
 		 * Rearrange exponent vectors in place and then re-sort the polynomial.
 		 */
 		void reorderVarsInPlace(int varmap[]);
@@ -111,19 +111,19 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 */
 		void expandVarsInPlace(int vars, Symbol* newvars, int varmap[]);
 
-		/** 
-		 * Returns a copy of *this under the new variable ordering supplied. 
+		/**
+		 * Returns a copy of *this under the new variable ordering supplied.
 		 * varmap is such that this.names[i] = newvars[varmap[i]]
 		 * Returns an SMQP equal to *this but expended to newvars.
 		 */
 		SparseMultivariateIntegerPolynomial expandVariables(int vars, Symbol* newvars, int varmap[]) const;
-    
+
 	public:
 
     SparseMultivariateIntegerPolynomial subresultantGCD (const SparseMultivariateIntegerPolynomial& q) const;
-    
+
     std::vector<SparseMultivariateIntegerPolynomial> subresultantChain (const SparseMultivariateIntegerPolynomial& q, int filled = 0) const;
-    
+
     SparseMultivariateIntegerPolynomial resultant (const SparseMultivariateIntegerPolynomial& q) const;
 
     std::vector<SLPZRepresentation> slp;
@@ -144,7 +144,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		SparseMultivariateIntegerPolynomial(int v);
 
 		/**htop
-		
+
 		 * Construct with a variable name such that f(x) = x;
 		 *
 		 * @param x: The variable name
@@ -158,8 +158,8 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 		/**
 		 * Copy Constructor.
-		 * 
-		 * Does not reuse underlying memory allocated by b. 
+		 *
+		 * Does not reuse underlying memory allocated by b.
 		 *
 		 * @param b: A sparse multivariate polynomial
 		 **/
@@ -178,25 +178,25 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		SparseMultivariateIntegerPolynomial(const SparseMultivariateRationalPolynomial& b);
 
 		/**
-		 * Create a SMZP from an Integer. 
+		 * Create a SMZP from an Integer.
 		 */
 		SparseMultivariateIntegerPolynomial(const Integer& r, int nvar = 0);
 
 		/**
-		 * Create a SMZP from a RationalNumber. 
+		 * Create a SMZP from a RationalNumber.
 		 */
 		SparseMultivariateIntegerPolynomial(const RationalNumber& r, int nvar = 0);
 
 		/**
-		 * Create a SMZP from a univariate rational polynomial. 
-		 * 
-		 * @param p: A SUZP polynomial. 
+		 * Create a SMZP from a univariate rational polynomial.
+		 *
+		 * @param p: A SUZP polynomial.
 		 **/
 		SparseMultivariateIntegerPolynomial (const DenseUnivariateIntegerPolynomial& p);
 
 		/**
 		 * Construct from a SUP<SMZP> polynomial such that the resulting SMZP
-		 * has main variable equal to the variable of s. 
+		 * has main variable equal to the variable of s.
 		 *
 		 * @param s: The SUP<SMZP> polynomial
 		 **/
@@ -209,21 +209,19 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 
 		/* BPASRing interface */
-        static mpz_class characteristic;
-        static RingProperties properties;
         // static bool isPrimeField;
         // static bool isSmallPrimeField;
         // static bool isComplexField;
 
-        /** 
-         * Is this polynomial zero. 
+        /**
+         * Is this polynomial zero.
          * returns true iff this polynomial encodes 0.
          */
 		bool isZero() const;
 
 		/**
 		 * Set this polynomial to zero. Maintains existing variable ordering.
-		 */ 
+		 */
         void zero();
 
         /**
@@ -232,7 +230,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
          */
         bool isOne() const;
 
-        /** 
+        /**
          * Sets this polynomial to one. Maintains existing variable ordering.
          */
         void one();
@@ -243,20 +241,20 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
          */
         bool isNegativeOne() const;
 
-        /** 
+        /**
          * Sets this polynomial to -1. Maintains existing variable ordering.
          */
         void negativeOne();
 
         /**
-         * Determine if this polynomial encodes a constant. 
-         * returns 0 if not a constant, 1 if a constant >= 0, -1 if a negative contstant. 
+         * Determine if this polynomial encodes a constant.
+         * returns 0 if not a constant, 1 if a constant >= 0, -1 if a negative contstant.
          */
         int isConstant() const;
 
 		/**
-	     * Obtain the unit normal (a.k.a canonical associate) of an element. 
-	     * If either parameters u, v, are non-NULL then the units are returned such that 
+	     * Obtain the unit normal (a.k.a canonical associate) of an element.
+	     * If either parameters u, v, are non-NULL then the units are returned such that
 	     * b = ua, v = u^-1. Where b is the unit normal of a, and is the returned value.
 	     */
         inline SparseMultivariateIntegerPolynomial unitCanonical(SparseMultivariateIntegerPolynomial* u, SparseMultivariateIntegerPolynomial* v) const {
@@ -273,7 +271,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
         			*v = *u;
         		}
         		return ret;
-        	} 
+        	}
 
         	if (u != NULL) {
         		(*u).one();
@@ -300,7 +298,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
          * Assign this polynomial to be equal to the constant ring element.
          */
 	    SparseMultivariateIntegerPolynomial& operator= (const Integer& r);
-	    
+
         /**
          * Add two SMQP polynomials together, *this and the specified.
          */
@@ -344,7 +342,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		SparseMultivariateIntegerPolynomial operator* (const SparseMultivariateIntegerPolynomial& b) const;
 		SparseMultivariateIntegerPolynomial operator* (SparseMultivariateIntegerPolynomial&& b) const;
 
-		/** 
+		/**
 		 * Multiply the polynomials a and b, returning their product.
 		 */
 		// friend SparseMultivariateIntegerPolynomial operator* (SparseMultivariateIntegerPolynomial&& a, const SparseMultivariateIntegerPolynomial& b);
@@ -370,7 +368,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		/**
 		 * Exponentiate *this by the input exponent integer.
 		 * Treats negative exponents as positive.
-		 */ 
+		 */
 		SparseMultivariateIntegerPolynomial operator^ (long long int e) const;
 
 		/**
@@ -378,29 +376,29 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Treats negative exponents as positive.
 		 */
 		SparseMultivariateIntegerPolynomial& operator^= (long long int e);
-		
+
 		/**
 		 * Determine if *this is equal to the specified polynomial.
-		 * This takes into account the variable ordering on both poylnomials 
+		 * This takes into account the variable ordering on both poylnomials
 		 * in such a way that the same polynomial under different variable orderings
 		 * are NOT equal.
-		 */ 
+		 */
 		bool operator== (const SparseMultivariateIntegerPolynomial& b) const;
 
 		/**
 		 * Determine if *this is not equal to the specified polynomial.
-		 * This takes into account the variable ordering on both poylnomials 
+		 * This takes into account the variable ordering on both poylnomials
 		 * in such a way that the same polynomial under different variable orderings
 		 * are NOT equal.
 		 */
 		bool operator!= (const SparseMultivariateIntegerPolynomial& b) const;
-		
+
 		/**
 		 * Output the string representation of *this to the input ostream.
 		 */
 		void print(std::ostream& os) const;
 
-		/** 
+		/**
 		 * Parse a polynomial from the in stream. Exactly one line is parsed.
 		 */
 		friend std::istream& operator>>(std::istream& in, SparseMultivariateIntegerPolynomial& p);
@@ -419,7 +417,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
          * Get the GCD between *this and b as a primitive polynomial.
          */
         SparseMultivariateIntegerPolynomial primitiveGCD(const SparseMultivariateIntegerPolynomial& b) const;
-			
+
 		/**
 		 * Compute squarefree factorization of *this with respect to all of its variables.
 		 */
@@ -453,7 +451,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		Integer content() const;
 
 		/**
-		 * Get the content of this polynomial with respect to the variables in 
+		 * Get the content of this polynomial with respect to the variables in
 		 * the input vector v.
 		 *
 		 * Moreover, the content is one such that the leading coefficient
@@ -462,13 +460,13 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		SparseMultivariateIntegerPolynomial content(const std::vector<Symbol>& v) const;
 
 		/**
-		 * Get the primitive part with respect to all variables. 
+		 * Get the primitive part with respect to all variables.
 		 * This is equivalent to this / content().
 		 */
 		SparseMultivariateIntegerPolynomial primitivePart() const;
 
 		/**
-		 * Get the primitive part with respect to all variables. 
+		 * Get the primitive part with respect to all variables.
 		 * This is equivalent to this / content().
 		 *
 		 * Simultaneously returns the rational number content in the parameter content.
@@ -476,18 +474,18 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		SparseMultivariateIntegerPolynomial primitivePart(Integer& content) const;
 
 		/**
-		 * Get the primitive part with respect to the variables in the vector v. 
-		 * 
+		 * Get the primitive part with respect to the variables in the vector v.
+		 *
 		 * returns the primitive part.
 		 */
 		SparseMultivariateIntegerPolynomial primitivePart(const std::vector<Symbol>& v) const;
 
 		/**
-		 * Get the primitive part with respect to the variables in the vector v. 
+		 * Get the primitive part with respect to the variables in the vector v.
 		 * Returns the corresponding content in the content reference.
 		 * returns the primitive part.
 		 */
-		SparseMultivariateIntegerPolynomial primitivePart(const std::vector<Symbol>& v, SparseMultivariateIntegerPolynomial& content) const; 
+		SparseMultivariateIntegerPolynomial primitivePart(const std::vector<Symbol>& v, SparseMultivariateIntegerPolynomial& content) const;
 
 		/**
 		 * Get the leading coefficient of *this with respect to the main variable.
@@ -515,7 +513,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 		/**
 		 * Get the rank of this polynomial.
-		 * That is, the main variable raised to the main degree. 
+		 * That is, the main variable raised to the main degree.
 		 *
 		 * returns the rank.
 		 */
@@ -536,7 +534,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 */
 		SparseMultivariateIntegerPolynomial tail() const;
 
-		SparseMultivariateIntegerPolynomial separant() const; 
+		SparseMultivariateIntegerPolynomial separant() const;
 
 		/* BPASMultivariatePolynomial interface */
 
@@ -553,22 +551,22 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		}
 
 		/**
-		 * Get the number of non-zero terms 
+		 * Get the number of non-zero terms
 		 */
 		Integer numberOfTerms() const;
-		
-		/** 
+
+		/**
 		 * Total degree.
 		 */
 		Integer degree() const;
 
 		/**
-		 * Get the degree of a variable 
+		 * Get the degree of a variable
 		 */
 		Integer degree(const Symbol&) const;
-		
+
 		/**
-		 * Get the leading coefficient 
+		 * Get the leading coefficient
 		 */
 		Integer leadingCoefficient() const;
 
@@ -576,21 +574,21 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Set the leading coefficient.
 		 */
 		void setLeadingCoefficient(const Integer& it);
-		
+
 		/**
 		 * Get the trailing coefficient.
 		 */
 		Integer trailingCoefficient() const;
 
 		/**
-		 * Get a coefficient, given the exponent of each variable 
+		 * Get a coefficient, given the exponent of each variable
 		 */
 		Integer coefficient(int, const int*) const;
 
 		inline Integer coefficient(const std::vector<int>& v) const {
 			return coefficient(v.size(), v.data());
 		}
-		
+
 		/**
 		 * Set a coefficient, given the exponent of each variable
 		 */
@@ -605,33 +603,33 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Set variables' names.
 		 *
 		 * This method can be used to shrink, expand, re-order, and re-name the variables
-		 * of the polynomial ring in which this polynomial belongs. 
+		 * of the polynomial ring in which this polynomial belongs.
 		 *
 		 * Any symbol in the input vector that matches the current variables
 		 * is considered a re-order. Non-matching symbols are considered a re-name
 		 * and this renames is done in the order they appear by increasing index.
-		 * For example: Q[x,y,z] -> Q[y,s,t] will have y reordered to be the 
-		 * first variable, x renamed to s, and z renamed to t. 
+		 * For example: Q[x,y,z] -> Q[y,s,t] will have y reordered to be the
+		 * first variable, x renamed to s, and z renamed to t.
 		 *
 		 * If the size of the input vector is greater than the current number of variables
 		 * then the polynomial ring is being expanded. Matching variables from this
 		 * polynomial are re-ordered as they appear in the input vector. Current variables
 		 * that have no match in the input vector are re-named in order of increasing index
-		 * of unused variables from the input vector. 
-		 * For example: Q[x,y,z] -> Q[s,t,z,x] will have y named to s, t a new variable, 
-		 * and z and x re-ordered accordingly. 
+		 * of unused variables from the input vector.
+		 * For example: Q[x,y,z] -> Q[s,t,z,x] will have y named to s, t a new variable,
+		 * and z and x re-ordered accordingly.
 		 *
 		 * If the size of the input vector is less than the current number of variables
-		 * then the polynomial ring is shrink to remove variables. Variables in the 
-		 * input vector that are also found to be in the current polynomial ring 
-		 * are matched and re-ordered as necessary.  
+		 * then the polynomial ring is shrink to remove variables. Variables in the
+		 * input vector that are also found to be in the current polynomial ring
+		 * are matched and re-ordered as necessary.
 		 *
 		 * It is invalid to remove a variable which is non-zero in this polynomial.
 		 */
 		void setRingVariables (const std::vector<Symbol>&);
-		
+
 		/**
-		 * Get variable names of all variables available to this polynomial, 
+		 * Get variable names of all variables available to this polynomial,
 		 * even those that have zero degree.
 		 */
 		std::vector<Symbol> ringVariables() const;
@@ -646,7 +644,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 		/**
 		 * Determine if *this is equal to b.
-		 * This takes into account the variable ordering on both poylnomials 
+		 * This takes into account the variable ordering on both poylnomials
 		 * in such a way that the same polynomial under different variable orderings
 		 * are NOT equal.
 		 */
@@ -657,7 +655,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the derivative, k > 0
-		 **/ 
+		 **/
     	inline void differentiate(const Symbol& s, int k) {
     		*this = this->derivative(s, k);
     	}
@@ -666,7 +664,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Convert current object to its derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
     	inline void differentiate(const Symbol& s) {
     		this->differentiate(s,1);
     	}
@@ -676,24 +674,24 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the k-th derivative, k > 0
-		 **/ 
-    	SparseMultivariateIntegerPolynomial derivative(const Symbol& s, int k) const;		
-		
+		 **/
+    	SparseMultivariateIntegerPolynomial derivative(const Symbol& s, int k) const;
+
 		/**
 		 * Compute derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
 		inline SparseMultivariateIntegerPolynomial derivative(const Symbol& s) const {
     	 	return this->derivative(s,1);
-        } 
+        }
 
         /**
 		 * Convert current object to its k-th integral
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the derivative, k > 0
-		 **/ 
+		 **/
     	inline void integrate(const Symbol& s, int k) {
     		*this = this->integral(s, k);
     	}
@@ -702,7 +700,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Convert current object to its derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
     	inline void integrate(const Symbol& s) {
     		this->integrate(s,1);
     	}
@@ -717,9 +715,9 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the k-th derivative, k > 0
-		 **/ 
-    	SparseMultivariateIntegerPolynomial integral(const Symbol& s, int k) const;		
-		
+		 **/
+    	SparseMultivariateIntegerPolynomial integral(const Symbol& s, int k) const;
+
 		/**
 		 * Return k-th integral. If Symbol s is not a symbol contained in this
 		 * polynomial then it becomes the main variable of the result and
@@ -730,17 +728,17 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the k-th derivative, k > 0
-		 **/ 
+		 **/
 		SparseMultivariateRationalPolynomial rationalIntegral(const Symbol& s, int k) const;
 
 		/**
 		 * Compute integral
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
 		inline SparseMultivariateIntegerPolynomial integral(const Symbol& s) const {
     	 	return this->integral(s,1);
-        } 
+        }
 
         /**
          * Return the integral of this, with respect to Symbol s, as a rational number polynomial.
@@ -773,13 +771,13 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * vars must be a list of variables which are a (not necessarily proper) subset.
 		 * vars and values should have matching indices. i.e. the values of vars[i] is values[i].
 		 *
-		 * returns a new SMQP where all variables in vars have been evaluated using the values given. 
+		 * returns a new SMQP where all variables in vars have been evaluated using the values given.
 		 */
 		SparseMultivariateIntegerPolynomial evaluate(const std::vector<Symbol>& vars, const std::vector<Integer>& values) const;
 
 		/**
 		 * Find the interpolating polynomial for the integer points and values specified by each vector, respectively.
-		 * The points vector is a vector of vectors, where each element of the outer vector represents a multi-dimensional point. 
+		 * The points vector is a vector of vectors, where each element of the outer vector represents a multi-dimensional point.
 		 * Each multi-dimensional point should have the same number of dimensions and in the same order.
 		 *
 		 * An error will occur if the resulting interpolating polynomial cannot be represented as an integer polynomial.
@@ -787,10 +785,10 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * returns the interpolating polynomial.
 		 */
 		static SparseMultivariateIntegerPolynomial interpolate(const std::vector<std::vector<Integer>>& points, const std::vector<Integer>& vals);
-		
+
 		/**
 		 * Find the interpolating polynomial for the rational number points and values specified by each vector, respectively.
-		 * The points vector is a vector of vectors, where each element of the outer vector represents a multi-dimensional point. 
+		 * The points vector is a vector of vectors, where each element of the outer vector represents a multi-dimensional point.
 		 * Each multi-dimensional point should have the same number of dimensions and in the same order.
 		 *
 		 * An error will occur if the resulting interpolating polynomial cannot be represented as an integer polynomial.
@@ -808,7 +806,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		bool divide(const SparseMultivariateIntegerPolynomial& b, SparseMultivariateIntegerPolynomial& q, SparseMultivariateIntegerPolynomial& r) const;
 
 		/**
-		 * Divide this by polynomial b, return the quotient and remainder in q and r as rational number polynomials. 
+		 * Divide this by polynomial b, return the quotient and remainder in q and r as rational number polynomials.
 		 * This differs from the normal divide function where divisibility of coefficients does not matter as the result
 		 * belongs to the polynomial ring over the rational numbers.
 		 *
@@ -823,13 +821,13 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 		/**
 		 * Update *this by setting it to the remainder of *this divided by b.
-		 */ 
+		 */
 		SparseMultivariateIntegerPolynomial& operator%= (const SparseMultivariateIntegerPolynomial& b);
 
-		/** 
+		/**
 		 * Pseudo divide this by b. The remainder is returned.
 		 * if parameter quo is not null then the quotient is returned in quo.
-		 * if parameter mult is not null then the multiplier is set to the initial of b 
+		 * if parameter mult is not null then the multiplier is set to the initial of b
 		 * raised to the power of degree(c, mvar(c)) - degree(b, mvar(c)) + 1.
 		 *
 		 * returns the pseudo remainder.
@@ -839,7 +837,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 		/**
 		 * Add *this and a mpz_t.
-		 */		
+		 */
 		inline SparseMultivariateIntegerPolynomial operator+ (const mpz_t r) const {
 			return (*this + mpz_class(r));
 		}
@@ -874,15 +872,15 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		inline friend SparseMultivariateIntegerPolynomial operator+ (const mpz_class& r, const SparseMultivariateIntegerPolynomial& b) {
 			return (b + r);
 		}
-		
+
 		/**
 		 * Update *this by adding the mpz_class r to it.
-		 */ 
+		 */
 		SparseMultivariateIntegerPolynomial& operator+= (const mpz_class& r);
 
 		/**
 		 * Update *this by adding the Integer r to it.
-		 */ 
+		 */
 		inline SparseMultivariateIntegerPolynomial& operator+= (const Integer& r) {
 		    *this += r.get_mpz();
 		    return *this;
@@ -953,7 +951,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Multiply *this by mpz_class r.
 		 */
 		SparseMultivariateIntegerPolynomial operator* (const mpz_class& r) const;
-		
+
 		/**
 		 * Multiply *this by Integer r.
 		 */
@@ -981,7 +979,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		inline friend SparseMultivariateIntegerPolynomial operator* (const mpz_class& r, const SparseMultivariateIntegerPolynomial& b) {
 			return (b * r);
 		}
-		
+
 		/**
 		 * Update *this by multiplying by mpz_class r.
 		 */
@@ -1019,7 +1017,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 */
 		friend SparseMultivariateIntegerPolynomial operator/ (const mpz_t r, const SparseMultivariateIntegerPolynomial& b) ;
 
-		/** 
+		/**
 		 * Update *this by dividing by mpz_t r.
 		 */
 		inline SparseMultivariateIntegerPolynomial& operator/= (const mpz_t r) {
@@ -1037,11 +1035,11 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 			return ret;
 		}
 
-		/** 
+		/**
 		 * Update *this by dividing by mpz_class r.
 		 */
-		SparseMultivariateIntegerPolynomial& operator/= (const mpz_class& r); 
-		/** 
+		SparseMultivariateIntegerPolynomial& operator/= (const mpz_class& r);
+		/**
 		 * Update *this by dividing by Integer r.
 		 */
 		inline SparseMultivariateIntegerPolynomial& operator/= (const Integer& r) {
@@ -1050,14 +1048,14 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		}
 
 		/**
-		 * Get the polynomial term at index. Returns 0 if index is beyond the 
+		 * Get the polynomial term at index. Returns 0 if index is beyond the
 		 * number of terms in this polynomial.
 		 */
 		SparseMultivariateIntegerPolynomial operator[] (int index) const;
 
 		/**
 		 * Get the leading variable, that is, the highest-order variable with positive degree
-		 * of this polynomial. 
+		 * of this polynomial.
 		 * returns the leading variable or the empty string if this polynomial has zero variables.
 		 */
 		Symbol leadingVariable() const;
@@ -1066,14 +1064,14 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Get the degree of this polynomial w.r.t the leading variable.
 		 */
 		Integer leadingVariableDegree() const;
-		
+
 		/**
 		 * Is the contant term zero.
 		 */
 		bool isConstantTermZero() const;
 
 		/**
-		 * Get the leading coefficient w.r.t the input variable 'x'. 
+		 * Get the leading coefficient w.r.t the input variable 'x'.
 		 * Returns the leading exponent as e.
 		 *
 		 * returns the coefficient as a new SMQP.
@@ -1088,21 +1086,21 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		SparseUnivariatePolynomial<SparseMultivariateIntegerPolynomial> convertToSUP(const Symbol& x) const;
 
 		/**
-		 * Negate all the coefficients of *this. Note, that due to the 
+		 * Negate all the coefficients of *this. Note, that due to the
 		 * sharing nature of underling nodes, this may alter the Nodes of
 		 * other SMQP.
 		 */
 		void negate();
 
-		/** 
+		/**
 		 * Get a copy of this such that all underlying memory is NOT shared.
 		 * Note, any following arithmetic operations on the returned result
-		 * will result in possibly making the underlying memory shared again. 
+		 * will result in possibly making the underlying memory shared again.
 		 */
 		SparseMultivariateIntegerPolynomial deepCopy() const;
 
 		/**
-		 * Factors this polynomial into irreducible factors. 
+		 * Factors this polynomial into irreducible factors.
 		 * The Factors may include a common numerical (integer) factor.
 		 * See also, Factors.
 		 */
@@ -1135,7 +1133,7 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * resulting polynomial.
 		 * A sparsity of 0 produces a dense polynomial. A sparsity of 1 produces only
 		 * one term; one whose monomial has exponents equal to maxDegs.
-		 * 
+		 *
 		 * coefBound: limit on the number of bits encoding the coefficients.
 		 * sparsity: a percentage of zero-terms between term with maxDegs and the constant term.
 		 * includeNeg: a bool to say if coefs can be randomly negative or all positive
@@ -1146,11 +1144,11 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 		 * Convert *this to an ExpressionTree.
 		 *
 		 * returns the new ExpressionTree.
-		 */		
+		 */
 		ExpressionTree convertToExpressionTree() const;
 };
 
-		
+
 
 
 

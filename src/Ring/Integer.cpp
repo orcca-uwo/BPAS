@@ -11,9 +11,6 @@
 
 #include <iostream>
 
-mpz_class Integer::characteristic(0);
-RingProperties Integer::properties = EUCLIDEAN_DOMAIN;		
-
 // bool Integer::isPrimeField = 0;
 // bool Integer::isSmallPrimeField = 0;
 // bool Integer::isComplexField = 0;
@@ -22,8 +19,8 @@ RingProperties Integer::properties = EUCLIDEAN_DOMAIN;
 // Implement properly all the conversions.
 ////////////////////////////////////////
 
-Integer::Integer () { 
-	_m = 0; 
+Integer::Integer () {
+	_m = 0;
 }
 
 Integer::Integer (int a) {
@@ -199,4 +196,4 @@ Integer Integer::remainder(const Integer& b) const {
 	exit(1);
 	return *this;
 }
-	
+

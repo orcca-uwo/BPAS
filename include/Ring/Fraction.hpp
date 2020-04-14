@@ -17,30 +17,27 @@ class Fraction: public BPASFieldOfFractions<Domain, Fraction<Domain>> {
 	private:
 		Domain den;//denominator
 		Domain num;//numerator
-		
+
 
 
 	public:
 
-		mpz_class characteristic;
 		/**
 		 * Construct the zero fraction function
 		 *
 		 * @param
-		 **/ 
+		 **/
 		Fraction<Domain>(){
 			den.one();
 			num.zero();
 			Domain e;
-			characteristic = e.characteristic;
 		};
 		/**
 		 * Copy constructor
 		 *
 		 * @param b: A rational function
-		 **/ 
+		 **/
 		Fraction<Domain>(const Fraction<Domain> &b): num(b.num),den(b.den){
-			characteristic = b.characteristic;
 		}
 
 		/**
@@ -57,7 +54,6 @@ class Fraction: public BPASFieldOfFractions<Domain, Fraction<Domain>> {
 		  num = a;
 		  den = b;
 		  Domain e;
-		  characteristic = e.characteristic;
 		}
 
 		/**
@@ -81,10 +77,10 @@ class Fraction: public BPASFieldOfFractions<Domain, Fraction<Domain>> {
 
 		Fraction<Domain> operator+(const Fraction<Domain> &b) const;
 		Fraction<Domain>& operator+=(const Fraction<Domain> &b);
-		
+
 		Fraction<Domain> operator-(const Fraction<Domain> &b) const;
 		Fraction<Domain>& operator-=(const Fraction<Domain> &b);
-		
+
 		Fraction<Domain> operator*(const Fraction<Domain> &b) const;
 		Fraction<Domain>& operator*=(const Fraction<Domain> &b);
 
@@ -161,11 +157,11 @@ class Fraction: public BPASFieldOfFractions<Domain, Fraction<Domain>> {
     		Fraction<Domain> ret;
     		if(isZero() == true &&b.isZero() == true){
     			ret.zero();
-    			
+
     		}
     		//otherwise is one
     		else{
-    			ret.one();	
+    			ret.one();
     		}
 
     		return ret;
@@ -176,7 +172,7 @@ class Fraction: public BPASFieldOfFractions<Domain, Fraction<Domain>> {
     		return Factors<Fraction<Domain>>(*this);
     	}
 
-    	Fraction<Domain> euclideanSize() const {
+    	Integer euclideanSize() const {
     		//TODO
     		//if is zero, throw error exit(1)
     		//otherwise return 0
@@ -186,9 +182,7 @@ class Fraction: public BPASFieldOfFractions<Domain, Fraction<Domain>> {
     			exit(1);
     		}
     		else{
-    			Fraction<Domain> ret;
-    			ret.zero();
-    			return ret;
+    			return Integer(1);
     		}
     	}
 

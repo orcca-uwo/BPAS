@@ -2,11 +2,12 @@
 #define _UPOLYNOMIAL_H_
 
 //#include <type_traits>
-#include "../polynomial.h"
+#include "../Polynomial/BPASUnivarPolynomial.hpp"
 #include "../IntegerPolynomial/uzpolynomial.h"
 #include "../RationalNumberPolynomial/urpolynomial.h"
 #include "../Utils/TemplateHelpers.hpp"
 #include "../Utils/RandomHelpers.hpp"
+
 
 /**
  * A univariate polynomial over an arbitrary BPASRing represented sparsely.
@@ -17,14 +18,18 @@
  * by means of std::conditional.
  */
 template <class Ring>
-class SparseUnivariatePolynomial : public virtual BPASUnivariatePolynomial<Ring>  {
+class SparseUnivariateTempPoly : public virtual BPASUnivariatePolynomial<Ring>,
+								   private Derived_from<Ring, BPASRing> {
 
+									   // public std::conditional<std::is_base_of<BPASGCDDomain<Ring>, Ring>::value,
+										  // SparseUnivariateDomainPolynomial<Ring, Derived>,
+										  // SparseUnivariateTempPolyBase<Ring, Derived> >::type {
 
 private:
 	Symbol name;
 	std::vector< UnivariateTerm<Ring> > terms;
 
-	inline bool isEqual(const SparseUnivariatePolynomial<Ring>& b) const {
+	inline bool isEqual(const Derived& b) const {
 		if (degree() > 0 && b.degree() > 0 && (name != b.name))
 			return 0;
 		int n = terms.size();
@@ -80,11 +85,11 @@ private:
 	}
 
 /* this += t * b */
-	inline void pomopo(UnivariateTerm<Ring> t, const SparseUnivariatePolynomial<Ring>& b) {
+	inline void pomopo(UnivariateTerm<Ring> t, const Derived& b) {
 		int ai = 0, m = b.terms.size();
 		int n = terms.size();
 		int i;
-		
+
 		// //product
 		// std::vector<UnivariateTerm<Ring>> prodTerms;
 		// prodTerms.reserve(m);
@@ -114,7 +119,7 @@ private:
 		// 	}
 		// 	else if (aExp < bExp) {
 		// 		mergeOut[curIdx] = adata[i];
-		// 		++i; 
+		// 		++i;
 		// 	} else {
 		// 		mergeOut[curIdx] = proddata[j];
 		// 		++j;
@@ -180,7 +185,7 @@ private:
 	}
 
 /* this = c*this + t*b */
-	inline void pomopo(Ring c, UnivariateTerm<Ring> t, const SparseUnivariatePolynomial<Ring>& b) {
+	inline void pomopo(Ring c, UnivariateTerm<Ring> t, const Derived& b) {
 		int ai = 0, m = b.terms.size();
 
 		for (int i = 0; i < m; ++i) {
@@ -224,15 +229,15 @@ private:
 
 	// For subresultant
 	// y = s;
-	inline SparseUnivariatePolynomial<Ring> LazardSe(SparseUnivariatePolynomial<Ring>& sd, SparseUnivariatePolynomial<Ring>& sdm, Ring& y) const {
+	inline Derived LazardSe(Derived& sd, Derived& sdm, Ring& y) const {
 		int n = (sd.degree() - sdm.degree()).get_si() - 1;
 		if (!n) { return sdm; }
 		Ring x = sdm.leadingCoefficient();
 		// Ring y = sd.leadingCoefficient();
 		int a = (int) pow(2, floor(log2(n)));
 		Ring c = x;
-		SparseUnivariatePolynomial<Ring> se = sdm;
-		
+		Derived se = sdm;
+
 		n -= a;
 		/* int orign = n; */
 		while (a != 1) {
@@ -252,11 +257,11 @@ private:
 		return se;
 	}
 
-	inline SparseUnivariatePolynomial<Ring> DucosSem(SparseUnivariatePolynomial<Ring>& a, SparseUnivariatePolynomial<Ring>& sdm, SparseUnivariatePolynomial<Ring>& se, Ring sd) const {
-	    
+	inline Derived DucosSem(Derived& a, Derived& sdm, Derived& se, Ring sd) const {
+
 	    Integer d = a.degree();
 	    int e = sdm.degree().get_si();
-		SparseUnivariatePolynomial<Ring> res;
+		Derived res;
 		res.name = name;
 		Ring ec = se.leadingCoefficient();
 
@@ -265,12 +270,12 @@ private:
 		/* std::cout << "Se := " << se << std::endl; */
 		/* std::cout << "sd := " << sd << std::endl; */
 		/* std::cout << "se := " << ec << std::endl; */
-		
+
 		if (d == e){
 	// Streamlined resultant computation for regular case
 			Ring dc = a.leadingCoefficient();
 			Ring rTemp;
-			SparseUnivariatePolynomial<Ring> supTemp;
+			Derived supTemp;
 			supTemp.name = name;
 	// compute first of two main terms
 			res = a;
@@ -291,12 +296,12 @@ private:
 			res += supTemp;
 	// divide out dc to obtain resultant
 			res /= dc;
-			return res;		
+			return res;
 		}
 		else {
 	// Ducos algorithm for defective case
 			Ring mc = sdm.leadingCoefficient();
-			SparseUnivariatePolynomial<Ring>* P = new SparseUnivariatePolynomial<Ring>[d.get_si()];
+			Derived* P = new Derived[d.get_si()];
 			for (int i = 0; i < e; ++i) {
 				P[i].setVariableName(name);
 				P[i].setCoefficient(i, ec);
@@ -313,7 +318,7 @@ private:
 				if (!P[i-1].coefficient(e-1).isZero()) {
 					ec = -P[i-1].coefficient(e-1);
 				}
-				else { 
+				else {
 					ec.zero(); // prevents poly name error
 				}
 				ec /= mc;
@@ -324,7 +329,7 @@ private:
 			}
 			res *= P[d.get_si()-1];
 
-			SparseUnivariatePolynomial<Ring> D;
+			Derived D;
 			for (int i = 0; i < d; ++i) {
 				P[i] *= a.coefficient(i);
 				D += P[i];
@@ -364,8 +369,8 @@ public:
 	* Construct a polynomial
 	*
 	* @param
-	**/ 
-	SparseUnivariatePolynomial<Ring> () : name("%"), terms() {
+	**/
+	SparseUnivariateTempPoly<Ring, Derived> () : name("%"), terms() {
 		Ring e;
 		characteristic = e.characteristic;
 	}
@@ -374,38 +379,38 @@ public:
 	* Copy constructor
 	*
 	* @param b: A sparse univariate polynomial
-	**/ 
-	SparseUnivariatePolynomial<Ring> (const SparseUnivariatePolynomial<Ring>& b) : name(b.name), terms(b.terms) {
+	**/
+	SparseUnivariateTempPoly<Ring, Derived> (const SparseUnivariateTempPoly<Ring, Derived>& b) : name(b.name), terms(b.terms) {
 		Ring e;
 		characteristic = e.characteristic;
 	}
 
-	SparseUnivariatePolynomial<Ring> (int a) {
+	SparseUnivariateTempPoly<Ring, Derived> (int a) {
 		UnivariateTerm<Ring> t;
 		t.coef = Ring(a);
 		terms.push_back(t);
 	}
 
-	SparseUnivariatePolynomial<Ring> (const Integer& c) {
+	SparseUnivariateTempPoly<Ring, Derived> (const Integer& c) {
 		UnivariateTerm<Ring> t;
 		t.coef = Ring(c);
 		terms.push_back(t);
 	}
 
-	SparseUnivariatePolynomial<Ring> (const RationalNumber& c) {
+	SparseUnivariateTempPoly<Ring, Derived> (const RationalNumber& c) {
 		UnivariateTerm<Ring> t;
 		t.coef = Ring(c);
 		t.exp = 0;
 		terms.push_back(t);
 	}
 
-	SparseUnivariatePolynomial<Ring> (const ComplexRationalNumber& c) {
+	SparseUnivariateTempPoly<Ring, Derived> (const ComplexRationalNumber& c) {
 		UnivariateTerm<Ring> t;
 		t.coef = Ring(c);
 		terms.push_back(t);
 	}
 
-	SparseUnivariatePolynomial<Ring> (const DenseUnivariateIntegerPolynomial& b) {
+	SparseUnivariateTempPoly<Ring, Derived> (const DenseUnivariateIntegerPolynomial& b) {
 		name = b.variable();
 		for (int i = 0; i <= b.degree().get_si(); ++i) {
 			Ring e (Integer(b.coefficient(i)));
@@ -418,7 +423,7 @@ public:
 		}
 	}
 
-	SparseUnivariatePolynomial<Ring> (const DenseUnivariateRationalPolynomial& b) {
+	SparseUnivariateTempPoly<Ring, Derived> (const DenseUnivariateRationalPolynomial& b) {
 		name = b.variable();
 		for (int i = 0; i <= b.degree().get_si(); ++i) {
 			Ring e (RationalNumber(b.coefficient(i)));
@@ -431,12 +436,17 @@ public:
 		}
 	}
 
+	SparseUnivariateTempPoly<Ring, Derived> (Symbol sym) : name(sym), terms() {
+		this->one();
+		terms[0].exp = 1;
+	}
+
 	/**
 	 * Destroy the polynomial
  	 *
      * @param
      **/
-	~SparseUnivariatePolynomial<Ring> () {
+	~SparseUnivariateTempPoly<Ring, Derived> () {
 		terms.clear();
 	}
 
@@ -453,7 +463,7 @@ public:
 	 * Get the degree of the polynomial
 	 *
 	 * @param
-	 **/ 
+	 **/
 	inline Integer degree() const {
 		int n = terms.size();
 		if (n) { return terms[n-1].exp; }
@@ -484,7 +494,7 @@ public:
 	 * Get a coefficient
 	 *
 	 * @param k: The exponent
-	 **/ 
+	 **/
 	inline Ring coefficient(int k) const {
 		int n = terms.size();
 		for (int i = 0; i < n; ++i) {
@@ -547,11 +557,11 @@ public:
 		name = c;
 	}
 
-	inline SparseUnivariatePolynomial<Ring> unitCanonical(SparseUnivariatePolynomial<Ring>* u = NULL, SparseUnivariatePolynomial<Ring>* v = NULL) const {
+	inline Derived unitCanonical(Derived* u = NULL, Derived* v = NULL) const {
 		Ring lead = leadingCoefficient();
 		Ring ru, rv;
 		Ring canon = lead.unitCanonical(&ru, &rv);
-		SparseUnivariatePolynomial<Ring> ret = *this * ru;
+		Derived ret = *this * ru;
 		if (u != NULL) {
 			*u = ru;
 		}
@@ -566,8 +576,8 @@ public:
 	 * Overload operator =
 	 *
 	 * @param b: A sparse univariate polynomial
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring>& operator= (const SparseUnivariatePolynomial<Ring>& b) {
+	 **/
+	inline Derived& operator= (const Derived& b) {
 		if (this != &b) {
 			terms.clear();
 			name = b.name;
@@ -575,20 +585,20 @@ public:
 			Ring e;
 			characteristic = e.characteristic;
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
-	/** 
+	/**
 	 * Overload operator =
 	 *
 	 * @param r: A base ring element
 	 */
-	inline SparseUnivariatePolynomial<Ring>& operator= (const Ring& r) {
+	inline Derived& operator= (const Ring& r) {
 		terms.clear();
 		UnivariateTerm<Ring> t;
 		t.coef = Ring(r);
 		terms.push_back(t);
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
 
@@ -596,8 +606,8 @@ public:
 	 * Overload operator !=
 	 *
 	 * @param b: A sparse univariate polynomial
-	 **/ 
-	inline bool operator!= (const SparseUnivariatePolynomial<Ring>& b) const {
+	 **/
+	inline bool operator!= (const Derived& b) const {
 		return !(isEqual(b));
 	}
 
@@ -605,8 +615,8 @@ public:
 	 * Overload operator ==
 	 *
 	 * @param b: A sparse univariate polynomial
-	 **/ 
-	inline bool operator== (const SparseUnivariatePolynomial<Ring>& b) const {
+	 **/
+	inline bool operator== (const Derived& b) const {
 		return isEqual(b);
 	}
 
@@ -664,7 +674,7 @@ public:
 	 * Is polynomial a constant -1
 	 *
 	 * @param
-	 **/ 
+	 **/
 	inline bool isNegativeOne() const {
 		if (terms.size() == 1 && !terms[0].exp)
 			return terms[0].coef.isNegativeOne();
@@ -730,11 +740,11 @@ public:
 		return c;
 	}
 
-	inline SparseUnivariatePolynomial<Ring> primitivePart() const {
+	inline Derived primitivePart() const {
 		//TODO
 		std::cerr << "BPAS ERROR: SUP<Ring>::primitivePart NOT YET IMPLEMENTED" << std::endl;
 		return (*this);
-	}	
+	}
 
 	/**
 	 * Overload operator ^
@@ -742,12 +752,12 @@ public:
 	 *
 	 * @param e: The exponentiation, e > 0
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator^ (long long int e) const {
-		SparseUnivariatePolynomial<Ring> res;
+	inline Derived operator^ (long long int e) const {
+		Derived res;
 		res.name = name;
 	//res.one();
 	//unsigned long int q = e / 2, r = e % 2;
-	//SparseUnivariatePolynomial<Ring> power2 = *this * *this;
+	//Derived power2 = *this * *this;
 	//for (int i = 0; i < q; ++i)
 	//	res *= power2;
 	//if (r) { res *= *this; }
@@ -756,7 +766,7 @@ public:
 		else if (e == 2)
 			res = *this * *this;
 		else if (e > 2) {
-			SparseUnivariatePolynomial<Ring> x (*this);
+			Derived x (*this);
 			res.one();
 
 			while (e) {
@@ -779,9 +789,9 @@ public:
 	 *
 	 * @param e: The exponentiation, e > 0
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator^= (long long int e) {
+	inline Derived& operator^= (long long int e) {
 		*this = *this ^ e;
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
 	/**
@@ -790,21 +800,21 @@ public:
 	 *
 	 * @param k: The exponent of variable, k > 0
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator<< (int k) const {
-		SparseUnivariatePolynomial<Ring> r (*this);
+	inline Derived operator<< (int k) const {
+		Derived r (*this);
 		return (r <<= k);
 	}
 
 	/**
-	 * Overload operator <<= 
+	 * Overload operator <<=
 	 * replace by muplitying x^k
 	 *
 	 * @param k: The exponent of variable, k > 0
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator<<= (int k) {
+	inline Derived& operator<<= (int k) {
 		for (int i = 0; i < terms.size(); ++i)
 			terms[i].exp += (unsigned long int) k;
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
 	/**
@@ -814,8 +824,8 @@ public:
 	 *
 	 * @param k: The exponent of variable, k > 0
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator>> (int k) const {
-		SparseUnivariatePolynomial<Ring> r (*this);
+	inline Derived operator>> (int k) const {
+		Derived r (*this);
 		return (r >>= k);
 	}
 
@@ -826,7 +836,7 @@ public:
 	 *
 	 * @param k: The exponent of variable, k > 0
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator>>= (int k) {
+	inline Derived& operator>>= (int k) {
 		int i = 0;
 		unsigned long int e = (unsigned long int) k;
 		while (i < terms.size()) {
@@ -836,7 +846,7 @@ public:
 			}
 			else { terms.erase(terms.begin()); }
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
 	/**
@@ -844,8 +854,8 @@ public:
 	 *
 	 * @param b: A univariate polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator+ (const SparseUnivariatePolynomial<Ring>& b) const {
-		SparseUnivariatePolynomial<Ring> res(*this);
+	inline Derived operator+ (const Derived& b) const {
+		Derived res(*this);
 		return (res += b);
 	}
 
@@ -853,10 +863,10 @@ public:
 	 * Overload operator+=
 	 *
 	 * @param b: A univariate polynomial
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring>& operator+= (const SparseUnivariatePolynomial<Ring>& b) {
+	 **/
+	inline Derived& operator+= (const Derived& b) {
 		if (!terms.size()) { return (*this = b); }
-		if (!b.terms.size()) { return *this; }
+		if (!b.terms.size()) { return dynamic_cast<Derived&>(*this); }
 		if (isConstant()) { return (*this = b + terms[0].coef); }
 		if (b.isConstant()) { return (*this += b.terms[0].coef); }
 		if (name != b.name) {
@@ -893,7 +903,7 @@ public:
 					terms.insert(terms.begin()+ai, bt);
 			}
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
 	/**
@@ -901,8 +911,8 @@ public:
 	 *
 	 * @param e: A coefficient constant
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator+ (const Ring& e) const {
-		SparseUnivariatePolynomial<Ring> r (*this);
+	inline Derived operator+ (const Ring& e) const {
+		Derived r (*this);
 		return (r += e);
 	}
 
@@ -911,7 +921,7 @@ public:
 	 *
 	 * @param e: A coefficient constant
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator+= (const Ring& e) {
+	inline Derived& operator+= (const Ring& e) {
 		if (!e.isZero()) {
 			if (terms.size()) {
 				UnivariateTerm<Ring> a = terms[0];
@@ -933,10 +943,10 @@ public:
 				terms.push_back(a);
 			}
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
-	inline friend SparseUnivariatePolynomial<Ring> operator+ (const Ring& c, const SparseUnivariatePolynomial<Ring>& p) {
+	inline friend Derived operator+ (const Ring& c, const Derived& p) {
 		return (p + c);
 	}
 
@@ -944,9 +954,9 @@ public:
 	 * Overload operator -, negate
 	 *
 	 * @param
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> operator- () const {
-		SparseUnivariatePolynomial<Ring> res;
+	 **/
+	inline Derived operator- () const {
+		Derived res;
 		res.name = name;
 		for (int i = 0; i < terms.size(); ++i) {
 			UnivariateTerm<Ring> t;
@@ -960,21 +970,21 @@ public:
 	/**
 	 * Subtract another polynomial
 	 *
-	 * @param b: A univariate polynomial 
+	 * @param b: A univariate polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator- (const SparseUnivariatePolynomial<Ring>& b) const {
-		SparseUnivariatePolynomial<Ring> res(*this);
+	inline Derived operator- (const Derived& b) const {
+		Derived res(*this);
 		return (res -= b);
 	}
 
 	/**
 	 * Overload operator -=
 	 *
-	 * @param b: A univariate polynomial 
+	 * @param b: A univariate polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator-= (const SparseUnivariatePolynomial<Ring>& b) {
+	inline Derived& operator-= (const Derived& b) {
 		if (!terms.size()) { return (*this = -b); }
-		if (!b.terms.size()) { return *this; }
+		if (!b.terms.size()) { return dynamic_cast<Derived&>(*this); }
 		if (isConstant()) { return (*this = -b + terms[0].coef); }
 		if (b.isConstant()) { return (*this -= b.terms[0].coef); }
 		if (name != b.name) {
@@ -1013,7 +1023,7 @@ public:
 					terms.insert(terms.begin()+ai, t);
 			}
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
 	/**
@@ -1021,8 +1031,8 @@ public:
 	 *
 	 * @param e: A coefficient constant
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator- (const Ring& e) const {
-		SparseUnivariatePolynomial<Ring> r (*this);
+	inline Derived operator- (const Ring& e) const {
+		Derived r (*this);
 		return (r -= e);
 	}
 
@@ -1031,7 +1041,7 @@ public:
 	 *
 	 * @param e: A coefficient constant
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator-= (const Ring& e) {
+	inline Derived& operator-= (const Ring& e) {
 		if (!e.isZero()) {
 			if (terms.size()) {
 				UnivariateTerm<Ring> t = terms[0];
@@ -1053,26 +1063,26 @@ public:
 				terms.push_back(t);
 			}
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
-	inline friend SparseUnivariatePolynomial<Ring> operator- (const Ring& c, const SparseUnivariatePolynomial<Ring>& p) {
+	inline friend Derived operator- (const Ring& c, const Derived& p) {
 		return (-p + c);
 	}
 
 	/**
 	 * Multiply another polynomial
 	 *
-	 * @param b: A univariate polynomial 
+	 * @param b: A univariate polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring> operator* (const SparseUnivariatePolynomial<Ring>& b) const {
+	inline Derived operator* (const Derived& b) const {
 		int n = terms.size(), m = b.terms.size();
 		if (!n)
 			return *this;
 		if (!m)
 			return b;
 
-		SparseUnivariatePolynomial<Ring> res;
+		Derived res;
 		if (degree() == 0) {
 			for (int i = 0; i < m; ++i) {
 				UnivariateTerm<Ring> bt = b.terms[i];
@@ -1114,7 +1124,7 @@ public:
 		else {
 			int s = (m > n) ? m : n;
 			s >>= 1;
-			SparseUnivariatePolynomial<Ring> f0, f1;
+			Derived f0, f1;
 			f0.name = f1.name = name;
 			for (int i = 0; i < n; ++i) {
 				if (terms[i].exp < s)
@@ -1124,7 +1134,7 @@ public:
 					f1.terms.push_back(t);
 				}
 			}
-			SparseUnivariatePolynomial<Ring> g0, g1;
+			Derived g0, g1;
 			g0.name = g1.name = name;
 			for (int i = 0; i < m; ++i) {
 				if (b.terms[i].exp < s)
@@ -1134,7 +1144,7 @@ public:
 					g1.terms.push_back(t);
 				}
 			}
-			SparseUnivariatePolynomial<Ring> t0, t1;
+			Derived t0, t1;
 			t0.name = t1.name = name;
 			n = f0.terms.size(), m = g0.terms.size();
 			if (n <= m) {
@@ -1165,7 +1175,7 @@ public:
 					t1.pomopo(g0.terms[i], f0);
 			}
 			t1 -= res + t0;
-			for (int i = 0; i < t1.terms.size(); ++i) 
+			for (int i = 0; i < t1.terms.size(); ++i)
 				t1.terms[i].exp += s;
 			s <<= 1;
 			for (int i = 0; i < t0.terms.size(); ++i)
@@ -1179,24 +1189,24 @@ public:
 	 * Overload operator *=
 	 *
 	 * @param b: A univariate polynomial
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring>& operator*= (const SparseUnivariatePolynomial<Ring>& b) {
+	 **/
+	inline Derived& operator*= (const Derived& b) {
 		*this = *this * b;
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
 	/**
 	 * Overload operator *
 	 *
 	 * @param c: A coefficient
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> operator* (const Ring& c) const {
-		SparseUnivariatePolynomial<Ring> r (*this);
+	 **/
+	inline Derived operator* (const Ring& c) const {
+		Derived r (*this);
 		return (r *= c);
 	}
 
-	inline SparseUnivariatePolynomial<Ring> operator* (const sfixn& e) const {
-		SparseUnivariatePolynomial<Ring> r (*this);
+	inline Derived operator* (const sfixn& e) const {
+		Derived r (*this);
 		return (r *= e);
 	}
 
@@ -1204,8 +1214,8 @@ public:
 	 * Overload operator *=
 	 *
 	 * @param c: A coefficient
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring>& operator*= (const Ring& c) {
+	 **/
+	inline Derived& operator*= (const Ring& c) {
 		if (!isZero()) {
 			if (!c.isZero() && !c.isOne()) {
 				for (int i = 0; i < terms.size(); ++i)
@@ -1214,23 +1224,23 @@ public:
 			else if (c.isZero())
 				terms.clear();
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
-	inline SparseUnivariatePolynomial<Ring>& operator*= (const sfixn& e) {
+	inline Derived& operator*= (const sfixn& e) {
 		if (e != 0 && e != 1) {
 			for (int i = 0; i < terms.size(); ++i)
 				terms[i].coef *= e;
 		}
 		else if (e == 0) { zero(); }
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
-	inline friend SparseUnivariatePolynomial<Ring> operator* (const Ring& e, const SparseUnivariatePolynomial<Ring>& p) {
+	inline friend Derived operator* (const Ring& e, const Derived& p) {
 		return (p * e);
 	}
 
-	inline friend SparseUnivariatePolynomial<Ring> operator* (const sfixn& e, const SparseUnivariatePolynomial<Ring>& p) {
+	inline friend Derived operator* (const sfixn& e, const Derived& p) {
 		return (p * e);
 	}
 
@@ -1239,10 +1249,11 @@ public:
 	 * EdeDivision
 	 *
 	 * @param b: A univariate polynomial
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> operator/ (const SparseUnivariatePolynomial<Ring>& b) const {
-		SparseUnivariatePolynomial<Ring> rem(*this);
-		return (rem /= b);
+	 **/
+	inline Derived operator/ (const Derived& b) const {
+		Derived rem(*this);
+		rem /= b;
+		return rem;
 	}
 
 	/**
@@ -1251,22 +1262,22 @@ public:
 	 *
 	 * @param b: A univariate polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator/= (const SparseUnivariatePolynomial<Ring>& b) {
+	inline Derived& operator/= (const Derived& b) {
 		if (b.isZero()) {
-			std::cout << "BPAS: error, dividend is zero from SparseUnivariatePolynomial<Ring>." << std::endl;
+			std::cout << "BPAS: error, dividend is zero from Derived." << std::endl;
 			exit(1);
 		}
 		if (b.isConstant()) { return (*this /= b.terms[0].coef); }
 		if (isConstant()) {
 			zero();
-			return *this;
+			return dynamic_cast<Derived&>(*this);
 		}
 		if (name != b.name) {
 			std::cout << "BPAS: error, trying to exact divide between Ring[" << name << "] and Ring[" << b.name << "]." << std::endl;
 			exit(1);
 		}
 
-		SparseUnivariatePolynomial<Ring> q;
+		Derived q;
 		q.name = name;
 
 		Integer db = b.degree();
@@ -1287,7 +1298,7 @@ public:
 				for (int i = 1; i < at.exp; ++i) {
 					if (k < terms.size() && terms[k].exp == i) {
 						e = terms[k].coef;
-						k++; 
+						k++;
 					}
 					else { e.zero(); }
 					t.coef = (e - prev) / b.terms[0].coef;
@@ -1300,19 +1311,19 @@ public:
 				if (prev == at.coef)
 					return (*this = q);
 				else {
-					std::cout << "BPAS: error, not exact division in SparseUnivariatePolynomial<Ring>." << std::endl;
+					std::cout << "BPAS: error, not exact division in Derived." << std::endl;
 					exit(1);
 				}
 			}
 			else {
 				if (!terms[0].exp) {
-					std::cout << "BPAS: error, not exact division in SparseUnivariatePolynomial<Ring>." << std::endl;
+					std::cout << "BPAS: error, not exact division in Derived." << std::endl;
 					exit(1);
 				}
 				else {
 					for (int i = 0; i < terms.size(); ++i)
 						terms[i].exp--;
-					return *this;
+					return dynamic_cast<Derived&>(*this);
 				}
 			}
 		}
@@ -1328,7 +1339,7 @@ public:
 			q.terms.insert(q.terms.begin(), lc);
 		}
 		if (!isZero()) {
-			std::cout << "BPAS: error, not exact division in SparseUnivariatePolynomial<Ring>." << std::endl;
+			std::cout << "BPAS: error, not exact division in Derived." << std::endl;
 			exit(1);
 		}
 		return (*this = q);
@@ -1338,10 +1349,11 @@ public:
 	 * Overload operator /
 	 *
 	 * @param e: A coefficient constant
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> operator/ (const Ring& e) const {
-		SparseUnivariatePolynomial<Ring> r (*this);
-		return (r /= e);
+	 **/
+	inline Derived operator/ (const Ring& e) const {
+		Derived r (*this);
+		r /= e;
+		return r;
 	}
 
 	/**
@@ -1349,13 +1361,13 @@ public:
 	 *
 	 * @param e: A coefficient constant
 	 **/
-	inline SparseUnivariatePolynomial<Ring>& operator/= (const Ring& e) {
+	inline Derived& operator/= (const Ring& e) {
 		if (e.isZero()) {
-			std::cout << "BPAS: error, dividend is zero from SparseUnivariatePolynomial<Ring>." << std::endl;
+			std::cout << "BPAS: error, dividend is zero from Derived." << std::endl;
 			exit(1);
 		}
 		else if (!e.isOne()) {
-			int i = 0; 
+			int i = 0;
 			while (i < terms.size()) {
 				terms[i].coef /= e;
 				if (terms[i].coef.isZero())
@@ -1363,15 +1375,15 @@ public:
 				else { ++i; }
 			}
 		}
-		return *this;
+		return dynamic_cast<Derived&>(*this);
 	}
 
-	inline friend SparseUnivariatePolynomial<Ring> operator/ (const Ring& e, const SparseUnivariatePolynomial<Ring>& p) {
+	inline friend Derived operator/ (const Ring& e, const Derived& p) {
 		if (p.isZero()) {
-			std::cout << "BPAS: error, dividend is zero from SparseUnivariatePolynomial<Ring>." << std::endl;
+			std::cout << "BPAS: error, dividend is zero from Derived." << std::endl;
 			exit(1);
 		}
-		SparseUnivariatePolynomial<Ring> q;
+		Derived q;
 		q.name = p.name;
 
 		if (p.isConstant()) {
@@ -1398,23 +1410,23 @@ public:
 	 *
 	 * @param b: The dividend polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring> monicDivide(const SparseUnivariatePolynomial<Ring>& b) {
+	inline Derived monicDivide(const Derived& b) {
 		if (b.isZero()) {
-			std::cout << "BPAS: error, dividend is zero from SparseUnivariatePolynomial<Ring>." << std::endl;
+			std::cout << "BPAS: error, dividend is zero from Derived." << std::endl;
 			exit(1);
 		}
 		else if (!b.leadingCoefficient().isOne()) {
-			std::cout << "BPAS: error, leading coefficient is not one in monicDivide() from SparseUnivariatePolynomial<Ring>." << std::endl;
+			std::cout << "BPAS: error, leading coefficient is not one in monicDivide() from Derived." << std::endl;
 			exit(1);
 		}
 
 		if (b.isConstant()) {
-			SparseUnivariatePolynomial<Ring> r (*this);
+			Derived r (*this);
 			zero();
 			return r;
 		}
 		if (isConstant()) {
-			SparseUnivariatePolynomial<Ring> r;
+			Derived r;
 			r.zero();
 			return r;
 		}
@@ -1423,7 +1435,7 @@ public:
 			exit(1);
 		}
 
-		SparseUnivariatePolynomial<Ring> quo;
+		Derived quo;
 		quo.name = name;
 		UnivariateTerm<Ring> bt = b.leadingTerm();
 		while (degree() >= b.degree()) {
@@ -1446,7 +1458,7 @@ public:
 	 * @param b: The dividend polynomial
 	 * @param rem: The remainder polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring> monicDivide(const SparseUnivariatePolynomial<Ring>& b, SparseUnivariatePolynomial<Ring>* rem) const {
+	inline Derived monicDivide(const Derived& b, Derived* rem) const {
 		std::cout << "*this " <<  *this << std::endl;
 		*rem = *this; std::cout<< "salam"<<std::endl;
 		return rem->monicDivide(b);
@@ -1461,17 +1473,17 @@ public:
 	 * @param c: The leading coefficient of b to the power e
 	 * @param d: That to the power deg(a) - deg(b) + 1 - e
 	 **/
-	inline SparseUnivariatePolynomial<Ring> lazyPseudoDivide (const SparseUnivariatePolynomial<Ring>& b, Ring* c, Ring* d=NULL) {
+	inline Derived lazyPseudoDivide (const Derived& b, Ring* c, Ring* d=NULL) {
 		if (d == NULL)
 			d = new Ring;
 		Integer da = degree(), db = b.degree();
 		if (b.isZero() || db == 0) {
-			std::cout << "BPAS: error, dividend is zero or constant from SparseUnivariatePolynomial<Ring>." << std::endl;
+			std::cout << "BPAS: error, dividend is zero or constant from Derived." << std::endl;
 			exit(1);
 		}
 		c->one(), d->one();
 		if (isConstant()) {
-			SparseUnivariatePolynomial<Ring> r;
+			Derived r;
 			r.zero();
 			return r;
 		}
@@ -1481,12 +1493,12 @@ public:
 		}
 
 		if (da < db) {
-			SparseUnivariatePolynomial<Ring> r;
+			Derived r;
 			r.name = name;
 			return r;
 		}
 
-		SparseUnivariatePolynomial<Ring> quo;
+		Derived quo;
 		quo.name = name;
 		Ring blc = b.leadingTerm().coef;
 
@@ -1519,7 +1531,7 @@ public:
 	 * @param c: The leading coefficient of b to the power e
 	 * @param d: That to the power deg(a) - deg(b) + 1 - e
 	 **/
-	inline SparseUnivariatePolynomial<Ring> lazyPseudoDivide (const SparseUnivariatePolynomial<Ring>& b, SparseUnivariatePolynomial<Ring>* rem, Ring* c, Ring* d) const {
+	inline Derived lazyPseudoDivide (const Derived& b, Derived* rem, Ring* c, Ring* d) const {
 		*rem = *this;
 		return rem->lazyPseudoDivide(b, c, d);
 	}
@@ -1530,13 +1542,13 @@ public:
 	 *
 	 * @param b: The divident polynomial
 	 * @param d: The leading coefficient of b
-	 * 	     to the power deg(a) - deg(b) + 1 
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> pseudoDivide (const SparseUnivariatePolynomial<Ring>& b, Ring* d=NULL) {
+	 * 	     to the power deg(a) - deg(b) + 1
+	 **/
+	inline Derived pseudoDivide (const Derived& b, Ring* d=NULL) {
 		Ring c;
 		if (d == NULL)
 			d = new Ring;
-		SparseUnivariatePolynomial<Ring> quo = lazyPseudoDivide(b, &c, d);
+		Derived quo = lazyPseudoDivide(b, &c, d);
 		quo *= *d;
 		*this *= *d;
 		*d *= c;
@@ -1551,10 +1563,10 @@ public:
 	 * @param rem: The remainder polynomial
 	 * @param d: The leading coefficient of b
 	 *           to the power deg(a) - deg(b) + 1
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> pseudoDivide (const SparseUnivariatePolynomial<Ring>& b, SparseUnivariatePolynomial<Ring>* rem, Ring* d) const {
+	 **/
+	inline Derived pseudoDivide (const Derived& b, Derived* rem, Ring* d) const {
 		Ring c;
-		SparseUnivariatePolynomial<Ring> quo = lazyPseudoDivide(b, rem, &c, d);
+		Derived quo = lazyPseudoDivide(b, rem, &c, d);
 		quo *= *d;
 		*rem *= *d;
 		*d *= c;
@@ -1573,7 +1585,7 @@ public:
 			if (terms[i].exp >= k) {
 				for (int j = 0; j < k; ++j)
 					terms[i].coef *= Ring(terms[i].exp - j);
-				terms[i].exp -= k;		
+				terms[i].exp -= k;
 				i++;
 			}
 			else
@@ -1584,7 +1596,7 @@ public:
 	/**
 	 * Convert current object to its derivative
 	 *
-	 **/ 
+	 **/
 	inline void differentiate() {
 		this->differentiate(1);
 	}
@@ -1593,9 +1605,9 @@ public:
 	 * Return k-th derivative
 	 *
 	 * @param k: k-th derivative, k > 0
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> derivative(int k) const {
-		SparseUnivariatePolynomial<Ring> a(*this);
+	 **/
+	inline Derived derivative(int k) const {
+		Derived a(*this);
 		a.differentiate(k);
 		return a;
 	}
@@ -1603,8 +1615,8 @@ public:
 	/**
 	 * Compute derivative
 	 *
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> derivative() const {
+	 **/
+	inline Derived derivative() const {
 		return this->derivative(0);
 	}
 
@@ -1617,7 +1629,7 @@ public:
 		int i = terms.size()-1;
 		while (i > -1) {
 			terms[i].coef /= (terms[i].exp + 1);
-			terms[i].exp += 1;	
+			terms[i].exp += 1;
 			i--;
 		}
 	}
@@ -1625,9 +1637,9 @@ public:
 	/**
 	 * Compute integral with constant of integration 0
 	 *
-	 **/ 
-	inline SparseUnivariatePolynomial<Ring> integral() const {
-		SparseUnivariatePolynomial<Ring> a(*this);
+	 **/
+	inline Derived integral() const {
+		Derived a(*this);
 		a.integrate();
 		return a;
 	}
@@ -1636,7 +1648,7 @@ public:
 	 * Is trailing coefficient zero
 	 *
 	 * @param
-	 **/ 
+	 **/
 	inline bool isConstantTermZero() const {
 		if (isZero())
 			return 1;
@@ -1649,7 +1661,7 @@ public:
 	/**
 	 * Evaluate f(x)
 	 *
-	 * @param x: Evaluation point 
+	 * @param x: Evaluation point
 	 **/
 	inline Ring evaluate(const Ring& x) const {
 		int d = terms.size() - 1;
@@ -1691,9 +1703,9 @@ public:
 		}
 		return px;
 	}
-	
-	inline void fillChain (std::vector<SparseUnivariatePolynomial<Ring>>& chain) const {
-		SparseUnivariatePolynomial<Ring> zero;
+
+	inline void fillChain (std::vector<Derived>& chain) const {
+		Derived zero;
 		zero.zero();
 		int fullSize(chain[chain.size()-2].degree().get_ui()+2);
 		int delta;
@@ -1729,7 +1741,7 @@ public:
 	 *
 	 * @param q: The other sparse univariate polynomial
 	 **/
-	inline std::vector< SparseUnivariatePolynomial<Ring> > subresultantChain (const SparseUnivariatePolynomial<Ring>& q, int filled=0) const {
+	inline std::vector< Derived > subresultantChain (const Derived& q, int filled=0) const {
 		if (name != q.name) {
 			std::cout << "BPAS: error, trying to compute subresultant chains between Ring[" << name << "] and Ring[" << q.name << "]." << std::endl;
 			exit(1);
@@ -1739,9 +1751,9 @@ public:
 			std::cout << "BPAS: error, Input polynomials to subresultantChain must have positive degree." << std::endl;
 			exit(1);
 		}
-		
-		std::vector< SparseUnivariatePolynomial<Ring> > S;
-		SparseUnivariatePolynomial<Ring> a, b;
+
+		std::vector< Derived > S;
+		Derived a, b;
 		if (q.degree() > degree()) {
 			a = q;
 			b = *this;
@@ -1754,7 +1766,7 @@ public:
 		int k = (a.degree() - b.degree()).get_si();
 		Ring s = b.leadingCoefficient() ^ k;
 
-		SparseUnivariatePolynomial<Ring> A = b, B = a, C = -b;
+		Derived A = b, B = a, C = -b;
 		if (k > 1) {
 			b *= b.leadingCoefficient()^(k-1); // converts b to S_{degree(b)}
 		}
@@ -1790,13 +1802,13 @@ public:
 	}
 
 	/**
- 	 * monomialBasisSubResultantChain 
+ 	 * monomialBasisSubResultantChain
 	 *
 	 * @param q: The other sparse univariate polynomial
 	 **/
-	inline std::vector<SparseUnivariatePolynomial<Ring> > monomialBasisSubresultantChain(const SparseUnivariatePolynomial<Ring>& q) {
-		std::vector< SparseUnivariatePolynomial<Ring> > s = this->subresultantChain(q);
-		SparseUnivariatePolynomial<Ring> sup;
+	inline std::vector<Derived > monomialBasisSubresultantChain(const Derived& q) {
+		std::vector< Derived > s = this->subresultantChain(q);
+		Derived sup;
 		int delta,n;
 		for (int i=s.size()-2; i>0; --i) {
 			delta = s.at(i).degree() - s.at(i-1).degree();
@@ -1811,8 +1823,8 @@ public:
 		}
 		return s;
 		/*int delta;
-		SparseUnivariatePolynomial<Ring> pp;
-		std::vector< SparseUnivariatePolynomial<Ring> >    src;
+		Derived pp;
+		std::vector< Derived >    src;
 		if(this->degree()>q.degree()){
 		src.push_back(*this);
 		src.push_back(q);
@@ -1831,7 +1843,7 @@ public:
 
 
 
-		SparseUnivariatePolynomial<Ring> qq = s[s.size()-1];
+		Derived qq = s[s.size()-1];
 		src.push_back(qq);
 		delta= delta - qq.degree();
 		while(true){
@@ -1839,9 +1851,9 @@ public:
 		if(delta>=2){
 
 		for(int j=0;j<delta-2;j++){
-		SparseUnivariatePolynomial<Ring> poly;
+		Derived poly;
 		poly.zero();
-		src.push_back(poly); 
+		src.push_back(poly);
 		}
 
 		}
@@ -1859,7 +1871,7 @@ public:
 		}
 
 
-		pp= s[i];  
+		pp= s[i];
 		src.push_back(pp);
 
 		qq = s[i-1];
@@ -1883,8 +1895,8 @@ public:
 	 *
 	 * @param q: The other sparse univariate polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring> resultant (const SparseUnivariatePolynomial<Ring>& q) {
-		std::vector< SparseUnivariatePolynomial<Ring> > s = subresultantChain(q);
+	inline Derived resultant (const Derived& q) {
+		std::vector< Derived > s = subresultantChain(q);
 		return s[0];
 	}
 
@@ -1893,7 +1905,7 @@ public:
 	 *
 	 * @param q: The other polynomial
 	 **/
-	inline SparseUnivariatePolynomial<Ring> gcd (const SparseUnivariatePolynomial<Ring>& q) const {
+	inline Derived gcd (const Derived& q) const {
 		if (isZero()) { return q; }
 		if (q.isZero()) { return *this; }
 		if (name != q.name) {
@@ -1901,13 +1913,13 @@ public:
 			exit(1);
 		}
 
-		SparseUnivariatePolynomial<Ring> a(*this), b(q);
+		Derived a(*this), b(q);
 		if (a.degree() == 0 || b.degree() == 0) {
 			a.one();
 			return a;
 		}
 
-		SparseUnivariatePolynomial<Ring> r;
+		Derived r;
 		r.name = name;
 
 		//std::cout << "is_same: " << std::is_same<Ring, RationalNumber>::value << std::endl;
@@ -1917,7 +1929,7 @@ public:
 		// 	DenseUnivariateRationalPolynomial f = a.convertToDUQP();
 		// 	DenseUnivariateRationalPolynomial g = b.convertToDUQP();
 		// 	DenseUnivariateRationalPolynomial z = f.gcd(g);
-		// 	r = SparseUnivariatePolynomial<Ring> (z);
+		// 	r = Derived (z);
 		// }
 		// else {
 			Ring ca, cb, cr;
@@ -1925,7 +1937,7 @@ public:
 			a /= ca;
 			cb = b.content();
 			b /= cb;
-			std::vector< SparseUnivariatePolynomial<Ring> > R = a.subresultantChain(b);
+			std::vector< Derived > R = a.subresultantChain(b);
 
 			r.setCoefficient(0, ca.gcd(cb));
 			//r *= cb;
@@ -1956,13 +1968,13 @@ public:
 	 *
 	 * @param
 	 **/
-	inline Factors<SparseUnivariatePolynomial<Ring>> squareFree() const {
-		std::vector< SparseUnivariatePolynomial<Ring> > sf;
+	inline Factors<Derived> squareFree() const {
+		std::vector< Derived > sf;
 		int d = terms.size()-1;
 		if (!terms[d].exp)
 			sf.push_back(*this);
 		else if (terms[d].exp == 1) {
-			SparseUnivariatePolynomial<Ring> t;
+			Derived t;
 			t.name = name;
 			t += terms[d].coef;
 			sf.push_back(t);
@@ -1970,13 +1982,13 @@ public:
 			sf.push_back(t);
 		}
 		else {
-			SparseUnivariatePolynomial<Ring> a (*this), b(*this);
+			Derived a (*this), b(*this);
 			b.differentiate(1);
-			SparseUnivariatePolynomial<Ring> g = a.gcd(b);
+			Derived g = a.gcd(b);
 			g /= g.content();
-			SparseUnivariatePolynomial<Ring> x = a / g;
-			SparseUnivariatePolynomial<Ring> y = b / g;
-			SparseUnivariatePolynomial<Ring> z = -x;
+			Derived x = a / g;
+			Derived y = b / g;
+			Derived z = -x;
 			z.differentiate(1);
 			z += y;
 
@@ -1998,13 +2010,13 @@ public:
 				e *= sf[i].leadingCoefficient();
 				sf[i] /= sf[i].leadingCoefficient();
 			}
-			SparseUnivariatePolynomial<Ring> t;
+			Derived t;
 			t.name = name;
 			t += e;
 			sf.insert(sf.begin(), t);
 		}
 
-		Factors<SparseUnivariatePolynomial<Ring>> f;
+		Factors<Derived> f;
 		f.setRingElement(sf[0]);
 		for (int i = 1; i < sf.size(); ++i) {
 			f.addFactor(sf[i], i);
@@ -2092,10 +2104,132 @@ public:
 		if (!isDense) { res.zero(); }
 		return res;
 	}
+
+
+
+
+
+
+
 };
 
 
-//TODO: Develop random element generator for all BPASRings so that this can be placed in SUP<Ring>	
+template <class Field>
+class SparseUnivariateTempFieldPoly : public virtual SparseUnivariateTempPoly<Field> {
+
+	Integer euclideanSize() const {
+		return this->degree();
+	}
+
+	Derived euclideanDivision(
+		const Derived& b,
+		Derived* q = NULL) const
+	{
+		Field lc = b.leadingCoefficient();
+		Derived monicb = b * lc.inverse();
+		if (q != NULL) {
+			Derived rem;
+			*q = this->monicDivide(monicb, &rem);
+			*q *= lc;
+			return rem;
+		} else {
+			Derived rem = *this;
+			return rem.monicDivide(b);
+		}
+
+	}
+
+	Derived extendedEuclidean(
+		const Derived& b,
+		Derived* s,
+		Derived* t) const
+	{
+		//TODO NOT YET IMPLEMENTED
+
+		return *this;
+	}
+
+
+	Derived quotient(const Derived& b) const {
+		Derived q;
+		this->euclideanDivision(b, &q);
+		return q;
+	}
+
+	Derived remainder(const Derived& b) const {
+		return this->euclideanDivision(b);
+	}
+
+	Derived operator%(const Derived& b) const {
+		Derived ret = *this;
+		ret %= b;
+		return ret;
+	}
+
+	Derived& operator%=(const Derived& b) {
+		*this = this->remainder(b);
+		return dynamic_cast<Derived&>(*this);
+	}
+};
+
+template <class Ring>
+class SparseUnivariatePolynomial : public std::conditional<std::is_base_of<BPASField, Ring>::value, SparseUnivariateTempFieldPoly<Ring>, SparseUnivariateTempPoly<Ring>> >::type {
+
+public:
+	typedef SparseUnivariateTempPoly<Ring, SparseUnivariatePolynomial<Ring>> Base;
+
+	SparseUnivariatePolynomial<Ring>() : Base() {}
+
+	SparseUnivariatePolynomial<Ring>& operator=(const SparseUnivariatePolynomial<Ring>& other) {
+		Base::operator=(other);
+		return *this;
+	}
+
+	SparseUnivariatePolynomial<Ring>& operator=(SparseUnivariatePolynomial<Ring>&& other) {
+		Base::operator=(other);
+		return *this;
+	}
+
+	SparseUnivariatePolynomial<Ring>& operator=(const Ring& r) {
+		Base::operator=(r);
+		return *this;
+	}
+
+	SparseUnivariatePolynomial<Ring>(const SparseUnivariatePolynomial<Ring>& other) : Base(other) {}
+	SparseUnivariatePolynomial<Ring>(SparseUnivariatePolynomial<Ring>&& other) : Base(other) {}
+
+	SparseUnivariatePolynomial<Ring>(int a) : Base(a) {}
+
+
+	SparseUnivariatePolynomial<Ring>(const Integer& a) : Base(a) {}
+
+	SparseUnivariatePolynomial<Ring>(const RationalNumber& a) : Base(a) {}
+
+	SparseUnivariatePolynomial<Ring>(const ComplexRationalNumber& a) : Base(a) {}
+
+	SparseUnivariatePolynomial<Ring>(const DenseUnivariateIntegerPolynomial& b) :  Base(b) {}
+
+	SparseUnivariatePolynomial<Ring> (const DenseUnivariateRationalPolynomial& b)  : Base(b) {}
+
+
+	SparseUnivariatePolynomial<Ring> (Symbol sym) : Base(sym) {}
+
+	SparseUnivariatePolynomial<Ring> (const Base& b) : Base(b) {}
+
+	/**
+	 * Destroy the polynomial
+ 	 *
+     * @param
+     **/
+	~SparseUnivariatePolynomial<Ring> () {}
+
+
+};
+
+
+
+
+//TODO: Develop random element generator for all BPASRings so that this can be placed in SUP<Ring>
 /**
  * Generate random polynomial
  *
@@ -2123,7 +2257,31 @@ static SparseUnivariatePolynomial<RationalNumber> randomSUPQPolynomial(int n, do
 	return P;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif
+
+
+
+
+
 /* This file is part of the BPAS library http://www.bpaslib.org
 
     BPAS is free software: you can redistribute it and/or modify

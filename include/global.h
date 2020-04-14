@@ -23,7 +23,6 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <gmpxx.h>
-#include "polynomial.h"		// Polynomial template
 
 // For execution timing
 #if !defined(SERIAL) && defined(CILKVIEW_TIMING)

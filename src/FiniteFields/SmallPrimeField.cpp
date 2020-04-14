@@ -11,13 +11,12 @@
 #include "FiniteFields/GeneralizedFermatPrimeField.hpp"
 #include "IntegerPolynomial/uzpolynomial.h"
 #include "RationalNumberPolynomial/urpolynomial.h"
-#include "RingPolynomial/upolynomial.h" 
+#include "RingPolynomial/upolynomial.h"
 
 using std::endl;
 using std::cout;
 
 mpz_class SmallPrimeField::characteristic(883949569);
-RingProperties SmallPrimeField::properties = SMALL_PRIME_FIELD;
 
 // bool SmallPrimeField::isPrimeField = 1;
 // bool SmallPrimeField::isSmallPrimeField = 1;
@@ -80,7 +79,7 @@ SmallPrimeField::SmallPrimeField (const RationalNumber& c) {
 SmallPrimeField::SmallPrimeField (const ComplexRationalNumber& c) {
 	std::cerr << "Cannot convert input to SmallPrimeField! " << std::endl;
 	exit(1);
-}	
+}
 
 SmallPrimeField::SmallPrimeField (const BigPrimeField& c) {
 	// need to write code to implement proper embedding
@@ -123,7 +122,7 @@ template <class Ring>
 SmallPrimeField::SmallPrimeField (const SparseUnivariatePolynomial<Ring>& c) {
 	std::cerr << "Cannot convert input to SmallPrimeField! " << std::endl;
 	exit(1);
-}	
+}
 
 SmallPrimeField* SmallPrimeField::SPFpointer(SmallPrimeField* b) {
 	return b;
@@ -162,7 +161,7 @@ long long int SmallPrimeField::number() const {
 void SmallPrimeField::whichprimefield(){
 	cout << "MontSmallPrimeField" << endl;
 }
-	
+
 long long int SmallPrimeField::Prime(){
 	return prime;
 }
@@ -244,7 +243,7 @@ long long int* SmallPrimeField::pinverse(){
 		return NULL;
     }
     if(r[0] > prime){
-		r[0] -= prime;    
+		r[0] -= prime;
     }
     return r;
 }
@@ -279,7 +278,7 @@ long long int SmallPrimeField::Mont(long long int b, long long int c){
   return b;
 }
 long long int SmallPrimeField::getRsquare(){
-  
+
   long long int res;
    __asm__(
       "movq %%rax,%%rsi\n\t"
@@ -307,7 +306,7 @@ SmallPrimeField SmallPrimeField::inverse2(){
 	long long int v = prime;
 	long long int x1 = 1;
 	long long int x2 = 0;
-	
+
 	while(u!=1 && v!=1){
 		while (u%2 == 0){
 			u = u >> 1;
@@ -352,21 +351,21 @@ SmallPrimeField SmallPrimeField::extendedEuclidean(const SmallPrimeField& b, Sma
 	// 	return r.gcd(b);
 	// }
 
- //    if (isZero()) { 
- //        (*s).Zero(); 
- //        (*t).One(); 
- //        return b; 
- //    } 
+ //    if (isZero()) {
+ //        (*s).Zero();
+ //        (*t).One();
+ //        return b;
+ //    }
 //TODO
 	std::cerr << "SmallPrimeField::extendedEuclidean not yet implemented" << std::endl;
-    // int x1, y1; // To store results of recursive call 
-    // int gcd = gcdExtended(b%a, a, &x1, &y1); 
-  
-    // // Update x and y using results of recursive 
-    // // call 
-    // *x = y1 - (b/a) * x1; 
-    // *y = x1; 
-  
+    // int x1, y1; // To store results of recursive call
+    // int gcd = gcdExtended(b%a, a, &x1, &y1);
+
+    // // Update x and y using results of recursive
+    // // call
+    // *x = y1 - (b/a) * x1;
+    // *y = x1;
+
     // return gcd;
     return 1;
 }

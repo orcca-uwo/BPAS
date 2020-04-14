@@ -541,7 +541,32 @@ add_subdirectory( ${CMAKE_SOURCE_DIR}/tests ${CMAKE_BINARY_DIR}/tests EXCLUDE_FR
 
 
 
+# --------------------------------------
+# DOC
+# --------------------------------------
 
-
-
-
+set (DOC_TARGET doc)
+add_custom_target(${DOC_TARGET})
+add_custom_command(
+	TARGET ${DOC_TARGET}
+	COMMAND rm -rf help/html help-simple/html
+	COMMAND doxygen Doxyfile
+	COMMAND doxygen Doxyfile-simple
+	COMMAND tclsh doc/insertSimpleDiagram.tcl help-simple/html help/html
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+add_custom_command(
+	TARGET ${DOC_TARGET}
+	COMMAND make
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/latex
+)
+add_custom_command(
+	TARGET ${DOC_TARGET}
+	COMMAND tclsh insertClassTex.tcl latex ../help/html
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/doc
+)
+add_custom_command(
+	TARGET ${DOC_TARGET}
+	COMMAND rm -rf help-simple
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)

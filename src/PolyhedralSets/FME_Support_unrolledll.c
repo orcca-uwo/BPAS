@@ -13,7 +13,6 @@ void allocNode(int varNum, inequalityNode_t * new)
 
 	for (int i = 0; i < UNROLLED_LL_SIZE; i++)
 	{
-//        &(new->data[i]) = (inequality_t *) malloc(sizeof(inequality_t));
 		allocInequality(varNum, &(new->data[i]));
 	}
 

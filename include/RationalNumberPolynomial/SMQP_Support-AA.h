@@ -1,12 +1,12 @@
 
 /*****
- * Supporting methods for sparse multivariate rational polynomials written in 
- * pure C. 
+ * Supporting methods for sparse multivariate rational polynomials written in
+ * pure C.
  *
  * Throughout this it is assumed that polynomials are compatiable. They must have
- * the same number of variables and the same variable ordering. 
+ * the same number of variables and the same variable ordering.
  *
- * Lexicographical ordering is used for term ordering throughout. 
+ * Lexicographical ordering is used for term ordering throughout.
  *
  * Functions assume that the number of variables is at least 1. But, in the most
  * basic case, a NULL exponent vector encodes nvar = 0. Similar to how Node* = NULL
@@ -37,7 +37,7 @@ extern "C" {
  */
 #define SMQP_SUPPORT_DEBUG 1
 
-/** 
+/**
  * Define if SMQP should count number of comparisons in a global variable
  */
 #define SMQP_COUNT_COMPARISONS 0
@@ -55,7 +55,7 @@ extern "C" {
 
 
 /*****************
- * Data types used throughout 
+ * Data types used throughout
  *****************/
 
 typedef long int polysize_t;
@@ -80,12 +80,12 @@ typedef mpq_t ratNum_t;
  *****************/
 
 /**
- * A Node struct containing a single term of a polynomial, that is, 
+ * A Node struct containing a single term of a polynomial, that is,
  * the coefficient and the monomial's exponent vector. It also contains
  * a pointer to the next Node in the polynomial. In this way, a Node represents
- * both a single term and a polynomial. 
+ * both a single term and a polynomial.
  *
- * Note that a NULL Node is considered to be 0. 
+ * Note that a NULL Node is considered to be 0.
  */
 
 typedef struct Node {
@@ -121,7 +121,7 @@ static inline Node* deepCopyNode(Node* node, int nvar) {
 }
 
 /**
- * Free a node, and all it's sucessors. 
+ * Free a node, and all it's sucessors.
  */
 void freePolynomial(Node* node);
 
@@ -131,22 +131,22 @@ void freePolynomial(Node* node);
 Node* deepCopyPolynomial(Node* node, int nvar);
 
 /**
- * Determine the number of terms in a polynomial given the head node 
+ * Determine the number of terms in a polynomial given the head node
  * of the linked-list representation of the polynomial.
- * returns the number of terms including and following the supplied node 
+ * returns the number of terms including and following the supplied node
  */
 polysize_t numberOfTermsNode(Node* node);
 
 /**
- * Given a linked-list of nodes, whose head is poly, 
+ * Given a linked-list of nodes, whose head is poly,
  * sort the list based on the ordering of compareExponentVectors.
  * Updates the polynomial in place by modifying *poly to be the new head node.
- * Also returns a pointer which is the new head node. 
+ * Also returns a pointer which is the new head node.
  */
 Node* sortPolynomial(Node** poly, int nvar);
 
 /**
- * Given a polynomial in sorted order, with all non-zero cofficients, 
+ * Given a polynomial in sorted order, with all non-zero cofficients,
  * but with possible duplicates, condense the list such that
  * like-terms are combined into a single node.
  */
@@ -154,10 +154,10 @@ void condensePolyomial(Node* poly, int nvar);
 
 /**
  * Add a term to the end of the polynomial linked list given the tail node,
- * trailingTerm, the exponent vector for the new term, d, and the coefficient, 
+ * trailingTerm, the exponent vector for the new term, d, and the coefficient,
  * ratNum_t. A copy of the input coef is made and stored in the node. But the
- * degrees_t is stored directly. 
- * 
+ * degrees_t is stored directly.
+ *
  * returns a pointer to the new tail of the list (the node created)
  */
 Node* addTerm(Node* trailingTerm, degrees_t d, const ratNum_t coef);
@@ -165,28 +165,28 @@ Node* addTerm(Node* trailingTerm, degrees_t d, const ratNum_t coef);
 /**
  * Add a term to the end of linked list with tail trailingTerm. The new term
  * will have degs d and a coef of 0.
- * 
+ *
  * returns a pointer to the new tail of the list (the node created)
  */
 Node* addZeroTerm(Node* trailingTerm, degrees_t d);
 
-/** 
+/**
  * Given two terms, as nodes a and b, multiply these two and return the
  * single result as a node.
  */
 Node* multiplyTerms(Node* a, Node* b, int nvar);
 
 /**
- * Negate a polynomial. 
+ * Negate a polynomial.
  * Given the head of a polynomial, negate all coefficients in place.
  */
 void negatePolynomial(Node* a);
 
 /**
- * Evaluate a polynomial whose head is given by a. 
+ * Evaluate a polynomial whose head is given by a.
  * This method returns another polynomial as not all variables need
- * to have values supplied. But, if they do, a constant term will be returned. 
- * both active and vals are arrays of size nvar. active[i] determines if 
+ * to have values supplied. But, if they do, a constant term will be returned.
+ * both active and vals are arrays of size nvar. active[i] determines if
  * the variable at degs[i] is to be evaluated using vals[i] as value.
  */
 Node* evaluatePoly(const Node* a, const int* active, const mpq_t* vals, int nvar);
@@ -271,7 +271,7 @@ static inline AltArr_t* makePolynomial_AA(int allocSize, int nvar) {
 	}
 
 	AltArr_t* newAA = (AltArr_t*) malloc(sizeof(AltArr_t));
-	newAA->size = 0; 
+	newAA->size = 0;
 	newAA->alloc = allocSize;
 	newAA->nvar = nvar;
 	newAA->unpacked = 0;
@@ -284,7 +284,7 @@ static inline AltArrDegList_t* makePolynomial_AADL(int allocSize, int nvar) {
 		return NULL;
 	}
 	AltArrDegList_t* newAA = (AltArrDegList_t*) malloc(sizeof(AltArrDegList_t));
-	newAA->size = 0; 
+	newAA->size = 0;
 	newAA->alloc = allocSize;
 	newAA->nvar = nvar;
 	newAA->elems = (AAElem_DegList_t*) malloc(sizeof(AAElem_DegList_t)*allocSize);
@@ -437,8 +437,31 @@ void printDegs_AA(FILE* fp, degrees_t degs, const char** syms, int nvar, const d
  * Print the poly, aa, to the file pointer fp.
  * syms are the variable symbols, and should have length at least nvar.
  */
-void printPoly_AA(FILE* fp, const AltArr_t* aa, const char** syms, int nvar);
-/////////////////////////////////////////////////////////////////////////////Algebric Factoring 
+void printPolyOptions_AA(FILE* fp, const AltArr_t* aa, const char** syms, int nvar, int positiveDegsOnly);
+
+/**
+ * Print the poly, aa, to the file pointer fp.
+ * syms are the variable symbols, and should have length at least nvar.
+ * This includes printing all variables and all exponents in a monomial.
+ */
+static inline void printPoly_AA(FILE* fp, const AltArr_t* aa, const char** syms, int nvar) {
+	printPolyOptions_AA(fp, aa, syms, nvar, 0);
+}
+
+/**
+ * Print the poly, aa, to the file pointer fp.
+ * syms are the variable symbols, and should have length at least nvar.
+ * This prints only variables in a monomial with positive exponents.
+ */
+static inline void printPolyClean_AA(FILE* fp, const AltArr_t* aa, const char** syms, int nvar) {
+	printPolyOptions_AA(fp, aa, syms, nvar, 1);
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////Algebric Factoring
 //AltArr_t * Factorization_AA (AltArr_t* a, AltArr_t* b, AltArr_t*** factors, int **exponet );
 AltArr_t* Factorization_AA (AltArr_t* a, AltArr_t* b, int *shift, mpq_t cont,AltArr_t** HornerRet, AltArr_t** OriginalPassPoly,AltArr_t**contentPoly,AltArr_t**ZFac);
 long  NtlFactor (AltArr_t* Norm,int *shift, mpq_t cont_NTL , AltArr_t*** factors, long **exponet );
@@ -452,6 +475,10 @@ void  Combination(AltArr_t *rawpoly , AltArr_t*** factors ,long NumFac,AltArr_t*
 AltArr_t* algInv(AltArr_t* leadingPoly,AltArr_t * minimalPoly);
 
 /////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 /**
  * Determine if the AAZ aa is in canonical form.
  * This is helpful for debugging.
@@ -460,7 +487,7 @@ AltArr_t* algInv(AltArr_t* leadingPoly,AltArr_t * minimalPoly);
 int isInOrder_AA(AltArr_t* aa);
 
 /**
- * Determine if two polynomials are exactly equal. 
+ * Determine if two polynomials are exactly equal.
  * This function does NOT check whether two polynomials are mathematically equal
  * for instance, if they have a different number of variables. The polynomials
  * must match exactly.
@@ -479,20 +506,20 @@ void nonZeroVariables_AA(AltArr_t* aa, int* vars);
  */
 degree_t totalDegree_AA(AltArr_t* aa);
 
-/** 
+/**
  * Get the partial degree of the kth-variable.
  * returns 0 if aa is zero or k >= nvar.
  */
 degree_t partialDegree_AA(const AltArr_t* aa, int k);
 
 /**
- * Get the partial degrees of each variable in aa. 
+ * Get the partial degrees of each variable in aa.
  * The partial degree of variable i is returned in degs[i].
  */
 void partialDegrees_AA(const AltArr_t* aa, degree_t* degsList);
 
 /**
- * Get the main degree of aa. In particular, the 
+ * Get the main degree of aa. In particular, the
  * partial degree of the first variable whose partial
  * degree is positive.
  */
@@ -516,15 +543,15 @@ void coefficient_AA(AltArr_t* aa, const degree_t* degs, int nvar, mpq_t retCoef)
 void setCoefficient_AA(AltArr_t* aa, const degree_t* degs, int nvar, const mpq_t coef);
 
 /**
- * Append a new term ot the end of the AltArr_t aa. 
- * This operations is potentially unsafe; no re-ordering is performed, 
+ * Append a new term ot the end of the AltArr_t aa.
+ * This operations is potentially unsafe; no re-ordering is performed,
  * it is only a simple append.
  */
 void addTerm_AA(AltArr_t* aa, const degree_t* degs, int nvar, const mpq_t coef);
 
 /**
  * Determine if two polynomials are equal given a mapping between thier variables in xs.
- * variable xs[2*j]-1 in a matches variable xs[2*j+1]-1 in b. If xs[2*j] is 0 then 
+ * variable xs[2*j]-1 in a matches variable xs[2*j+1]-1 in b. If xs[2*j] is 0 then
  * the variable in b of xs[2*j+1] does not appear in a, and vice versa.
  */
 int isEqualWithVariableOrdering_AA(AltArr_t* a, AltArr_t* b, const int* xs, int xsSize);
@@ -542,31 +569,31 @@ int isConstantTermZero_AA(AltArr_t* a);
 
 /**
  * Re-pack the exponent vectors of aa so that they have newNvar number of variables.
- * Expansion is done to the right. That is, exponents are packed into indices 
+ * Expansion is done to the right. That is, exponents are packed into indices
  * in the new exponent vector starting from 0.
  */
 void expandNumVars_AA(AltArr_t* aa, int newNvar);
 
 /**
  * Re-pack the exponent vectors of aa so that they have newNvar number of variables.
- * Expansion is done to the left. That is, exponents are packed so that the the 
+ * Expansion is done to the left. That is, exponents are packed so that the the
  * leading exponents in the new exponent vector are 0.
  */
 void expandNumVarsLeft_AA(AltArr_t* aa, int newNvar);
 
 /**
- * Re-pack the exponent vectors of aa so they have one less variable. 
- * This re-packing is done such that the exponent at index idx is discarded completely. 
+ * Re-pack the exponent vectors of aa so they have one less variable.
+ * This re-packing is done such that the exponent at index idx is discarded completely.
  * NOTE sorting may be needed after a call to this function, depending on the circumstances.
  * No combination of like-terms or re-ordering is done here.
  */
 void shrinkNumVarsAtIdx_AA(AltArr_t* aa, int idx);
 
 /**
- * Like reorderVars except that the varMap can map to indices less than 0. That is, 
+ * Like reorderVars except that the varMap can map to indices less than 0. That is,
  * if varMap[i] < 0 then variable at index i is removed from the exponent vector.
  *
- * It is assumed that the polynomial aa has zero exponents for all such i. 
+ * It is assumed that the polynomial aa has zero exponents for all such i.
  */
 void shrinkAndReorderVars_AA(AltArr_t* aa, int* varMap, int varmapSize);
 
@@ -643,7 +670,7 @@ static inline int computeShrinkMapPolys_AA(const AltArr_t* aa, const AltArr_t* b
 }
 
 /**
- * Given a variable mapping, varMap, which was used exclusively to remove variables, 
+ * Given a variable mapping, varMap, which was used exclusively to remove variables,
  * not re-order variables, compute its reverse map.
  *
  * @param originalSize, the number of variables before shrinking
@@ -656,7 +683,7 @@ static inline void reverseShrinkMap_AA(int originalSize, int shrunkSize, int* va
 	if (varMap == NULL || revMap == NULL) {
 		return;
 	}
-	
+
 	//undo the shrinking.
 	int j = 0;
 	for (int i = 0; i < shrunkSize; ++i) {
@@ -683,7 +710,7 @@ int reverseShrinkVariables_AA_inp(AltArr_t* aa, int varmapSize, int* varMap);
 void setDegrees_AA_inp(AltArr_t* aa, int idx, const degree_t* degsList, int nvar);
 
 /**
- * Alloc more (or less) space for the elements of an alternating array. 
+ * Alloc more (or less) space for the elements of an alternating array.
  * If the requested alloc size is less than the number of elements currently
  * in the array, then those excess elements are freed.
  */
@@ -720,26 +747,26 @@ static inline int monomialDivideTest_AA (AltArr_t* a, int idxa, AltArr_t* b, int
 /**
  * Construct an alternating array polynomial representation from a Node rep.
  *
- * returns the new alternating array pointer. 
+ * returns the new alternating array pointer.
  */
 AltArr_t* deepCopyPolynomial_AAFromNode(Node* a, int nvar);
 
 /**
  * Construct an linked list polynomial representation from an alternating array rep.
  *
- * returns the head node pointer of the linked list. 
+ * returns the head node pointer of the linked list.
  */
 Node* deepCopyPolynomial_NodeFromAA(AltArr_t* aa);
 
 /**
  * Construct an alternating array with un-packed exponents from an alternating
- * array with packed exponents. 
+ * array with packed exponents.
  */
 AltArrDegList_t* deepCopyPolynomial_AADegListFromAA(AltArr_t* aa);
 
-/** 
+/**
  * Create a deep copy of the polynomial represented by the alternating array aa.
- * 
+ *
  * returns a pointer to the new alternating array.
  */
 AltArr_t* deepCopyPolynomial_AA(AltArr_t* aa);
@@ -757,7 +784,7 @@ AltArr_t* sortPolynomial_AA(AltArr_t* aa);
 void mergeSortPolynomial_AA(AltArr_t* aa);
 
 /**
- * Given a polynomial in sorted order but with possible monomial duplicates, 
+ * Given a polynomial in sorted order but with possible monomial duplicates,
  * combine like terms and condense the polynomial.
  */
 void condensePolyomial_AA(AltArr_t* aa);
@@ -768,12 +795,12 @@ void condensePolyomial_AA(AltArr_t* aa);
 void negatePolynomial_AA(AltArr_t* a);
 
 void exactDividePolynomials_AA (AltArr_t* c, AltArr_t* b, AltArr_t** res_a, register int nvar);
-    
+
 /**
  * Multiply through a polynomial by a single rational number.
  */
 void multiplyByRational_AA_inp(AltArr_t* aa, const mpq_t z);
- 
+
 /**
  * Evaluate a polynomial represented as an alternating array.
  * This method returns the rational number vlaue in res.
@@ -784,8 +811,8 @@ void evalPolyToVal_AA(const AltArr_t* aa, ratNum_t* vals, short nvar, ratNum_t r
 /**
  * Evaluate a polynomial represented as an alternating array.
  * This method returns another polynomial as not all variables need
- * to have values supplied. But, if they do, a constant term will be returned. 
- * both active and vals are arrays of size nvar. active[i] determines if 
+ * to have values supplied. But, if they do, a constant term will be returned.
+ * both active and vals are arrays of size nvar. active[i] determines if
  * the variable at degs[i] is to be evaluated using vals[i] as value.
  */
 AltArr_t* evaluatePoly_AA(AltArr_t* aa, int* active, ratNum_t* vals, short nvar);
@@ -798,9 +825,9 @@ AltArr_t* swappingExponents_AA (AltArr_t* aa, int idx1, int idx2);
 
 /**
  * (right) shift main variable of polynomial aa of size n.
- */ 
+ */
 AltArr_t* mainLShiftPolynomial_AA (AltArr_t* aa, int n);
-AltArr_t* mainLShiftPolynomial_AA_inp (AltArr_t* aa, int n);   
+AltArr_t* mainLShiftPolynomial_AA_inp (AltArr_t* aa, int n);
 
 /**
  * Given polynomial a, return the leading term
@@ -816,36 +843,36 @@ int leadingVariable_AA (AltArr_t* aa);
 
 /**
  * Main Leading Degree
- * given a sorted multivariable polynomial aa, this function returns 
+ * given a sorted multivariable polynomial aa, this function returns
  * the maximum value of the main variable of aa.
- */ 
+ */
 int mainLeadingDegree_AA (AltArr_t* aa);
-    
+
 /**
  * Main Leading Coefficient
- * given a multivariable polynomial aa, this function returns 
+ * given a multivariable polynomial aa, this function returns
  * the leading coefficient of aa w.r.t the main variable.
- * NOTE: This function is NOT inplace! 
- */ 
+ * NOTE: This function is NOT inplace!
+ */
 AltArr_t* mainLeadingCoefficient_AA (AltArr_t* aa);
 
 /**
  * Main Leading Coefficient w.r.t the e-th variable
  * given a multivariable polynomial aa and index of a variable,
- *  this function returns the leading coefficient of aa w.r.t 
+ *  this function returns the leading coefficient of aa w.r.t
  * the special variable.
- * NOTE: This function is NOT inplace! 
- */ 
+ * NOTE: This function is NOT inplace!
+ */
 AltArr_t* mainCoefficientAtIdx_AA (AltArr_t* aa, int e);
 
-	
+
 /**
  * Make a List of Leading Coefficients w.r.t the idx-th variable
  * given a multivariable polynomial aa and index of a variable,
- * this function returns the list of leading coefficients of aa w.r.t 
+ * this function returns the list of leading coefficients of aa w.r.t
  * the special variable.
- * NOTE: This function is NOT inplace! 
- */ 
+ * NOTE: This function is NOT inplace!
+ */
 void mainCoefficientListAtIdx_AA (AltArr_t* aa, int idx, AltArr_t*** cList, int *sz);
 
 /**
@@ -881,10 +908,10 @@ void addRationalNumber_AA_inp(AltArr_t* a, const mpq_t coef);
 AltArr_t* addPolynomials_AA(AltArr_t* a, AltArr_t* b, int nvar);
 
 AltArr_t* subPolynomials_AA(AltArr_t* a, AltArr_t* b, int nvar);
-    
+
 /**
  * Add polynomial a and b, putting the sum back into a.
- * 
+ *
  * nvar: size of exponent vectors in a and b.
  *
  * returns a pointer to the new head of a.
@@ -895,7 +922,7 @@ AltArr_t* addPolynomials_AA_inp(AltArr_t* a, AltArr_t* b, int nvar);
 
 /**
  * Subtract b from a, putting the difference back into a.
- * 
+ *
  * nvar: size of exponent vectors in a and b.
  *
  * returns a pointer to the new head of a.
@@ -906,12 +933,12 @@ AltArr_t* subPolynomials_AA_inp(AltArr_t* a, AltArr_t* b, int nvar);
 /**
  * Given a polynomial, a, and the size of exponent vector in a,
  * This algorithm returns a without its leading term.
- * 
+ *
  * Note this is in-place
- */	
+ */
 void subByLeadingTerm_AA (AltArr_t** a, int nvar);
 
-	
+
 /*****************
  * SMQP Multiplication & Helpers
  *****************/
@@ -973,7 +1000,7 @@ void prodheapPrint(ProductHeap* h, int nvar);
 #endif
 
 /**
- * Make an element for the product heap, combining nodes a and b as the 
+ * Make an element for the product heap, combining nodes a and b as the
  * element's product.
  */
 productHeapElem* prodheapMakeElement(ProductHeap* h, Node* a, Node* b);
@@ -991,7 +1018,7 @@ static inline ProductHeapChain_AA* prodheapMakeChain_AA(AAElem_t* a, AAElem_t* b
 }
 
 /**
- * Free a product heap element and its product node. 
+ * Free a product heap element and its product node.
  */
 static inline void prodheapFreeElement(productHeapElem* elem) {
 	freeNode(elem->product);
@@ -1022,16 +1049,16 @@ static inline void prodheapFree_AA(ProductHeap_AA* h) {
 		prodheapFreeChain_AA(elems[i].chain);
 	}
 	free(h->elements);
-	free(h); 
+	free(h);
 }
 
 /**
- * Create an empty product heap. 
+ * Create an empty product heap.
  */
 ProductHeap* prodheapCreate(int nvar);
 
 /**
- * Create an empty product heap. 
+ * Create an empty product heap.
  */
 static inline ProductHeap_AA* prodheapCreate_AA(int nvar) {
 	ProductHeap_AA* h = (ProductHeap_AA*) malloc(sizeof(ProductHeap_AA));
@@ -1047,7 +1074,7 @@ static inline ProductHeap_AA* prodheapCreate_AA(int nvar) {
  * Initialize the product heap with the two polynomials to multiply, a and b.
  *
  * We know the maximum heap size is numTerms(a) as at most one of a_i*b
- * is in the heap at once. 
+ * is in the heap at once.
  */
 ProductHeap* prodheapInit(Node* a, Node* b, int nvar);
 
@@ -1055,12 +1082,12 @@ ProductHeap* prodheapInit(Node* a, Node* b, int nvar);
  * Initialize the product heap with the two polynomials to multiply, a and b.
  *
  * We know the maximum heap size is numTerms(a) as at most one of a_i*b
- * is in the heap at once. 
+ * is in the heap at once.
  */
 ProductHeap_AA* prodheapInit_AA(AltArr_t* a, AltArr_t* b, int nvar);
 
 /**
- * Increase the capacity of the heap to newAllocSize. 
+ * Increase the capacity of the heap to newAllocSize.
  */
 static inline void prodheapResize_AA(ProductHeap_AA* h, int newAllocSize) {
 	h->elements = (ProductHeapElem_AA*) realloc(h->elements, sizeof(ProductHeapElem_AA)*newAllocSize);
@@ -1068,14 +1095,14 @@ static inline void prodheapResize_AA(ProductHeap_AA* h, int newAllocSize) {
 }
 
 /**
- * Given an index, i, into the heap, swim that node up so that the heap 
- * is properly ordered. 
+ * Given an index, i, into the heap, swim that node up so that the heap
+ * is properly ordered.
  */
 void prodheapSwim(ProductHeap* h, int index);
 
 /**
- * Given an index, i, into the heap, sink that node down so that the heap 
- * is properly ordered. 
+ * Given an index, i, into the heap, sink that node down so that the heap
+ * is properly ordered.
  * Note: This is not used in the chained heap case
  */
 void prodheapSink(ProductHeap* h, int i);
@@ -1083,7 +1110,7 @@ void prodheapSink(ProductHeap* h, int i);
 #if SMQP_COUNT_CHAINS
 	static unsigned long long int SMQP_CHAINS = 0;
 	static unsigned long long int SMQP_INSERTS = 0;
-#endif 
+#endif
 
 /**
  * Insert a new element, elem, into the product heap, h, chaining as possible.
@@ -1138,7 +1165,7 @@ productHeapElem* prodheapRemoveMax(ProductHeap* h);
 ProductHeapChain_AA* prodheapRemoveMax_AA(ProductHeap_AA* h);
 
 /**
- * Extract the maximum product from the heap, returned as the Node*. 
+ * Extract the maximum product from the heap, returned as the Node*.
  * This automatically adds the next term in the stream of the chosen maximum
  * if such a term exists.
  */
@@ -1146,9 +1173,9 @@ Node* prodheapExtract(ProductHeap* h);
 
 /**
  * Multiply two polynomials given their head Nodes, a and b.
- * This algorithm makes use of heaps as an efficient search data structure. 
+ * This algorithm makes use of heaps as an efficient search data structure.
  * It is assumed that both a and b have compatible exponent vectors.
- * 
+ *
  * nvar: number of elements in the exponent vectors.
  *
  * returns a pointer to the head Node of the product polynomial.
@@ -1157,9 +1184,9 @@ Node* multiplyPolynomials(Node* a, Node* b, int nvar);
 
 /**
  * Multiply two polynomials given their head Nodes, a and b.
- * This algorithm makes use of heaps as an efficient search data structure. 
+ * This algorithm makes use of heaps as an efficient search data structure.
  * It is assumed that both a and b have compatible exponent vectors.
- * 
+ *
  * nvar: number of elements in the exponent vectors.
  *
  * returns a pointer to the head Node of the product polynomial.
@@ -1170,7 +1197,7 @@ AltArr_t* multiplyPolynomials_AA(AltArr_t* a, AltArr_t* b, int nvar);
  * Multiply two polynomials in-place wrt the first polynomial.
  * That is, the multiplication occurs, reusing elements of a as much as possible
  * and the previous content of a is destroyed in the process.
- * It is assumed that a and b have the same sized exponent vectors. 
+ * It is assumed that a and b have the same sized exponent vectors.
  *
  *
  * nvar: number of elements in the exponent vectors.
@@ -1184,7 +1211,7 @@ Node* multiplyPolynomials_inp(Node* a, Node* b, int nvar);
  * Multiply two polynomials in-place wrt the first polynomial.
  * That is, the multiplication occurs, reusing elements of a as much as possible
  * and the previous content of a is destroyed in the process.
- * It is assumed that a and b have the same sized exponent vectors. 
+ * It is assumed that a and b have the same sized exponent vectors.
  *
  *
  * nvar: number of elements in the exponent vectors.
@@ -1194,23 +1221,23 @@ Node* multiplyPolynomials_inp(Node* a, Node* b, int nvar);
  */
 AltArr_t* multiplyPolynomials_AA_inp(AltArr_t* a, AltArr_t* b, int nvar);
 
-/** 
- * Multiply polynomial, aa, by X_{idx}^n where 0 <= idx < nvar. 
+/**
+ * Multiply polynomial, aa, by X_{idx}^n where 0 <= idx < nvar.
  * Note this works inplace.
- */ 
+ */
 void multiplyPolynomialAtIdxByXn_AA_inp (AltArr_t* aa, int idx, int n, int nvar);
 
 
 /*****************
- * Polynomial exponentiation 
+ * Polynomial exponentiation
  *****************/
 
 /**
  * Given a polynomial, a, compute a^n.
- * 
+ *
  * n: a positive integer
  * nvar: the number of variables of a
- * 
+ *
  */
 Node* exponentiatePoly(Node* a, unsigned int n, int nvar);
 
@@ -1239,43 +1266,43 @@ AltArr_t* exponentiatePoly_AA(AltArr_t* a, unsigned int n, int nvar);
  */
 Node* divisionGetNextTerm(ProductHeap* h);
 
-#if SMQP_INT_PRODHEAP 
+#if SMQP_INT_PRODHEAP
 void divisionGetNextTerm_AA(ProductHeap_AA* h, const AAElem_t* __restrict__ aElems, const AAElem_t* __restrict__ bElems, mpq_t* retCoef);
-#else 
+#else
 void divisionGetNextTerm_AA(ProductHeap_AA* h, mpq_t* retCoef);
 #endif
 
-/** 
+/**
  * Given a polynomial, c, and a term, b, determine polynomials a and r
  * such that c = b*a + r.
- * a and r are returned in res_a and res_r, respectively. 
+ * a and r are returned in res_a and res_r, respectively.
  */
 void divideBySingleTerm(Node* c, Node* b, Node** res_a, Node** res_r, int nvar);
 
-/** 
+/**
  * Given a polynomial, c, and a term, b, determine polynomials a and r
  * such that c = b*a + r.
- * a and r are returned in res_a and res_r, respectively. 
+ * a and r are returned in res_a and res_r, respectively.
  */
 void divideBySingleTerm_AA(AltArr_t* c, AltArr_t* b, AltArr_t** res_a, AltArr_t** res_r, int nvar);
 
-/** 
+/**
  * Given two polynomials, c and b, find their quotient and remainder such that
- * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r 
+ * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r
  * Based on Stephen Johnson's "Sparse Polynomial Arithmetic".
  */
 void dividePolynomials(Node* c, Node* b, Node** res_a, Node** res_r, int nvar);
 
-/** 
+/**
  * Given two polynomials, c and b, find their quotient and remainder such that
- * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r 
+ * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r
  * Based on Stephen Johnson's "Sparse Polynomial Arithmetic".
  */
 void dividePolynomials_AA(AltArr_t* c, AltArr_t* b, AltArr_t** res_a, AltArr_t** res_r, int nvar);
 
 /**
- * Perform pseudodivision of c by b, both univariate. The pseudoquotient is returned in 
- * res_a and the pseudoremainder in res_r. 
+ * Perform pseudodivision of c by b, both univariate. The pseudoquotient is returned in
+ * res_a and the pseudoremainder in res_r.
  *
  * The actual number of division steps performed is returned in e such that lc(b)^e*c = qb + r;
  * If lazy is 0 then e = deg(c) - deg(b) + 1;
@@ -1287,7 +1314,7 @@ int divideTestSingleTerm_AA(AltArr_t* c, AltArr_t* b, AltArr_t** res_a, int nvar
 
 /**
  * Determine if a polynomial, c, is exactly divisble by another, b.
- * If the division is exact, returns the quoteint in res_a. 
+ * If the division is exact, returns the quoteint in res_a.
  * Otherwise, the value of res_a is undefined.
  * returns 1 iff division is exact. 0 otherwise.
  */
@@ -1295,12 +1322,12 @@ int divideTest_AA(AltArr_t* c, AltArr_t* b, AltArr_t** res_a, int nvar);
 
 /**
  * Given two polynomials, c and b, to compute the remainder and quotient
- * of leading terms of c and b such that lt(c) = lt(b)*res_a + res_r.   
+ * of leading terms of c and b such that lt(c) = lt(b)*res_a + res_r.
  */
 void divideByLeadingTerms_AA (AltArr_t* c, AltArr_t* b, AltArr_t** res_a, AltArr_t** res_r, int nvar);
 
 /**
- * Get the primitive part of this polynomial, so that it has only integer coefficients, 
+ * Get the primitive part of this polynomial, so that it has only integer coefficients,
  * and then apply a the modulo mod in a symmetric fashion.
  *
  * @param p the polynomial to mod
@@ -1399,7 +1426,7 @@ void integerPolynomialTestCont_AA(AltArr_t* aa, mpz_t mpzG);
  * If factored is not NULL then the input polynomial with common factor removed
  * is returned in factored.
  *
- * returns the common factor. 
+ * returns the common factor.
  */
 AltArr_t* commonFactor_AA(AltArr_t* a, AltArr_t** factored);
 
@@ -1413,7 +1440,7 @@ AltArr_t* commonFactor_AA(AltArr_t* a, AltArr_t** factored);
  * Interpolate a univariate polynomial of degree nPoints-1 for the point-value
  * pairs specified by points and vals arrays. There are treated as parallel arrays.
  *
- * returns the interpolating polynomial. 
+ * returns the interpolating polynomial.
  */
 AltArr_t* univarInterpolate_AA(mpq_t* points, mpq_t* vals, int nPoints);
 
@@ -1423,12 +1450,12 @@ AltArr_t* univarInterpolate_AA(mpq_t* points, mpq_t* vals, int nPoints);
  * The points and values are doubles, to facilitate numerical sources. These
  * doubles are converted to rational number coefficients.
  *
- * returns the interpolating polynomial with multi-precision coefficients. 
+ * returns the interpolating polynomial with multi-precision coefficients.
  */
 AltArr_t* univarInterpolateDoubles_AA(double* points, double* vals, int nPoints);
 
 /**
- * Evaluate a univariate polynomial at the point, point. The result is 
+ * Evaluate a univariate polynomial at the point, point. The result is
  * returned as a multi-precision rational number, res.
  */
 void univarEvaluate_AA(AltArr_t* aa, const mpq_t point, mpq_t res);
@@ -1442,12 +1469,12 @@ typedef struct mpzCoefs_t{
     mpz_t mpzCoef;
     struct mpzCoefs_t* next;
 } mpzCoefs_t;
- 
+
 typedef struct content_t{
     mpz_t cont;
 } content_t;
 
- 
+
 /**
  * Return content of the  polynomial, a,  where a = content(a) * primitivePart(a)
  */
@@ -1455,7 +1482,7 @@ content_t* content (Node* a);
 
 
 /**
- * Given the polynomial, a, and number of variables, nvar, to compute the primitive part of the 
+ * Given the polynomial, a, and number of variables, nvar, to compute the primitive part of the
  * polynomial and the content.
  * Note content is returned by reference in returnContent variable.
  */
@@ -1466,8 +1493,8 @@ Node* primitivePart (Node* a, content_t** returnContent,  int nvar);
 * Multi-Divisor Division
 *****************/
 
-/** 
- * Normal Form (or Multi-Divisor Division (MDD)) 
+/**
+ * Normal Form (or Multi-Divisor Division (MDD))
  * Given the dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
  * Return (by reference) the remainder and the quotient set Q[s] = {q_0, ..., q_{s-1}},
@@ -1476,7 +1503,7 @@ Node* primitivePart (Node* a, content_t** returnContent,  int nvar);
  *  if type = 0 then using the naive normal form algorithm which works with general divisor-sets
  *  if type = 1 then using the normal form algorithm which is specialized for triangular-sets works recursively
  *  if type > 1 then using the triangular-set normal form with using primitive factorization techniques
- * Note the triangular-set normal form algorithm over recursive representation of polynoimials 
+ * Note the triangular-set normal form algorithm over recursive representation of polynoimials
  *  is implemented in SMQP_Support_Recurisve-AA.h
  */
 void multiDivisorDivision_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t** r, int s, int nvar, int type);
@@ -1484,9 +1511,9 @@ void multiDivisorDivision_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t*
 /**
  * The specific Normal Form algorithm to compute only the normal form of f w.r.t G
  */
-AltArr_t* onlyNormalForm_AA (AltArr_t* f, AltArr_t** G, int s, int nvar); 
+AltArr_t* onlyNormalForm_AA (AltArr_t* f, AltArr_t** G, int s, int nvar);
 
-/** 
+/**
  * Multi-Divisor Division (MDD) using Heap (Johnson's) Division
  * Given the dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
@@ -1495,7 +1522,7 @@ AltArr_t* onlyNormalForm_AA (AltArr_t* f, AltArr_t** G, int s, int nvar);
 void normalForm_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t** r, int s, int nvar);
 void heapMDD_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t** r, int s, int nvar);
 
-/** 
+/**
  * Multi-Divisor Division (MDD) where the divisor-set is a Triangular Set
  * Given the  dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
@@ -1504,9 +1531,9 @@ void heapMDD_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t** r, int s, i
 void triangularSetMDD_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t** r, int s, int nvar);
 void recTriangularSetMDD_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t** r, int s, int nvar);
 
-/** 
+/**
  * Multi-Divisor Division (MDD) where the divisor-set is a Triangular Set
- * with using primitive factorization techniques 
+ * with using primitive factorization techniques
  * Given the dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
  * Return (by reference) the remainder and the quotient set Q[s] = {q_0, ..., q_{s-1}}.
@@ -1514,8 +1541,8 @@ void recTriangularSetMDD_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t**
 void primitiveFactorTriangularSetMDD_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t** r, int s, int nvar);
 
 /**
- * given the number of variables, nvar, and return a recursive loop of the routine doing 
- * in triangular-set normal form algorithm  
+ * given the number of variables, nvar, and return a recursive loop of the routine doing
+ * in triangular-set normal form algorithm
  */
 static inline int* recursiveLoop (int nvar)
 {
@@ -1537,14 +1564,14 @@ static inline int* recursiveLoop (int nvar)
     }
 }
 
- 
-/** 
- * Check the input triangular set is normalized or not, 
- * s is the size of the triangular set and nvar is the number of variables 
+
+/**
+ * Check the input triangular set is normalized or not,
+ * s is the size of the triangular set and nvar is the number of variables
  */
 int isNormalizedTriangularSet_AA (AltArr_t** G, int s, int nvar);
 
-/** 
+/**
  * The verification algorithm to test the correctness of normal form algorithms.
  */
 int multiDivisorDivisionVerification_AA (AltArr_t* f, AltArr_t** G, AltArr_t** Q, AltArr_t* r, AltArr_t* hPow, int nSet, int tnvar);

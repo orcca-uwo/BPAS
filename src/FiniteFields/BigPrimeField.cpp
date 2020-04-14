@@ -7,7 +7,7 @@
 #include "FiniteFields/GeneralizedFermatPrimeField.hpp"
 #include "IntegerPolynomial/uzpolynomial.h"
 #include "RationalNumberPolynomial/urpolynomial.h"
-#include "RingPolynomial/upolynomial.h" 
+#include "RingPolynomial/upolynomial.h"
 
 #include <iostream>
 
@@ -16,7 +16,6 @@ using std::cout;
 
 //mpz_class BigPrimeField::prime ("52374250506775412587080182017685909013279339260195121351951847958786555732255090462694066661827009813312276859354987266719224819790981416185422168457217",10);
 mpz_class BigPrimeField::characteristic ("52374250506775412587080182017685909013279339260195121351951847958786555732255090462694066661827009813312276859354987266719224819790981416185422168457217",10);
-RingProperties BigPrimeField::properties = PRIME_FIELD;        
 
 // bool BigPrimeField::isPrimeField = 1;
 // bool BigPrimeField::isSmallPrimeField = 0;
@@ -101,7 +100,7 @@ BigPrimeField::BigPrimeField (const SparseUnivariatePolynomial<Ring>& c) {
 	std::cerr << "Cannot convert input to BigPrimeField! " << std::endl;
 	exit(1);
 }
-	
+
 BigPrimeField* BigPrimeField::BPFpointer(BigPrimeField* b) {
 	return b;
 }

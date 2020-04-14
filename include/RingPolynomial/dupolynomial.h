@@ -2,7 +2,7 @@
 #define _DUNIPOLYNOMIAL_H_
 
 
-#include "../polynomial.h"
+#include "../Polynomial/BPASUnivarPolynomial.hpp"
 #include <typeinfo>
 #include "../DyadicRationalNumber/Multiplication/multiplication.h"	// Taylor Shift DnC
 #include <math.h>
@@ -17,8 +17,8 @@
  * This class is templated by a Field which should be a BPASField.
  */
 template <class Field>
-class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUnivariatePolynomial<Field>>, 
-							      public BPASEuclideanDomain<DenseUnivariatePolynomial<Field>>, 
+class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUnivariatePolynomial<Field>>,
+							      public BPASEuclideanDomain<DenseUnivariatePolynomial<Field>>,
 							      private Derived_from<Field, BPASField<Field>>
 {
 	private:
@@ -110,7 +110,7 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 		DenseUnivariatePolynomial<Field> () : curd(0), n(1), name("%") {
 			coef = new Field[1];
 			coef[0] = 0;
-			characteristic = coef[0].characteristic;
+			characteristic = coef[0].getCharacteristic();
 		}
 		/**
 		 * Construct a polynomial with degree
@@ -125,14 +125,14 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 			//coef[0] = 0;
 			zeros();
 			name = "%";
-			characteristic = coef[0].characteristic;
+			characteristic = coef[0].getCharacteristic();
 		}
 
 
 		DenseUnivariatePolynomial<Field> (Field e) : curd(0), n(1), name("%")  {
 			coef = new Field[1];
 			coef[0] = e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 		}
 		/**
 		 * Copy constructor
@@ -477,7 +477,7 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 			*this = *this >> k;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator +
 		 *
@@ -676,7 +676,7 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
         		return true;
         	return false;
         }
-	
+
 		/**
 		 * Multiply to another polynomial
 		 *
@@ -709,7 +709,7 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 		    res.name = name;
 		    res.coef = new Field[size];
 
-		    if(Field::characteristic == 0){ 	//Q, R, C
+		    if(res.coef[0].getCharacteristic() == 0){ 	//Q, R, C
 		    	//TODO
 				// if(Field::isPrimeField == 1){				//if Field = Q
 				// 	std::cout << "we have rational number coefficients!" << std::endl;//to avoid compiler error
@@ -846,7 +846,7 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 					// 		BigPrimeField *u = new BigPrimeField[N];
 					// 		BigPrimeField *v = new BigPrimeField[N];
 
-					// 		std::copy(coef, (coef)+this->curd+1, u);					
+					// 		std::copy(coef, (coef)+this->curd+1, u);
 					// 		std::copy(b.coef, (b.coef)+b.curd+1, v);
 
 					// 		this->FFT(u, 2, e, nth_primitive);
@@ -881,7 +881,7 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 			}//end of field::char if
 
 			return res;
-		}//end of function		
+		}//end of function
 
 		inline void FFT(SmallPrimeField* field, int K, int e, SmallPrimeField& omega){
 			//std::cout  << "FFT omega "<<  omega << std::endl;
@@ -1565,7 +1565,7 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 		 * @param out: Stream object
 		 * @param b: A univariate rational polynoial
 		 **/
-		inline void print(std::ostream& out) const {		
+		inline void print(std::ostream& out) const {
 			//std::cout << b.curd << std::endl;
 			bool isFirst = 1;
 			for (int i = 0; i <= this->curd; ++i) {
@@ -1595,15 +1595,23 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 
 
 		/** Euclidean domain methods **/
-		
-		DenseUnivariatePolynomial<Field> euclideanSize() const {
-			return DenseUnivariatePolynomial<Field>(degree().get_si());
+
+		Integer euclideanSize() const {
+			return degree();
 		}
 
 		DenseUnivariatePolynomial<Field> euclideanDivision(const DenseUnivariatePolynomial<Field>& b, DenseUnivariatePolynomial<Field>* q = NULL) const {
-			std::cerr << "DenseUnivariatePolynomial::ExactDivision NOT YET IMPLEMENTED" << std::endl;
-			//TODO
-			return *this;
+			Field lc = b.leadingCoefficient();
+			DenseUnivariatePolynomial<Field> monicb = b * lc.inverse();
+			if (q != NULL) {
+				DenseUnivariatePolynomial<Field> rem;
+				*q = this->monicDivide(monicb, &rem);
+				*q *= lc;
+				return rem;
+			} else {
+				DenseUnivariatePolynomial<Field> rem = *this;
+				return rem.monicDivide(b);
+			}
 		}
 
 		DenseUnivariatePolynomial<Field> extendedEuclidean(const DenseUnivariatePolynomial<Field>& b, DenseUnivariatePolynomial<Field>* s = NULL, DenseUnivariatePolynomial<Field>* t = NULL) const {
@@ -1613,15 +1621,13 @@ class DenseUnivariatePolynomial : public BPASUnivariatePolynomial<Field, DenseUn
 		}
 
 		DenseUnivariatePolynomial<Field> quotient(const DenseUnivariatePolynomial<Field>& b) const {
-			std::cerr << "DenseUnivariatePolynomial::quotient NOT YET IMPLEMENTED" << std::endl;
-			//TODO
-			return *this;	
+			DenseUnivariatePolynomial<Field> q;
+			this->euclideanDivision(b, &q);
+			return q;
 		}
 
 		DenseUnivariatePolynomial<Field> remainder(const DenseUnivariatePolynomial<Field>& b) const {
-			std::cerr << "DenseUnivariatePolynomial::remainder NOT YET IMPLEMENTED" << std::endl;
-			//TODO
-			return *this;
+			return this->euclideanDivision(b);
 		}
 
 		DenseUnivariatePolynomial<Field> operator% (const DenseUnivariatePolynomial<Field>& b) const {

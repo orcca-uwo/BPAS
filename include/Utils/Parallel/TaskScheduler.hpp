@@ -4,7 +4,7 @@
 
 #if defined(SERIAL) && SERIAL
 #define TASK_SCHED_PARALLEL 0
-#else 
+#else
 #define TASK_SCHED_PARALLEL 1
 #endif
 
@@ -18,14 +18,14 @@
 #endif
 
 /**
- * A class to encapsulate sharing and scheduling tasks across 
+ * A class to encapsulate sharing and scheduling tasks across
  * many processors.
  */
 class TaskScheduler {
 
 #if TASK_SCHED_PARALLEL
 	ExecutorThreadPool& m_pool;
-#else 
+#else
 	std::deque<std::function<void()>> tasks;
 #endif
 
@@ -48,8 +48,8 @@ public:
 
 	/**
 	 * Add a new high priority task (function to execute) to be scheduled for execution.
-	 * @param f, the function to execute
-	 * @params args, the arguments to pass to the function on execution.
+	 * @param f: the function to execute
+	 * @params args: the arguments to pass to the function on execution.
 	 */
 	template <class Function, class... Args>
 	void addPriorityTask(Function&& f, Args... args) {
@@ -63,8 +63,8 @@ public:
 
 	/**
 	 * Add a new task (function to execute) to be scheduled for execution.
-	 * @param f, the function to execute
-	 * @params args, the arguments to pass to the function on execution.
+	 * @param f: the function to execute
+	 * @params args: the arguments to pass to the function on execution.
 	 */
 	template <class Function, class... Args>
 	void addTask(Function&& f, Args... args) {

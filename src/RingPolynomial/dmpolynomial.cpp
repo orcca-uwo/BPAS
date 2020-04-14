@@ -6,7 +6,10 @@
 
 #include "RingPolynomial/dmpolynomial.h"
 
-//empty class to test compiling. 
+template <class Field>
+mpz_class DistributedDenseMultivariateModularPolynomial<Field>::characteristic(5);
+
+//empty class to test compiling.
 //TODO properly separate implementation out of dmpolynomial.h
 
 DistributedDenseMultivariateModularPolynomial<RationalNumber> testMethod() {

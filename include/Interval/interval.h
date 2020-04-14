@@ -2,6 +2,8 @@
 #define _INTERVAL_H_
 
 #include "../DyadicRationalNumber/globals.h"
+#include "../Symbol/Symbol.hpp"
+#include <iostream>
 
 /**
  * Data Structure for interval [a, b].
@@ -27,7 +29,7 @@ inline void intervalAddition(Interval* res, Interval* a, Interval* b) {
  **/
 void intervalMultiplication(Interval* res, Interval* a, Interval* b);
 
-/** Interval lists for real roots of multivariate polynomials. 
+/** Interval lists for real roots of multivariate polynomials.
  * i.e. []*..*[], .., []*..*[]
  **/
 class Intervals {
@@ -36,7 +38,7 @@ class Intervals {
 		Symbol* names;		// Variable names
 		std::vector<Interval> roots;	// Roots, using one dimension
 						// to present two dimensions
-						// []*..*[], .., []*..*[] 
+						// []*..*[], .., []*..*[]
 						// Each root is in the ascending
 						// order of the weight of variates
 
@@ -70,7 +72,7 @@ class Intervals {
 		 * Copy construct
 		 *
 		 * @param b: Intervals
-		 **/ 
+		 **/
 		Intervals (const Intervals& b) : var(b.var), roots(b.roots) {
 			names = new Symbol[var+1];
 			std::copy(b.names, b.names+var+1, names);
@@ -156,7 +158,7 @@ class Intervals {
 		 * Clear all the intervals
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline void clear() {
 			roots.clear();
 		}
@@ -194,7 +196,7 @@ class Intervals {
 					names[i] = xs[j];
 			}
 			else
-				std::cout << "BPAS: warning, not enough variables to set in Intervals." << std::endl; 
+				std::cout << "BPAS: warning, not enough variables to set in Intervals." << std::endl;
 		}
 		/**
 		 * Copy the k-th root

@@ -7,20 +7,17 @@
 #include "FiniteFields/GeneralizedFermatPrimeField.hpp"
 #include "IntegerPolynomial/uzpolynomial.h"
 #include "RationalNumberPolynomial/urpolynomial.h"
-#include "RingPolynomial/upolynomial.h" 
+#include "RingPolynomial/upolynomial.h"
 #include "RationalNumberPolynomial/mrpolynomial.h"
 
 #include <iostream>
-
-mpz_class RationalNumber::characteristic(0);
-RingProperties RationalNumber::properties = PRIME_FIELD;
 
 // bool RationalNumber::isPrimeField = 1;
 // bool RationalNumber::isSmallPrimeField = 0;
 // bool RationalNumber::isComplexField = 0;
 
-RationalNumber::RationalNumber () { 
-	_m = 0; 
+RationalNumber::RationalNumber () {
+	_m = 0;
 }
 
 RationalNumber::RationalNumber (int a, int b) {
@@ -47,7 +44,7 @@ RationalNumber::RationalNumber (const mpz_class& a, const mpz_class& b ) : _m(a,
 
 
 RationalNumber::RationalNumber (const RationalNumber& a) : _m(a._m) {
-	
+
 }
 
 RationalNumber::RationalNumber (const Integer& a) : _m(a.get_mpz()) {
@@ -188,7 +185,7 @@ RationalNumber RationalNumber::unitCanonical(RationalNumber* u, RationalNumber* 
 
 RationalNumber& RationalNumber::operator= (const RationalNumber& a) {
 	if (this != &a) {
-		_m = a._m; 
+		_m = a._m;
 	}
 	return *this;
 }

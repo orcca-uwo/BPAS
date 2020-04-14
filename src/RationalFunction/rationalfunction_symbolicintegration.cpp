@@ -1,4 +1,3 @@
-#include "../../include/polynomial.h"
 #include "../../include/ring.h"
 #include "../../include/RationalNumberPolynomial/urpolynomial.h"
 #include "../../include/RingPolynomial/upolynomial.h"
@@ -25,7 +24,7 @@ void _hermiteReduce(UnivariatePolynomialOverField &A, UnivariatePolynomialOverFi
 	/*  2) h, a single quotient of polynomials, is given  */
 	/*     as a UPoF vector, where the numerator and      */
 	/*     denominator are the first and second elements  */
-	
+
 	assert(!D.isZero());
 	UnivariatePolynomialOverField a,b,c,dm,dmstar,dm2,dstar,deriv;
 	a.setVariableName(A.variable());
@@ -36,18 +35,18 @@ void _hermiteReduce(UnivariatePolynomialOverField &A, UnivariatePolynomialOverFi
 	dm2.setVariableName(A.variable());
 	dstar.setVariableName(A.variable());
 	deriv.setVariableName(A.variable());
-	
+
 	a = A;
 	g->clear();
 	deriv = D;
 	deriv.differentiate(1);
 	//std::cout << "deriv = " << deriv << std::endl;
-	dm = D.gcd(deriv); // deriv = dD/dx	
+	dm = D.gcd(deriv); // deriv = dD/dx
 	//std::cout << "dm = " << dm << std::endl;
 	dstar = D;
 	dstar /= dm;
 	//std::cout << "dstar = " << dstar << std::endl;
-	
+
 	while (dm.degree() > 0){
 		deriv = dm;
 		deriv.differentiate(1);
@@ -88,7 +87,7 @@ SparseUnivariatePolynomial<UnivariatePolynomialOverField> _UPoFToSUP(UnivariateP
 	SparseUnivariatePolynomial<UnivariatePolynomialOverField> A;
 	A.setVariableName(P.variable());
 	Field fTemp(RationalNumber(0));
-	
+
 	for (int i=0; i <= P.degree().get_si(); i++){
 		fTemp = P.coefficient(i);
 		if (fTemp != 0){
@@ -107,7 +106,7 @@ void _prepRothsteinTragerResultant(SparseUnivariatePolynomial<UnivariatePolynomi
 	/* the log part of the integral from UPoF to SUP  */
 	/* and returns A-t*dD/dx as an SUP variable,      */
 	/* where t is an indeterminate.                   */
-	
+
 	int i;
 	//Field n(D.degree()); uncomment this to use Davenport divisor
 	Field fTemp(RationalNumber(0));
@@ -120,13 +119,13 @@ void _prepRothsteinTragerResultant(SparseUnivariatePolynomial<UnivariatePolynomi
 			indeterminate = "%";
 	}
 	upofTemp.setVariableName(indeterminate);
-	
+
 	// Create SUP version of A
 	*a = _UPoFToSUP<UnivariatePolynomialOverField,Field>(A,indeterminate);
-	
+
 	// Create SUP version of D
 	*d = _UPoFToSUP<UnivariatePolynomialOverField,Field>(D,indeterminate);
-	
+
 	// Create second argument for Rothstein-Trager resultant A-t*dD/dx
 	// To fix exponential coefficient growth for 1/(1+x^n), use (n*A-t*dD/dx)/n
 	// with the "Davenport divisor" n to prevent expression swell
@@ -142,13 +141,13 @@ void _prepRothsteinTragerResultant(SparseUnivariatePolynomial<UnivariatePolynomi
 		}
 	}
 	*amtdd = -*amtdd;
-	
+
 	//upofTemp.zero();
 	//upofTemp.setCoefficient(0,n);
 	//supTemp *= upofTemp; // uncomment these three lines to use Davenport divisor
-	
+
 	*amtdd += *a;
-	
+
 	//*amtdd /= upofTemp; //  uncomment this to use Davenport divisor
 }
 
@@ -169,7 +168,7 @@ void _computeLogArguments(std::vector< SparseUnivariatePolynomial<UnivariatePoly
 	// Profiling variables
 	unsigned long long start;
 	float elapsed = 0;
-	
+
 	for (i=1; i < Q.size(); i++){
 		if (Q[i].degree() > 0){
 			if (D.degree() == i){
@@ -197,17 +196,17 @@ void _computeLogArguments(std::vector< SparseUnivariatePolynomial<UnivariatePoly
 						}
 						upofTemp.one();
 						for (j=1; j<B.size(); j++){
-					
+
 							if (PROFILING) {
 								startTimer(&start);
 							}
-							
+
 							upofTemp2 = B.at(j).gcd(Q.at(i));
-							
+
 							if (PROFILING){
 								stopTimerAddElapsed(&start,&elapsed);
 							}
-							
+
 							upofTemp2 = upofTemp2^j;
 							upofTemp *= upofTemp2;
 						}
@@ -231,17 +230,17 @@ void _computeLogArguments(std::vector< SparseUnivariatePolynomial<UnivariatePoly
 					}
 					upofTemp.one();
 					for (j=1; j<B.size(); j++){
-					
+
 						if (PROFILING) {
 							startTimer(&start);
 						}
-						
+
 						upofTemp2 = B.at(j).gcd(Q.at(i));
-						
+
 						if (PROFILING){
 							stopTimerAddElapsed(&start,&elapsed);
 						}
-						
+
 						upofTemp2 = upofTemp2^j;
 						upofTemp *= upofTemp2;
 					}
@@ -252,7 +251,7 @@ void _computeLogArguments(std::vector< SparseUnivariatePolynomial<UnivariatePoly
 	}
 	if (PROFILING)
 		std::cout << "\t\tcomputeLogArguments gcd\t\t" << elapsed << std::endl;
-		
+
 	for (i=0; i < U->size(); i++){
 		for (j=0; (S->at(i).degree()+1) > j ; j++){
 			upofTemp = S->at(i).coefficient(j);
@@ -306,9 +305,9 @@ void _integrateRationalFunctionLogPart(std::vector< SparseUnivariatePolynomial<U
 	/*     the indeterminates in the corresponding        */
 	/*     entries of S must be evaluated to evaluate the */
 	/*     integral                                       */
-	
+
 	assert(A.degree()<=D.degree());
-	
+
 	Symbol indeterminate("c");
 	Symbol variable(A.variable());
 	D.setVariableName(variable);
@@ -321,33 +320,33 @@ void _integrateRationalFunctionLogPart(std::vector< SparseUnivariatePolynomial<U
 	d.setVariableName(variable);
 	amtdd.setVariableName(variable);
 	std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverField> > R;
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed = 0;
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-		
+
 	_prepRothsteinTragerResultant<UnivariatePolynomialOverField,Field>(&a, &d, &amtdd, A, D, indeterminate);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t\tPrep Rothstein\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	// Compute subresultant chain
 	d.setVariableName(Symbol("%"));
-	amtdd.setVariableName(Symbol("%"));	
+	amtdd.setVariableName(Symbol("%"));
 	// handle case of trivial resultant
 	if (amtdd.degree() >= 1) {
 		if (PROFILING){
 			startTimer(&start);
 		}
-			
+
 		R = d.subresultantChain(amtdd);
-		
+
 		if (PROFILING){
 			stopTimer(&start,&elapsed);
 			std::cout << "\t\tSubresultant\t\t\t" << elapsed << std::endl;
@@ -357,10 +356,10 @@ void _integrateRationalFunctionLogPart(std::vector< SparseUnivariatePolynomial<U
 		R.push_back(amtdd);
 	d.setVariableName(variable);
 	amtdd.setVariableName(variable);
-	for (i=0; i<R.size(); i++){				
+	for (i=0; i<R.size(); i++){
 		R.at(i).setVariableName(variable);
 	}
-	
+
 	resultant = R.at(0).coefficient(0);
 	//std::cout << "resultant = " << resultant << std::endl;
 	SparseUnivariatePolynomial<UnivariatePolynomialOverField> supTemp;
@@ -371,9 +370,9 @@ void _integrateRationalFunctionLogPart(std::vector< SparseUnivariatePolynomial<U
 	if (PROFILING){
 		startTimer(&start);
 	}
-		
+
 	Factors<UnivariatePolynomialOverField> f = resultant.squareFree();
-	
+
 	Q.clear();
 	Q.push_back(f.ringElement());
 	int curExp = 1;
@@ -389,15 +388,15 @@ void _integrateRationalFunctionLogPart(std::vector< SparseUnivariatePolynomial<U
 	// for (int i = 0; i < f.size(); ++i) {
 	// 	Q.push_back(f[i].first);
 	// }
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t\tSquare free fact\t\t" << elapsed << std::endl;
 		startTimer(&start);
 	}
-		
+
 	_computeLogArguments<UnivariatePolynomialOverField,Field>(S, U, amtdd, d, D, R, Q, indeterminate, PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t\tLog arguments\t\t\t" << elapsed << std::endl;
@@ -420,82 +419,82 @@ void _integrateRationalFunctionRationalPart(UnivariatePolynomialOverField &A, Un
 	/*     pairwise with numerator preceding denominator;        */
 	/*  3) the integrand R/H of the log part, where R and H are  */
 	/*     polynomials and H is squarefree.                      */
-	
+
 	//assert(A.degree()<D.degree());
-		
-	std::vector<UnivariatePolynomialOverField> K;	
+
+	std::vector<UnivariatePolynomialOverField> K;
 							// this vector is needed to store the rational function part
 							// of the Hermite reduction of A and D, which will be processed
 							// to compute the logarithmic part of the integral of A/D
-	
+
 	// set main variable
 	Symbol mainVariable;
 	mainVariable = A.variable();
-	
+
 	// initialize helper and temporary variables
 	int i,j;
 	UnivariatePolynomialOverField upofTemp;
 	upofTemp.setVariableName(mainVariable);
 	SparseUnivariatePolynomial<UnivariatePolynomialOverField> supTemp;
 	supTemp.setVariableName(mainVariable);
-	
+
 	// clear vector container
 	G->clear();
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed = 0;
-	
+
 	// extract polynomial part from the integrand
-	
+
 	_euclideanDivide<UnivariatePolynomialOverField,Field>(A,D,P,R);
-	
+
 	// compute the rational function part of the integral of R/D by Hermite reduction,
 	// which is returned in G, along with the derivative of the rest of the integral,
 	// viz., the derivatives of the polynomial and logarithmic parts, which is returned
 	// as a single rational function as a pair of polynomials in H
-	
+
 	if (PROFILING) {
 		startTimer(&start);
 	}
-		
+
 	_hermiteReduce<UnivariatePolynomialOverField,Field>(*R,D,G,&K);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t\tHermite reduce\t" << elapsed << std::endl;
 	}
-	
+
 	// process the derivative of the rest of the integral (polynomial and logarithmic parts),
-	// contained in H=(num(H),den(H)), to extract the derivative of the polynomial part Q, 
+	// contained in H=(num(H),den(H)), to extract the derivative of the polynomial part Q,
 	// and the remainder R/den(H), the derivative of the logarithmic part, which is integrated by
 	// integrateRationalLogPart
-	
+
 	UnivariatePolynomialOverField Q;
 	Q.setVariableName(mainVariable);
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	// compute num(H)/den(H) = Q + R/den(H)
 	_euclideanDivide<UnivariatePolynomialOverField,Field>(K.at(0),K.at(1),&Q,R);
-	
+
 	// add quotient to polynomial part
 	*P += Q;
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t\tEuclidean div\t" << elapsed << std::endl;
 	}
-	
+
 	// integrate polynomial part, if any
 	if (!(P->isZero()));
 		*P = P->integral();
-		
+
 	// return the log part of the integral as R/H (R already set by second call to _euclideanDivide)
 	*H = K.at(1);
-	
+
 }
 
 template <class UnivariatePolynomialOverField, class Field>
@@ -508,23 +507,23 @@ void _initializeRationalIntegration(UnivariatePolynomialOverField &A, Univariate
 	}
 	Symbol mainVariable;
 	mainVariable = A.variable();
-	
+
 	UnivariatePolynomialOverField upofTemp;
 	upofTemp.setVariableName(mainVariable);
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed = 0;
-	
+
 	if (PROFILING){
 		startTimer(&start);
 	}
-	
+
 	// remove any common gcd of A and D
 	upofTemp = A.gcd(D);
 	A /= upofTemp;
 	D /= upofTemp;
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\tCanonicalize\t" << elapsed << std::endl;
@@ -553,66 +552,66 @@ void _integrateRationalFunction(UnivariatePolynomialOverField &A, UnivariatePoly
 	/*     the indeterminates in the corresponding        */
 	/*     entries of S must be evaluated to evaluate the */
 	/*     integral                                       */
-	
+
 	//assert(A.degree()<D.degree());
-	
+
 	// variable checking and canonicalization
 	_initializeRationalIntegration<UnivariatePolynomialOverField,Field>(A,D,PROFILING);
-	
+
 	// set main variable
 	Symbol mainVariable;
 	mainVariable = A.variable();
-	
+
 	// initialize helper and temporary variables
 	//int i,j;
 	//SparseUnivariatePolynomial<UnivariatePolynomialOverField> supTemp;
 	//supTemp.setVariableName(mainVariable);
-	
+
 	// clear vector containers
-	U->clear();	
+	U->clear();
 	S->clear();
-	
+
 	// Profiling variables
 	unsigned long long start;
 	float elapsed = 0;
-	
-	// compute the rational part of the integral of R/D by Hermite reduction, which is 
-	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the 
-	// derivative of the rest of the integral, viz., the integrand of the logarithmic 
-	// part, which is returned as a single rational function as a pair of polynomials 
+
+	// compute the rational part of the integral of R/D by Hermite reduction, which is
+	// returned as G.at(0)/G.at(1), and the polynomial part, returned in P, along with the
+	// derivative of the rest of the integral, viz., the integrand of the logarithmic
+	// part, which is returned as a single rational function as a pair of polynomials
 	// R and H
-	
+
 	UnivariatePolynomialOverField R; // stores numerator of log part of integral of A/D
 	UnivariatePolynomialOverField H; // stores squarefee denominator of the log part
 	R.setVariableName(mainVariable);
 	H.setVariableName(mainVariable);
-	
+
 	if (PROFILING) {
 		std::cout << "\tRational function rational part" << std::endl;
 		std::cout << "\t------------------------------" << std::endl;
 		startTimer(&start);
 	}
-		
+
 	_integrateRationalFunctionRationalPart<UnivariatePolynomialOverField,Field>(A,D,P,G,&R,&H,PROFILING);
-	
+
 	if (PROFILING){
 		stopTimer(&start,&elapsed);
 		std::cout << "\t------------------------------" << std::endl;
 		std::cout << "\t\t\t" << elapsed << std::endl;
 	}
-	
+
 	// compute integral of R/H
-	
+
 	if (!R.isZero()) {
-		
+
 		if (PROFILING){
 			std::cout << "\tRational function log part" << std::endl;
 			std::cout << "\t------------------------------" << std::endl;
 			startTimer(&start);
 		}
-		
+
 		_integrateRationalFunctionLogPart<UnivariatePolynomialOverField,Field>(S,U,R,H,PROFILING);
-		
+
 		if (PROFILING){
 			stopTimer(&start,&elapsed);
 			std::cout << "\t------------------------------" << std::endl;

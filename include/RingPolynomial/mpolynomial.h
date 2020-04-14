@@ -6,7 +6,7 @@
  * stored in a sparse case
  **/
 
-#include "../polynomial.h"
+#include "../Polynomial/BPASMultivarPolynomial.hpp"
 #include "../global.h"
 #include "../DyadicRationalNumber/globals.h"
 #include "upolynomial.h"
@@ -14,8 +14,7 @@
 #include "../Utils/TemplateHelpers.hpp"
 
 template <class Ring>
-class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,SparseMultivariatePolynomial<Ring>>,
-									 private Derived_from<Ring, BPASRing<Ring>> {
+class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,SparseMultivariatePolynomial<Ring>> {
 	private:
 		std::string mPoly;
 		int var;		// Number of variables
@@ -325,7 +324,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 
 
 		  Ring e;
-		  characteristic = e.characteristic;
+		  characteristic = e.getCharacteristic();
 
 		}
 
@@ -340,7 +339,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 
 		  }
 		  Ring e;
-		  characteristic = e.characteristic;
+		  characteristic = e.getCharacteristic();
 
 		}
 
@@ -865,7 +864,6 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 
 	public:
 		mpz_class characteristic;
-		RingProperties properties;
 		// static bool isPrimeField;
 		// static bool isSmallPrimeField;
         // static bool isComplexField;
@@ -878,7 +876,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 			names = new Symbol[1];
 			names[0] = "1";
 			Ring e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 		}
 		/**
 		 * Construct a multivariate polynomial with number of terms and variates
@@ -896,7 +894,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 				names[i] += convert.str();
 			}
 			Ring e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 		}
 		/**
 		 * Construct with a variable name
@@ -916,7 +914,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 			t.degs[0] = 1;
 			terms.push_back(t);
 			Ring e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 		}
 
 		/**
@@ -926,7 +924,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 			names = new Symbol[1];
 			names[0] = "1";
 			Ring e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 			MultivariateTerm<Ring> a;
 			a.v = var;
 			a.coef = r;
@@ -943,7 +941,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 			names = new Symbol[var+1];
 			std::copy(b.names, b.names+var+1, names);
 			Ring e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 		}
 		/**
 		 * Construct from a SUP<SMQP> polynomial
@@ -980,7 +978,7 @@ class SparseMultivariatePolynomial : public BPASMultivariatePolynomial<Ring,Spar
 				else { *this = t; }
 			}
 			Ring e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 		}
 		}
 		/**
@@ -1155,7 +1153,7 @@ return uPoly.leadingCoefficient();*/
 					std::vector<Symbol> newNames;
 					for(int i=0; i<=var; i++){
 						if(names[i] != this->leadingVariable() && names[i]!="9" && names[i]!="1"){
-							
+
 							newNames.push_back(names[i]);
 						}
 					}
@@ -1338,7 +1336,7 @@ return uPoly.leadingCoefficient();*/
 				t.degs[i] = 0;
 			terms.push_back(t);
 		}
-		
+
 		/**
 		 * Is polynomial a constant -1
 		 *
@@ -1371,7 +1369,7 @@ return uPoly.leadingCoefficient();*/
 				t.degs[i] = 0;
 			terms.push_back(t);
 		}
-		
+
 		/**
 		 * Is a constant
 		 *
@@ -1405,7 +1403,7 @@ return uPoly.leadingCoefficient();*/
 			}
 			return ret;
 		}
-		
+
 		/**
 		 * Overload operator =
 		 *
@@ -1421,7 +1419,7 @@ return uPoly.leadingCoefficient();*/
 				std::copy(b.names, b.names+var+1, names);
 				terms = b.terms;
 				Ring e;
-				characteristic = e.characteristic;
+				characteristic = e.getCharacteristic();
 			}
 			return *this;
 		}
@@ -1487,7 +1485,7 @@ return uPoly.leadingCoefficient();*/
 		inline bool operator== (const SparseMultivariatePolynomial<Ring>& b) const {
 			return isEqual(b);
 		}
-		
+
 		/**
 		 * Overload operator !=
 		 *
@@ -1783,7 +1781,7 @@ return uPoly.leadingCoefficient();*/
 		 	}
 		 	return r;
 		}
-		
+
 		/**
 		 * Overload operator -=
 		 *
@@ -1793,7 +1791,7 @@ return uPoly.leadingCoefficient();*/
 			*this = *this - b;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator -
 		 *
@@ -1886,7 +1884,7 @@ return uPoly.leadingCoefficient();*/
 				r.pomopo(terms[i], b, xs);
 			return r;
 		}
-		
+
 		/**
 		 * Overload operator *=
 		 *
@@ -1896,7 +1894,7 @@ return uPoly.leadingCoefficient();*/
 			*this = *this * b;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator *
 		 *
@@ -2158,7 +2156,7 @@ return uPoly.leadingCoefficient();*/
 				delete []  pos;
 			}
 		}
-		
+
 		/**
 		 * Get variable names
 		 *
@@ -2175,7 +2173,7 @@ return uPoly.leadingCoefficient();*/
 			std::cerr << "BPAS ERROR: SDMP::variables() NOT YET IMPLEMENTED" << std::endl;
 			return ringVariables();
 		}
-		
+
 		/**
 		 * Get the coefficient of one term
 		 *
@@ -2676,7 +2674,7 @@ return uPoly.leadingCoefficient();*/
 
 		inline std::vector< SparseMultivariatePolynomial<Ring> > factors(){
 		  std::vector< SparseMultivariatePolynomial<Ring> > facs;
-		  //TODO 
+		  //TODO
 		  std::cerr << "SparseMultivariatePolynomial<Ring>::factors NOT YET IMPLEMENTED" << std::endl;
 		  // to be implemented
 		  return facs;

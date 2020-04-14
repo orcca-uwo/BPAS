@@ -2,6 +2,7 @@
 #define _UNIPOLYNOMIAL_H_
 
 
+#include "../Polynomial/BPASUnivarPolynomial.hpp"
 #include "../DyadicRationalNumber/globals.h"
 #include "../DyadicRationalNumber/Multiplication/multiplication.h"	// Taylor Shift DnC
 #include "../Interval/interval.h"
@@ -12,8 +13,7 @@ void ts_modulo (lfixz*, lfixz, lfixz, int);
 /**
  * A univariate polynomial with RationalNumber coefficients represented densely.
  */
-class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<RationalNumber,DenseUnivariateRationalPolynomial>,
-										  public BPASEuclideanDomain<DenseUnivariateRationalPolynomial> {
+class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<RationalNumber,DenseUnivariateRationalPolynomial> {
 	private:
 		Symbol name;	// Variable name
 		int curd;	// Current degree
@@ -78,8 +78,6 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		DenseUnivariateRationalPolynomial modularGCD (const DenseUnivariateRationalPolynomial& q) const;
 
 	public:
-		static mpz_class characteristic;
-		static RingProperties properties;
 		// static bool isPrimeField;
 		// static bool isSmallPrimeField;
         // static bool isComplexField;
@@ -87,12 +85,12 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * Construct a polynomial
 		 *
 		 * @param d
-		 **/ 
+		 **/
 		DenseUnivariateRationalPolynomial () : curd(0), n(1), name("%") {
 			coef = new lfixq[1];
 			coef[0] = 0;
 		}
-		
+
 		/**
 		 * Construct a polynomial with degree
 		 *
@@ -117,23 +115,23 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			coef = new lfixq[1];
 			coef[0] = mpq_class(e.get_mpz());
 		}
-		
+
 		DenseUnivariateRationalPolynomial (const RationalNumber& e) : curd(0), n(1), name("%")  {
 			coef = new lfixq[1];
 			coef[0] = mpq_class(e.get_mpq());
 		}
-		
+
 		/**
 		 * Copy constructor
 		 *
 		 * @param b: A densed univariate rationl polynomial
-		 **/ 
+		 **/
 		DenseUnivariateRationalPolynomial(const DenseUnivariateRationalPolynomial& b) : curd(b.curd), name(b.name) {
 			n = curd + 1;
 			coef = new lfixq[n];
 			std::copy(b.coef, b.coef+n, coef);
 		}
-		
+
 		/**
 		 * Destroy the polynomial
 		 *
@@ -173,13 +171,13 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		inline Integer numberOfTerms() const {
 			size_t c = 0;
 			for (size_t i = 0; i <= curd; ++i) {
-				if (coef[i] != 0){ 
+				if (coef[i] != 0){
 					++c;
 				}
 			}
 			return c;
 		}
-		
+
 		/**
 		 * Get coefficients of the polynomial, given start offset
 		 *
@@ -192,7 +190,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 #endif
 			return &coef[k];
 		}
-		
+
 		/**
 		 * Get a coefficient of the polynomial
 		 *
@@ -203,7 +201,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 				return lfixq(0);
 			return coef[k];
 		}
-		
+
 		/**
 		 * Set a coefficient of the polynomial
 		 *
@@ -220,11 +218,11 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 				curd = k;
 			resetDegree();
 		}
-		
+
 		inline void setCoefficient(int k, double value) {
 			setCoefficient(k, lfixq(value));
 		}
-		
+
 		/**
 		 * Get variable's name
 		 *
@@ -233,16 +231,16 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		inline Symbol variable() const {
 			return name;
 		}
-		
+
 		/**
 		 * Set variable's name
 		 *
 		 * @param x: Varable's name
-		 **/ 
+		 **/
 		inline void setVariableName (const Symbol& x) {
 			name = x;
 		}
-		
+
 		inline DenseUnivariateRationalPolynomial unitCanonical(DenseUnivariateRationalPolynomial* u = NULL, DenseUnivariateRationalPolynomial* v = NULL) const {
 			RationalNumber lead = leadingCoefficient();
 			RationalNumber leadInv = lead.inverse();
@@ -277,7 +275,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			*this = DenseUnivariateRationalPolynomial(r);
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator !=
 		 *
@@ -286,12 +284,12 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		inline bool operator!= (const DenseUnivariateRationalPolynomial& b) const {
 			return !(isEqual(b));
 		}
-		
+
 		/**
 		 * Overload operator ==
 		 *
 		 * @param b: A univariate rational polynoial
-		 **/ 
+		 **/
 		inline bool operator== (const DenseUnivariateRationalPolynomial& b) const {
 			return isEqual(b);
 		}
@@ -306,7 +304,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 				return (coef[0] == 0);
 			return 0;
 		}
-		
+
 		/**
 		 * Zero polynomial
 		 *
@@ -317,7 +315,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			zeros();
 			//coef[0] = 0;
 		}
-		
+
 		/**
 		 * Is polynomial a constatn 1
 		 *
@@ -328,7 +326,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 				return (coef[0] == 1);
 			return 0;
 		}
-		
+
 		/**
 		 * Set polynomial to 1
 		 *
@@ -340,7 +338,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			for (int i = 1; i < n; ++i)
 				coef[i] = 0;
 		}
-		
+
 		/**
 		 * Is polynomial a constatn -1
 		 *
@@ -351,7 +349,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 				return (coef[0] == -1);
 			return 0;
 		}
-		
+
 		/**
 		 * Set polynomial to -1
 		 *
@@ -363,7 +361,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			for (int i = 1; i < n; ++i)
 				coef[i] = 0;
 		}
-		
+
 		/**
 		 * Is a constant
 		 *
@@ -374,12 +372,12 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			else if (coef[0] >= 0) { return 1; }
 			else { return -1; }
 		}
-		
+
 		/**
 		 * Content of the polynomial
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline RationalNumber content() const {
 			return !isZero();
 		}
@@ -389,7 +387,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			std::cerr << "BPAS ERROR: DUQP::primitivePart NOT YET IMPLEMENTED" << std::endl;
 			return (*this);
 		}
-		
+
 		/**
 		 * Overload operator ^
 		 * replace xor operation by exponentiation
@@ -397,7 +395,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * @param e: The exponentiation, e > 0
 		 **/
 		DenseUnivariateRationalPolynomial operator^ (long long int e) const;
-		
+
 		/**
 		 * Overload operator ^=
 		 * replace xor operation by exponentiation
@@ -408,7 +406,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			*this = *this ^ e;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator <<
 		 * replace by muplitying x^k
@@ -416,7 +414,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * @param k: The exponent of variable, k > 0
 		 **/
 		DenseUnivariateRationalPolynomial operator<< (int k) const;
-		
+
 		/**
 		 * Overload operator <<=
 		 * replace by muplitying x^k
@@ -427,7 +425,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			*this = *this << k;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator >>
 		 * replace by dividing x^k, and
@@ -436,7 +434,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * @param k: The exponent of variable, k > 0
 		 **/
 		DenseUnivariateRationalPolynomial operator>> (int k) const;
-		
+
 		/**
 		 * Overload operator >>=
 		 * replace by dividing x^k, and
@@ -448,19 +446,19 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			*this = *this >> k;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator +
 		 *
 		 * @param b: A univariate rational polynomial
 		 **/
 		DenseUnivariateRationalPolynomial operator+ (const DenseUnivariateRationalPolynomial& b) const;
-		
+
 		/**
 		 * Overload Operator +=
 		 *
 		 * @param b: A univariate rational polynomial
-		 **/ 
+		 **/
 		inline DenseUnivariateRationalPolynomial& operator+= (const DenseUnivariateRationalPolynomial& b) {
 			if (curd >= b.curd)
 				add(b);
@@ -468,14 +466,14 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 				*this = *this + b;
 			return *this;
 		}
-		
+
 		/**
 		 * Add another polynomial to itself
 		 *
 		 * @param b: A univariate rational polynomial
-		 **/ 
+		 **/
     	void add(const DenseUnivariateRationalPolynomial& b);
-		
+
 		/**
 		 * Overload Operator +
 		 *
@@ -485,12 +483,12 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			DenseUnivariateRationalPolynomial r (*this);
 			return (r += c);
 		}
-		
+
 		inline DenseUnivariateRationalPolynomial operator+ (const mpq_class& c) const {
 			DenseUnivariateRationalPolynomial r (*this);
 			return (r += c);
 		}
-		
+
 		/**
 		 * Overload Operator +=
 		 *
@@ -500,7 +498,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			coef[0] += lfixq(c.get_mpq());
 			return *this;
 		}
-		
+
 		inline DenseUnivariateRationalPolynomial& operator+= (const mpq_class& c) {
 			coef[0] += c;
 			return *this;
@@ -509,14 +507,14 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		inline friend DenseUnivariateRationalPolynomial operator+ (const mpq_class& c, const DenseUnivariateRationalPolynomial& p) {
 			return (p + c);
 		}
-		
+
 		/**
 		 * Subtract another polynomial
 		 *
 		 * @param b: A univariate rational polynomial
 		 */
     	DenseUnivariateRationalPolynomial operator- (const DenseUnivariateRationalPolynomial& b) const;
-		
+
 		/**
 		 * Overload operator -=
 		 *
@@ -541,7 +539,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * Subtract another polynomial from itself
 		 *
 		 * @param b: A univariate rational polynomial
-		 **/ 
+		 **/
     	void subtract(const DenseUnivariateRationalPolynomial& b);
 
 		/**
@@ -568,7 +566,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			coef[0] -= lfixq(c.get_mpq());
 			return *this;
 		}
-		
+
 		inline DenseUnivariateRationalPolynomial& operator-= (const mpq_class& c) {
 			coef[0] -= c;
 			return *this;
@@ -614,7 +612,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			DenseUnivariateRationalPolynomial r (*this);
 			return (r *= e);
 		}
-		
+
 		/**
 		 * Overload operator *=
 		 *
@@ -644,7 +642,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * ExactDivision
 		 *
 		 * @param b: A univariate rational polynomial
-		 **/ 
+		 **/
 		inline DenseUnivariateRationalPolynomial operator/ (const DenseUnivariateRationalPolynomial& b) const{
 			DenseUnivariateRationalPolynomial rem(*this);
 			return (rem /= b);
@@ -700,7 +698,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * Return quotient and itself become the remainder
 		 *
 		 * @param b: The dividend polynomial
-		 **/ 
+		 **/
     	DenseUnivariateRationalPolynomial monicDivide(const DenseUnivariateRationalPolynomial& b);
 
 		/**
@@ -753,7 +751,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * @param rem: The remainder polynomial
 		 * @param d: The leading coefficient of b
 		 *           to the power deg(a) - deg(b) + 1
-		 **/ 
+		 **/
     	DenseUnivariateRationalPolynomial pseudoDivide (const DenseUnivariateRationalPolynomial& b, DenseUnivariateRationalPolynomial* rem, RationalNumber* d) const;
 
 		/**
@@ -778,13 +776,13 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * Convert current object to its k-th derivative
 		 *
 		 * @param k: Order of the derivative, k > 0
-		 **/ 
+		 **/
     	void differentiate(int k);
 
 		/**
 		 * Convert current object to its derivative
 		 *
-		 **/ 
+		 **/
     	inline void differentiate() {
     		this->differentiate(1);
     	}
@@ -793,21 +791,21 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * Return k-th derivative
 		 *
 		 * @param k: k-th derivative, k > 0
-		 **/ 
+		 **/
     	inline DenseUnivariateRationalPolynomial derivative(int k) const {
     	 	DenseUnivariateRationalPolynomial a(*this);
     	 	a.differentiate(k);
     	 	return a;
     	}
-		
+
 		/**
 		 * Compute derivative
 		 *
-		 **/ 
+		 **/
     	inline DenseUnivariateRationalPolynomial derivative() const {
     	 	return this->derivative(1);
     	}
-		
+
 		/**
 		 * Compute the integral with constant of integration 0
 		 *
@@ -815,23 +813,23 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 **/
 		 // THIS FUNCTION IS DEPRECATED
         //	DenseUnivariateRationalPolynomial integrate();
-		
+
 		/**
 		 * Convert current object to its integral with constant of integration 0
 		 *
-		 **/ 
+		 **/
     	void integrate();
-	
+
 		/**
 		 * Compute integral with constant of integration 0
 		 *
-		 **/ 
+		 **/
     	inline DenseUnivariateRationalPolynomial integral() const {
     	 	DenseUnivariateRationalPolynomial a(*this);
     	 	a.integrate();
     	 	return a;
     	 }
-	
+
 		/**
 		 * Evaluate f(x)
 		 *
@@ -880,7 +878,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 * @param q: The other polynomial
 		 **/
     	DenseUnivariateRationalPolynomial gcd (const DenseUnivariateRationalPolynomial& q, int type) const;
-		
+
     	inline DenseUnivariateRationalPolynomial gcd(const DenseUnivariateRationalPolynomial& q) const {
     		return gcd(q, 0);
     	}
@@ -913,21 +911,21 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		 **/
 
 		void reciprocal();
-		
+
 		/**
 		 * Homothetic operation
 		 *
 		 * @param k > 0: 2^(k*d) * f(2^(-k)*x);
 		 **/
 		void homothetic(int k=1);
-		
+
 		/**
 		 * Scale transform operation
 		 *
 		 * @param k > 0: f(2^k*x)
 		 **/
 		void scaleTransform(int k);
-		
+
 		/**
 		 * Compute f(-x)
 		 *
@@ -943,27 +941,27 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		void negate();
 
 		/**
-		 * Return an integer k such that any positive root 
+		 * Return an integer k such that any positive root
 		   alpha of the polynomial satisfies alpha < 2^k
 		 *
 		 * @param
 		 **/
 		mpz_class rootBound();
-		
+
 		/**
 		 * Taylor Shift operation by 1
 		 *
 		 * @param ts: Algorithm id
 		 **/
 		void taylorShift(int ts=-1);
-		
+
 		/**
 		 * Positive real root isolation
 		 * for square-free polynomials
 		 *
 		 * @param width: Interval's right - left < width
-		 * @ts: Taylor Shift option: 0 - CMY; -1 - optimized 
-		 **/ 
+		 * @ts: Taylor Shift option: 0 - CMY; -1 - optimized
+		 **/
 		inline Intervals positiveRealRootIsolate (mpq_class width, int ts=-1) {
 			Intervals pIs;
 			univariatePositiveRealRootIsolation(&pIs, this, width, ts);
@@ -1007,7 +1005,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			univariateRealRootIsolation(&pIs, this, width, ts);
 			return pIs;
 		}
-		
+
 		/**
 		 * Refine a root
 		 *
@@ -1017,7 +1015,7 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 		inline void refineRoot(Interval* a, mpq_class width) {
 			refineUnivariateInterval(a, a->right+1, this, width);
 		}
-		
+
 		/**
 		 * Refine the roots
 		 *
@@ -1029,13 +1027,13 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 			refineUnivariateIntervals(&b, &a, this, width);
 			return b;
 		}
-		
+
 		/**
 		 * Overload stream operator <<
 		 *
 		 * @param out: Stream object
 		 * @param b: A univariate rational polynoial
-		 **/ 
+		 **/
 		void print(std::ostream &out) const;
 
 		ExpressionTree convertToExpressionTree() const;
@@ -1044,35 +1042,41 @@ class DenseUnivariateRationalPolynomial : public BPASUnivariatePolynomial<Ration
 
 		/** BPASEuclideanDomain methods **/
 
-		inline DenseUnivariateRationalPolynomial euclideanSize() const {
+		inline Integer euclideanSize() const {
 			return degree();
 		}
 
+
 		inline DenseUnivariateRationalPolynomial euclideanDivision(const DenseUnivariateRationalPolynomial& b, DenseUnivariateRationalPolynomial* q = NULL) const {
-			std::cerr << "DenseUnivariateRationalPolynomial::euclideanDivision NOT YET IMPLEMENTED" << std::endl;
-			//TODO
-			return *this;
+			RationalNumber lc = b.leadingCoefficient();
+			DenseUnivariateRationalPolynomial monicb = b * lc.inverse();
+			if (q != NULL) {
+				DenseUnivariateRationalPolynomial rem;
+				*q = this->monicDivide(monicb, &rem);
+				*q *= lc;
+				return rem;
+			} else {
+				DenseUnivariateRationalPolynomial rem = *this;
+				return rem.monicDivide(b);
+			}
 		}
 
-		inline DenseUnivariateRationalPolynomial extendedEuclidean(const DenseUnivariateRationalPolynomial& b, 
+		inline DenseUnivariateRationalPolynomial extendedEuclidean(const DenseUnivariateRationalPolynomial& b,
 																		 DenseUnivariateRationalPolynomial* s = NULL,
 																		 DenseUnivariateRationalPolynomial* t = NULL) const {
-			std::cerr << "DenseUnivariateRationalPolynomial::extendedEuclidean NOT YET IMPLEMENTED" << std::endl;
-			//TODO
-			return *this;
+			DenseUnivariateRationalPolynomial g = this->gcd(b);
+			diophantinEquationSolve(*this, b, s, t);
+			return g;
 		}
 
 		inline DenseUnivariateRationalPolynomial quotient(const DenseUnivariateRationalPolynomial& b) const {
-			std::cerr << "DenseUnivariateRationalPolynomial::quotient NOT YET IMPLEMENTED" << std::endl;
-			//TODO
-			return *this;
+			DenseUnivariateRationalPolynomial q;
+			this->euclideanDivision(b, &q);
+			return q;
 		}
 
-
 		inline DenseUnivariateRationalPolynomial remainder(const DenseUnivariateRationalPolynomial& b) const {
-			std::cerr << "DenseUnivariateRationalPolynomial::remainder NOT YET IMPLEMENTED" << std::endl;
-			//TODO 
-			return *this;
+			return this->euclideanDivision(b);
 		}
 };
 

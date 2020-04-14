@@ -1,7 +1,7 @@
-#ifndef _SMQPALTARRAY_H_ 
+#ifndef _SMQPALTARRAY_H_
 #define _SMQPALTARRAY_H_
 
-#include "../polynomial.h"
+#include "../Polynomial/BPASRecursivePolynomial.hpp"
 #include "../Interval/interval.h"
 #include "urpolynomial.h"
 #include "../IntegerPolynomial/mzpolynomial.hpp"
@@ -53,7 +53,7 @@ class SLPRepresentation {
 				a.c = new RationalNumber(*(r.a.c));
 			} else {
 				a.i = r.a.i;
-			}   
+			}
 		}
 
 		~SLPRepresentation() {
@@ -63,7 +63,7 @@ class SLPRepresentation {
 		}
 };
 
-/** 
+/**
  * A multivariate polynomial with RationalNumber coefficients represented sparely.
  * Only non-zero coefficients are encoded.
  */
@@ -72,7 +72,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 	private:
 		mutable AltArr_t* poly;
 		int nvar;   		  //number of variables
-		Symbol* names;   //list of strings representing the variables. 
+		Symbol* names;   //list of strings representing the variables.
 							  //names[0] is 1 if "system-generated" variables
 							  //names[0] is 9 if "user-specified" variables;
 
@@ -86,7 +86,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 */
 		bool isOrderedRing(const SparseMultivariateRationalPolynomial& b, std::vector<int>& xs) const;
 
-		/** 
+		/**
 		 * Rearrange exponent vectors in place and then re-sort the polynomial.
 		 */
 		void reorderVarsInPlace(int varmap[]);
@@ -96,20 +96,20 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 */
 		void expandVarsInPlace(int vars, Symbol* newvars, int varmap[]);
 
-		/** 
-		 * Returns a copy of *this under the new variable ordering supplied. 
+		/**
+		 * Returns a copy of *this under the new variable ordering supplied.
 		 * varmap is such that this.names[i] = newvars[varmap[i]]
 		 * Returns an SMQP equal to *this but expended to newvars.
 		 */
 		SparseMultivariateRationalPolynomial expandVariables(int vars, Symbol* newvars, int varmap[]) const;
 
 		void preparePolysForSRC(const SparseMultivariateRationalPolynomial& q, const Symbol& v, std::vector<Symbol>& superRing, bool sameRing, int* varMap, int& swapIdx, AltArrZ_t** ppZ, AltArrZ_t** qqZ) const;
-    
+
 	public:
 
-                
+
 		SparseMultivariateRationalPolynomial subresultantGCD (const SparseMultivariateRationalPolynomial& q) const;
-    
+
 		std::vector<SLPRepresentation> slp;
 
 		/* Constructors */
@@ -147,8 +147,8 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 
 		/**
 		 * Copy Constructor.
-		 * 
-		 * Does not reuse underlying memory allocated by b. 
+		 *
+		 * Does not reuse underlying memory allocated by b.
 		 *
 		 * @param b: A sparse multivariate polynomial
 		 **/
@@ -167,30 +167,30 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		SparseMultivariateRationalPolynomial(const SparseMultivariateIntegerPolynomial& b);
 
 		/**
-		 * Create a SMQP from an Integer. 
+		 * Create a SMQP from an Integer.
 		 */
 		SparseMultivariateRationalPolynomial(const Integer& r, int nvar = 0);
 
 		/**
-		 * Create a SMQP from a RationalNumber. 
+		 * Create a SMQP from a RationalNumber.
 		 */
 		SparseMultivariateRationalPolynomial(const RationalNumber& r, int nvar = 0);
 
 		/**
-		 * Create a SMQP from a univariate rational polynomial. 
-		 * 
-		 * @param p: A SUQP polynomial. 
+		 * Create a SMQP from a univariate rational polynomial.
+		 *
+		 * @param p: A SUQP polynomial.
 		 **/
 		SparseMultivariateRationalPolynomial (const DenseUnivariateRationalPolynomial& p);
 
 		/**
 		 * Construct from a SUP<SMQP> polynomial such that the resulting SMQP
-		 * has main variable equal to the variable of s. 
+		 * has main variable equal to the variable of s.
 		 *
 		 * @param s: The SUP<SMQP> polynomial
 		 **/
     	SparseMultivariateRationalPolynomial (const SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial>& s);
-	
+
 		/**
 		 * Destroy the polynomial and underlying node memory.
 		 **/
@@ -198,21 +198,19 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 
 
 		/* BPASRing interface */
-        static mpz_class characteristic;
-        static RingProperties properties;
         // static bool isPrimeField;
         // static bool isSmallPrimeField;
         // static bool isComplexField;
 
-        /** 
-         * Is this polynomial zero. 
+        /**
+         * Is this polynomial zero.
          * returns true iff this polynomial encodes 0.
          */
 		bool isZero() const;
 
 		/**
 		 * Set this polynomial to zero. Maintains existing variable ordering.
-		 */ 
+		 */
         void zero();
 
         /**
@@ -221,7 +219,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
          */
         bool isOne() const;
 
-        /** 
+        /**
          * Sets this polynomial to one. Maintains existing variable ordering.
          */
         void one();
@@ -232,22 +230,22 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
          */
         bool isNegativeOne() const;
 
-        /** 
+        /**
          * Sets this polynomial to -1. Maintains existing variable ordering.
          */
         void negativeOne();
 
         /**
-         * Determine if this polynomial encodes a constant. 
-         * returns 0 if not a constant, 1 if a constant >= 0, -1 if a negative contstant. 
+         * Determine if this polynomial encodes a constant.
+         * returns 0 if not a constant, 1 if a constant >= 0, -1 if a negative contstant.
          */
         int isConstant() const;
-    
+
     	/**
-	     * Obtain the unit normal (a.k.a canonical associate) of an element. 
-	     * If either parameters u, v, are non-NULL then the units are returned such that 
+	     * Obtain the unit normal (a.k.a canonical associate) of an element.
+	     * If either parameters u, v, are non-NULL then the units are returned such that
 	     * b = ua, v = u^-1. Where b is the unit normal of a, and is the returned value.
-	     */  
+	     */
 		inline SparseMultivariateRationalPolynomial unitCanonical(SparseMultivariateRationalPolynomial* u, SparseMultivariateRationalPolynomial* v) const {
         	RationalNumber lead = leadingCoefficient();
         	RationalNumber leadInv = lead.inverse();
@@ -276,7 +274,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
          * Assign this polynomial to be equal to the constant ring element.
          */
 	    SparseMultivariateRationalPolynomial& operator= (const RationalNumber& r);
-	    
+
         /**
          * Add two SMQP polynomials together, *this and the specified.
          */
@@ -320,7 +318,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		SparseMultivariateRationalPolynomial operator* (const SparseMultivariateRationalPolynomial& b) const;
 		SparseMultivariateRationalPolynomial operator* (SparseMultivariateRationalPolynomial&& b) const;
 
-		// /** 
+		// /**
 		//  * Multiply the polynomials a and b, returning their product.
 		//  */
 		// friend SparseMultivariateRationalPolynomial operator* (SparseMultivariateRationalPolynomial&& a, const SparseMultivariateRationalPolynomial& b);
@@ -346,7 +344,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		/**
 		 * Exponentiate *this by the input exponent integer.
 		 * Treats negative exponents as positive.
-		 */ 
+		 */
 		SparseMultivariateRationalPolynomial operator^ (long long int e) const;
 
 		/**
@@ -354,52 +352,52 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Treats negative exponents as positive.
 		 */
 		SparseMultivariateRationalPolynomial& operator^= (long long int e);
-		
+
 		/**
 		 * Determine if *this is equal to the specified polynomial.
-		 * This takes into account the variable ordering on both poylnomials 
+		 * This takes into account the variable ordering on both poylnomials
 		 * in such a way that the same polynomial under different variable orderings
 		 * are NOT equal.
-		 */ 
+		 */
 		bool operator== (const SparseMultivariateRationalPolynomial& b) const;
 
 		/**
 		 * Determine if *this is not equal to the specified polynomial.
-		 * This takes into account the variable ordering on both poylnomials 
+		 * This takes into account the variable ordering on both poylnomials
 		 * in such a way that the same polynomial under different variable orderings
 		 * are NOT equal.
 		 */
 		bool operator!= (const SparseMultivariateRationalPolynomial& b) const;
-		
+
 		/**
 		 * Output the string representation of *this to the input ostream.
 		 */
 		void print(std::ostream& os) const;
 
 		/**
-		 * Parse polynomial from in stream. Exactly one line is parsed. 
+		 * Parse polynomial from in stream. Exactly one line is parsed.
 		 */
 		friend std::istream& operator>>(std::istream& in, SparseMultivariateRationalPolynomial& p);
 
-		/** 
+		/**
 		 * Parse a polynomial from string str and place in *this.
 		 */
  		void fromString(const std::string& str);
 
 		/**
-		 * Given a polynomial q, compute the subresultant chain between this and q, viewing both polynomial 
-		 * recursively with main variable v. 
+		 * Given a polynomial q, compute the subresultant chain between this and q, viewing both polynomial
+		 * recursively with main variable v.
 		 *
-		 * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants. 
-		 * 
-		 * @param q, the other polynomial for which to compute the subresultant chain.
-		 * @param v, the main variable to be used when computing the subresultant chain.
-		 * @param filled, if false, degenerative cases are not returned and so indices in the returned chain do not necessarily match subresultant degrees
+		 * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants.
+		 *
+		 * @param q: the other polynomial for which to compute the subresultant chain.
+		 * @param v: the main variable to be used when computing the subresultant chain.
+		 * @param filled: if false, degenerative cases are not returned and so indices in the returned chain do not necessarily match subresultant degrees
 		 *
 		 * @return a vector containing the subresultant chain whereby index 0 is resultant and subresultant degrees increase with index.
 		 *
 		 */
-		std::vector<SparseMultivariateRationalPolynomial> subresultantChain(const SparseMultivariateRationalPolynomial& q, const Symbol& v, bool filled = 1) const;	    
+		std::vector<SparseMultivariateRationalPolynomial> subresultantChain(const SparseMultivariateRationalPolynomial& q, const Symbol& v, bool filled = 1) const;
 
 		/**
 		 * Subresultant Chain with respect to the leaving variable of this.
@@ -408,31 +406,31 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
  		std::vector<SparseMultivariateRationalPolynomial> subresultantChain (const SparseMultivariateRationalPolynomial& q, int filled = 1) const;
 
 		/**
-		 * Given a polynomial q, compute the subresultant of index idx between this and q, viewing both polynomial 
+		 * Given a polynomial q, compute the subresultant of index idx between this and q, viewing both polynomial
 		 * recursively with main variable v. This function in fact computes the subresultant of index idx and idx+1
 		 * and so both are returned, unless idx+1 does not exist (e.g. idx = this->degree(v)).
 		 *
 		 * Optionally, this function also returns the principleCoefs of the subresultants of index i to this->degree(v).
 		 *
 		 * @note, if the subresultant of index idx+1 is degenerative then many subresultants will be returned until the first non-degenerative one is found.
-		 * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants. 
-		 * 
-		 * @param q, the other polynomial for which to compute the subresultant chain.
-		 * @param v, the main variable to be used when computing the subresultant chain.
+		 * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants.
+		 *
+		 * @param q: the other polynomial for which to compute the subresultant chain.
+		 * @param v: the main variable to be used when computing the subresultant chain.
 		 *
 		 * @return a vector containing the subresultant chain whereby index 0 is requested subresultant idx subresultant degrees increase with index.
 		 *
 		 */
 		std::vector<SparseMultivariateRationalPolynomial> subresultantChainAtIdx (const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx = 0, std::vector<SparseMultivariateRationalPolynomial>* principleCoefs = NULL) const;
-	
+
 		/**
  		* Extended Subresultant Chain
  		* Return the list of subresultants with Besout Coefficients
  		**/
-	    std::vector<std::vector<SparseMultivariateRationalPolynomial>> exSubresultantChain (const SparseMultivariateRationalPolynomial& q, const Symbol& v) const;	    
-	    
+	    std::vector<std::vector<SparseMultivariateRationalPolynomial>> exSubresultantChain (const SparseMultivariateRationalPolynomial& q, const Symbol& v) const;
+
 	    SparseMultivariateRationalPolynomial resultant (const SparseMultivariateRationalPolynomial& q, const Symbol& v) const;
-    
+
         /**
          * Get GCD between *this and b.
          */
@@ -442,7 +440,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
          * Get the GCD between *this and b as a primitive polynomial.
          */
         SparseMultivariateRationalPolynomial primitiveGCD(const SparseMultivariateRationalPolynomial& b) const;
-			
+
 		/**
 		 * Compute squarefree factorization of *this with respect to all of its variables.
 		 */
@@ -476,7 +474,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		RationalNumber content() const;
 
 		/**
-		 * Get the content of this polynomial with respect to the variables in 
+		 * Get the content of this polynomial with respect to the variables in
 		 * the input vector v.
 		 *
 		 * Moreover, the content is one such that the leading coefficient
@@ -499,19 +497,19 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		SparseMultivariateIntegerPolynomial primitivePartSMZP(RationalNumber& content) const;
 
 		/**
-		 * Get the primitive part with respect to all variables. 
+		 * Get the primitive part with respect to all variables.
 		 * This is equivalent to this / content().
 		 */
 		SparseMultivariateRationalPolynomial primitivePart() const;
 
 		/**
-		 * Get the primitive part with respect to the variable s. 
+		 * Get the primitive part with respect to the variable s.
 		 * This is equivalent to this / content(s).
 		 */
 		SparseMultivariateRationalPolynomial primitivePart(const Symbol& s) const;
 
 		/**
-		 * Get the primitive part with respect to all variables. 
+		 * Get the primitive part with respect to all variables.
 		 * This is equivalent to this / content().
 		 *
 		 * Simultaneously returns the rational number content in the parameter content.
@@ -519,23 +517,23 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		SparseMultivariateRationalPolynomial primitivePart(RationalNumber& content) const;
 
 		/**
-		 * Get the primitive part with respect to the variables in the vector v. 
-		 * 
+		 * Get the primitive part with respect to the variables in the vector v.
+		 *
 		 * returns the primitive part.
 		 */
 		SparseMultivariateRationalPolynomial primitivePart(const std::vector<Symbol>& v) const;
 
 		/**
-		 * Get the primitive part with respect to the variables in the vector v. 
+		 * Get the primitive part with respect to the variables in the vector v.
 		 * Returns the corresponding content in the content reference.
 		 * returns the primitive part.
 		 */
-		SparseMultivariateRationalPolynomial primitivePart(const std::vector<Symbol>& v, SparseMultivariateRationalPolynomial& content) const; 
+		SparseMultivariateRationalPolynomial primitivePart(const std::vector<Symbol>& v, SparseMultivariateRationalPolynomial& content) const;
 
         SparseMultivariateRationalPolynomial mainPrimitivePart() const;
 
         SparseMultivariateRationalPolynomial mainPrimitivePart(SparseMultivariateRationalPolynomial& content) const;
-	
+
 		/**
 		 * Get the leading coefficient of *this with respect to the main variable.
 		 *
@@ -562,7 +560,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 
 		/**
 		 * Get the rank of this polynomial.
-		 * That is, the main variable raised to the main degree. 
+		 * That is, the main variable raised to the main degree.
 		 *
 		 * returns the rank.
 		 */
@@ -583,7 +581,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 */
 		SparseMultivariateRationalPolynomial tail() const;
 
-		SparseMultivariateRationalPolynomial separant() const; 
+		SparseMultivariateRationalPolynomial separant() const;
 
 		/* BPASMultivariatePolynomial interface */
 
@@ -600,39 +598,39 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		}
 
 		/**
-		 * Get the number of non-zero terms 
+		 * Get the number of non-zero terms
 		 */
 		Integer numberOfTerms() const;
-		
-		/** 
+
+		/**
 		 * Total degree.
 		 */
 		Integer degree() const;
 
 		/**
-		 * Get the degree of a variable 
+		 * Get the degree of a variable
 		 */
 		Integer degree(const Symbol&) const;
-		
+
 		/**
-		 * Get the leading coefficient 
+		 * Get the leading coefficient
 		 */
 		RationalNumber leadingCoefficient() const;
-		
+
 		/**
 		 * Get the trailing coefficient.
 		 */
 		RationalNumber trailingCoefficient() const;
 
 		/**
-		 * Get a coefficient, given the exponent of each variable 
+		 * Get a coefficient, given the exponent of each variable
 		 */
 		RationalNumber coefficient(int, const int*) const;
 
 		inline RationalNumber coefficient(const std::vector<int>& v) const {
 			return coefficient(v.size(), v.data());
 		}
-		
+
 		/**
 		 * Set a coefficient, given the exponent of each variable
 		 */
@@ -647,33 +645,33 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Set variables' names.
 		 *
 		 * This method can be used to shrink, expand, re-order, and re-name the variables
-		 * of the polynomial ring in which this polynomial belongs. 
+		 * of the polynomial ring in which this polynomial belongs.
 		 *
 		 * Any symbol in the input vector that matches the current variables
 		 * is considered a re-order. Non-matching symbols are considered a re-name
 		 * and this renames is done in the order they appear by increasing index.
-		 * For example: Q[x,y,z] -> Q[y,s,t] will have y reordered to be the 
-		 * first variable, x renamed to s, and z renamed to t. 
+		 * For example: Q[x,y,z] -> Q[y,s,t] will have y reordered to be the
+		 * first variable, x renamed to s, and z renamed to t.
 		 *
 		 * If the size of the input vector is greater than the current number of variables
 		 * then the polynomial ring is being expanded. Matching variables from this
 		 * polynomial are re-ordered as they appear in the input vector. Current variables
 		 * that have no match in the input vector are re-named in order of increasing index
-		 * of unused variables from the input vector. 
-		 * For example: Q[x,y,z] -> Q[s,t,z,x] will have y named to s, t a new variable, 
-		 * and z and x re-ordered accordingly. 
+		 * of unused variables from the input vector.
+		 * For example: Q[x,y,z] -> Q[s,t,z,x] will have y named to s, t a new variable,
+		 * and z and x re-ordered accordingly.
 		 *
 		 * If the size of the input vector is less than the current number of variables
-		 * then the polynomial ring is shrink to remove variables. Variables in the 
-		 * input vector that are also found to be in the current polynomial ring 
-		 * are matched and re-ordered as necessary.  
+		 * then the polynomial ring is shrink to remove variables. Variables in the
+		 * input vector that are also found to be in the current polynomial ring
+		 * are matched and re-ordered as necessary.
 		 *
 		 * It is invalid to remove a variable which is non-zero in this polynomial.
 		 */
 		void setRingVariables (const std::vector<Symbol>&);
-		
+
 		/**
-		 * Get variable names of all variables available to this polynomial, 
+		 * Get variable names of all variables available to this polynomial,
 		 * even those that have zero degree.
 		 */
 		std::vector<Symbol> ringVariables() const;
@@ -688,7 +686,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 
 		/**
 		 * Determine if *this is equal to b.
-		 * This takes into account the variable ordering on both poylnomials 
+		 * This takes into account the variable ordering on both poylnomials
 		 * in such a way that the same polynomial under different variable orderings
 		 * are NOT equal.
 		 */
@@ -699,7 +697,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the derivative, k > 0
-		 **/ 
+		 **/
     	inline void differentiate(const Symbol& s, int k) {
     		*this = this->derivative(s, k);
     	}
@@ -708,7 +706,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Convert current object to its derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
     	inline void differentiate(const Symbol& s) {
     		this->differentiate(s,1);
     	}
@@ -718,24 +716,24 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the k-th derivative, k > 0
-		 **/ 
-    	SparseMultivariateRationalPolynomial derivative(const Symbol& s, int k) const;		
-		
+		 **/
+    	SparseMultivariateRationalPolynomial derivative(const Symbol& s, int k) const;
+
 		/**
 		 * Compute derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
 		inline SparseMultivariateRationalPolynomial derivative(const Symbol& s) const {
     	 	return this->derivative(s,1);
-        } 
+        }
 
         /**
 		 * Convert current object to its k-th integral
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the derivative, k > 0
-		 **/ 
+		 **/
     	inline void integrate(const Symbol& s, int k) {
     		*this = this->integral(s, k);
     	}
@@ -744,7 +742,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Convert current object to its derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
     	inline void integrate(const Symbol& s) {
     		this->integrate(s,1);
     	}
@@ -756,17 +754,17 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the k-th derivative, k > 0
-		 **/ 
-    	SparseMultivariateRationalPolynomial integral(const Symbol& s, int k) const;		
-		
+		 **/
+    	SparseMultivariateRationalPolynomial integral(const Symbol& s, int k) const;
+
 		/**
 		 * Compute integral
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
 		inline SparseMultivariateRationalPolynomial integral(const Symbol& s) const {
     	 	return this->integral(s,1);
-        } 
+        }
 
 		/**
 		 * Evaluate f(x)
@@ -791,13 +789,13 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * vars must be a list of variables which are a (not necessarily proper) subset.
 		 * vars and values should have matching indices. i.e. the values of vars[i] is values[i].
 		 *
-		 * returns a new SMQP where all variables in vars have been evaluated using the values given. 
+		 * returns a new SMQP where all variables in vars have been evaluated using the values given.
 		 */
 		SparseMultivariateRationalPolynomial evaluate(const std::vector<Symbol>& vars, const std::vector<RationalNumber>& values) const;
 
 		/**
 		 * Find the interpolating polynomial for the points and values specified by each vector, respectively.
-		 * The points vector is a vector of vectors, where each element of the outer vector represents a multi-dimensional point. 
+		 * The points vector is a vector of vectors, where each element of the outer vector represents a multi-dimensional point.
 		 * Each multi-dimensional point should have the same number of dimensions and in the same order.
 		 *
 		 * returns the interpolating polynomial.
@@ -818,10 +816,10 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 
 		/**
 		 * Update *this by setting it to the remainder of *this divided by b.
-		 */ 
+		 */
 		SparseMultivariateRationalPolynomial& operator%= (const SparseMultivariateRationalPolynomial& b);
 
-		
+
 		inline SparseMultivariateRationalPolynomial operator% (const Integer& i) const {
 			SparseMultivariateRationalPolynomial ret = *this;
 			ret %= i;
@@ -835,24 +833,24 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 			return *this;
 		}
 
-		/** 
+		/**
 		 * Pseudo divide this by b. The remainder is returned.
 		 * if parameter quo is not null then the quotient is returned in quo.
-		 * if parameter mult is not null then the multiplier is set to the initial of b 
+		 * if parameter mult is not null then the multiplier is set to the initial of b
 		 * raised to the power of degree(c, mvar(c)) - degree(b, mvar(c)) + 1.
 		 *
 		 * returns the pseudo remainder.
 		 */
 		SparseMultivariateRationalPolynomial pseudoDivide(const SparseMultivariateRationalPolynomial& b, SparseMultivariateRationalPolynomial* quo = NULL, SparseMultivariateRationalPolynomial* mult = NULL, bool lazy = 0) const;
 
-		/** 
+		/**
 		 * Pseudo divide this by b. The remainder is returned.
 		 * This function assumes that both this and b are primitive, and thus
 		 * can be viewed as integer polynomials. The psuedo-division is then performed
 		 * over the integers and the quotient and remainder returned also so they are primitive.
 		 *
 		 * If parameter quo is not null then the quotient is returned in quo.
-		 * If parameter mult is not null then the multiplier is set to the initial of b 
+		 * If parameter mult is not null then the multiplier is set to the initial of b
 		 * raised to the power of degree(c, mvar(c)) - degree(b, mvar(c)) + 1.
 		 *
 		 * @return the pseudo remainder.
@@ -862,7 +860,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 
 		/**
 		 * Add *this and a ratNum_t.
-		 */		
+		 */
 		inline SparseMultivariateRationalPolynomial operator+ (const ratNum_t& r) const {
 			return (*this + RationalNumber(r));
 		}
@@ -892,10 +890,10 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		inline friend SparseMultivariateRationalPolynomial operator+ (const RationalNumber& r, const SparseMultivariateRationalPolynomial& b) {
 			return (b + r);
 		}
-		
+
 		/**
 		 * Update *this by adding the RationalNumber r to it.
-		 */ 
+		 */
 		SparseMultivariateRationalPolynomial& operator+= (const RationalNumber& r);
 
 		/**
@@ -947,7 +945,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Multiply *this by RationalNumber r.
 		 */
 		SparseMultivariateRationalPolynomial operator* (const RationalNumber& r) const;
-		
+
 		/**
 		 * Multiply ratNum_t r and SMQP b.
 		 */
@@ -968,7 +966,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		inline friend SparseMultivariateRationalPolynomial operator* (const RationalNumber& r, const SparseMultivariateRationalPolynomial& b) {
 			return (b * r);
 		}
-		
+
 		/**
 		 * Update *this by multiplying by RationalNumber r.
 		 */
@@ -991,7 +989,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 */
 		friend SparseMultivariateRationalPolynomial operator/ (const ratNum_t& r, const SparseMultivariateRationalPolynomial& b) ;
 
-		/** 
+		/**
 		 * Update *this by dividing by ratNum_t r.
 		 */
 		inline SparseMultivariateRationalPolynomial& operator/= (const ratNum_t& r) {
@@ -1009,20 +1007,20 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 			return ret;
 		}
 
-		/** 
+		/**
 		 * Update *this by dividing by RationalNumber r.
 		 */
-		SparseMultivariateRationalPolynomial& operator/= (const RationalNumber& r); 
+		SparseMultivariateRationalPolynomial& operator/= (const RationalNumber& r);
 
 		/**
-		 * Get the polynomial term at index. Returns 0 if index is beyond the 
+		 * Get the polynomial term at index. Returns 0 if index is beyond the
 		 * number of terms in this polynomial.
 		 */
 		SparseMultivariateRationalPolynomial operator[] (int index) const;
 
 		/**
 		 * Get the leading variable, that is, the highest-order variable with positive degree
-		 * of this polynomial. 
+		 * of this polynomial.
 		 * returns the leading variable or the empty string if this polynomial has zero variables.
 		 */
 		Symbol leadingVariable() const;
@@ -1038,7 +1036,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		bool isConstantTermZero() const;
 
 		/**
-		 * Get the leading coefficient w.r.t the input variable 'x'. 
+		 * Get the leading coefficient w.r.t the input variable 'x'.
 		 * Returns the leading exponent as e.
 		 *
 		 * returns the coefficient as a new SMQP.
@@ -1053,21 +1051,21 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> convertToSUP(const Symbol& x) const;
 
 		/**
-		 * Negate all the coefficients of *this. Note, that due to the 
+		 * Negate all the coefficients of *this. Note, that due to the
 		 * sharing nature of underling nodes, this may alter the Nodes of
 		 * other SMQP.
 		 */
 		void negate();
 
-		/** 
+		/**
 		 * Get a copy of this such that all underlying memory is NOT shared.
 		 * Note, any following arithmetic operations on the returned result
-		 * will result in possibly making the underlying memory shared again. 
+		 * will result in possibly making the underlying memory shared again.
 		 */
 		SparseMultivariateRationalPolynomial deepCopy() const;
 
 		/**
-		 * Factors this polynomial into irreducible factors. 
+		 * Factors this polynomial into irreducible factors.
 		 * The Factors may include a common numerical (rational) factor.
 		 * See also, Factors.
 		 */
@@ -1088,7 +1086,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		int isIntervalsMatchable(Intervals*, Intervals*, DenseUnivariateRationalPolynomial*, DenseUnivariateRationalPolynomial*, lfixq);
 		int refineSleeveUnivariateIntervals(Intervals*, Intervals*, Intervals*, DenseUnivariateRationalPolynomial*, DenseUnivariateRationalPolynomial*, lfixq);
 		void sleeveBoundURPolynomials(DenseUnivariateRationalPolynomial*, DenseUnivariateRationalPolynomial*, Intervals&, int, int);
-	public: 
+	public:
 		/**
 		 * Given one real root for x_1, .., x_{n-1},
 		 * isolate positive roots for x_n
@@ -1103,7 +1101,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Return
 		 * 1: Need to refine preious polynomials
 		 * 0: Found positive real roots
-		 **/		
+		 **/
 		int positiveRealRootIsolation(Intervals* pIs, Intervals& apIs, mpq_class width, int ts=-1, bool s=0, bool check=1);
 
 		/**
@@ -1123,7 +1121,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * resulting polynomial.
 		 * A sparsity of 0 produces a dense polynomial. A sparsity of 1 produces only
 		 * one term; one whose monomial has exponents equal to maxDegs.
-		 * 
+		 *
 		 * coefBound: limit on the number of bits encoding the coefficients.
 		 * sparsity: a percentage of zero-terms between term with maxDegs and the constant term.
 		 * includeNeg: a bool to say if coefs can be randomly negative or all positive
@@ -1134,16 +1132,16 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Convert *this to an ExpressionTree.
 		 *
 		 * returns the new ExpressionTree.
-		 */		
+		 */
 		ExpressionTree convertToExpressionTree() const;
 
 
 /****************
 * Multi-Divisor Division
-*****************/	
-    
-/** 
- * Normal Form (or Multi-Divisor Division (MDD)) 
+*****************/
+
+/**
+ * Normal Form (or Multi-Divisor Division (MDD))
  * Given the dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
  * Return (by reference) the remainder and the quotient set Q[s] = {q_0, ..., q_{s-1}},
@@ -1151,31 +1149,31 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
  */
     SparseMultivariateRationalPolynomial lexNormalForm(const std::vector<Symbol>& superNames,
 						       const std::vector<SparseMultivariateRationalPolynomial>& ts, std::vector<SparseMultivariateRationalPolynomial>* quoSet = NULL) const;
-    
-  SparseMultivariateRationalPolynomial lexNormalizeDim0 (const std::vector<Symbol>& superNames, 
-                                                         const std::vector<SparseMultivariateRationalPolynomial>& ts, SparseMultivariateRationalPolynomial* A) const;    
 
-  /** 
+  SparseMultivariateRationalPolynomial lexNormalizeDim0 (const std::vector<Symbol>& superNames,
+                                                         const std::vector<SparseMultivariateRationalPolynomial>& ts, SparseMultivariateRationalPolynomial* A) const;
+
+  /**
  * Multi-Divisor Division (MDD) where the divisor-set is a Triangular Set
  * Given the  dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
  * Return (by reference) the remainder and the quotient set Q[s] = {q_0, ..., q_{s-1}}.
  */
     SparseMultivariateRationalPolynomial triangularSetNormalForm(const TriangularSet<RationalNumber,SparseMultivariateRationalPolynomial>& ts, std::vector<SparseMultivariateRationalPolynomial>* quoSet) const;
-	
-/** 
+
+/**
  * Do the pseudo division of c by the triangular-set (divisor set) of B in the naive principle
  * such that hPow*f = quoSet_0 * B_0 + ... + quoSet_{nSet-1} * B_{nSet-1} + rem.
- * Quotients are returned in quoSet, and remainder in rem. 
- * If hPow is not NULL then *hPow is set to the initial of b to the power of 
+ * Quotients are returned in quoSet, and remainder in rem.
+ * If hPow is not NULL then *hPow is set to the initial of b to the power of
  * the exact number of division steps which occurred..
  * nvar : size of exponent vectors
- * nSet : the size of the divisor set 
+ * nSet : the size of the divisor set
  */
     SparseMultivariateRationalPolynomial triangularSetPseudoDivide (const TriangularSet<RationalNumber,SparseMultivariateRationalPolynomial>& ts,
 								    std::vector<SparseMultivariateRationalPolynomial>* quoSet, SparseMultivariateRationalPolynomial* h) const;
-    
-/** 
+
+/**
  * Specialized Normal Form where the divisor-set is a Triangular Set
  * Given the  dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s].

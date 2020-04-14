@@ -29,8 +29,7 @@ private:
 
 public:
 
-	static mpz_class characteristic;
-    static RingProperties properties;        
+
 
 	// static bool isPrimeField;
 	// static bool isSmallPrimeField;
@@ -45,28 +44,28 @@ public:
 	ComplexRationalNumber(int _a, int _b = 1, int _c = 0, int _d = 1);
 
 	explicit ComplexRationalNumber (const Integer& c);
-	
+
 	explicit ComplexRationalNumber (const RationalNumber& c);
-	
+
 	explicit ComplexRationalNumber (const SmallPrimeField& c);
-	
+
 	explicit ComplexRationalNumber (const BigPrimeField& c);
-	
+
 	explicit ComplexRationalNumber (const GeneralizedFermatPrimeField& c);
 
 	explicit ComplexRationalNumber (const DenseUnivariateIntegerPolynomial& c);
-	
+
 	explicit ComplexRationalNumber (const DenseUnivariateRationalPolynomial& c);
-	
+
 	explicit ComplexRationalNumber (const SparseUnivariatePolynomial<Integer>& c);
-	
+
 	explicit ComplexRationalNumber (const SparseUnivariatePolynomial<RationalNumber>& c);
-	
+
 	explicit ComplexRationalNumber (const SparseUnivariatePolynomial<ComplexRationalNumber>& c);
-	
+
 	template <class Ring>
 	explicit ComplexRationalNumber (const SparseUnivariatePolynomial<Ring>& c);
-	
+
 	ComplexRationalNumber& operator= (const ComplexRationalNumber& c);
 
 	ComplexRationalNumber& operator= (const mpq_class& k);
@@ -103,17 +102,17 @@ public:
 	inline bool isZero() const {
 		return (a == 0 && b == 0);
 	}
-	
+
 	/**
 	 * Assign to zero
 	 *
 	 * @param
-	 **/ 
+	 **/
 	inline void zero() {
 		a = 0;
 		b = 0;
 	}
-	
+
 	/**
 	 * Is a 1
 	 *
@@ -122,17 +121,17 @@ public:
 	inline bool isOne() const {
 		return (a == 1 && b == 0);
 	}
-	
+
 	/**
 	 * Assign to one
 	 *
 	 * @param
-	 **/ 
+	 **/
 	inline void one() {
 		a = 1;
 		b = 0;
 	}
-	
+
 	/**
 	 * Is a -1
 	 *
@@ -141,7 +140,7 @@ public:
 	inline bool isNegativeOne() const {
 		return (a == -1 && b == 0);
 	}
-	
+
 	/**
 	 * Assign to negative one
 	 *
@@ -151,7 +150,7 @@ public:
 		a = -1;
 		b = 0;
 	}
-	
+
 	/**
 	 * Is a constant
 	 *
@@ -182,19 +181,19 @@ public:
 			return 1;
 		else { return 0; }
 	}
-	
+
 	inline bool operator!= (const ComplexRationalNumber& c) const {
 		if (a == c.a && b == c.b)
 			return 0;
 		else { return 1; }
 	}
-	
+
 	inline bool operator!= (const mpq_class& k) const {
 		if (a == k && b == 0)
 			return 1;
 		else { return 0; }
 	}
-	
+
 	inline bool operator!= (int k) const {
 		if (a == k && b == 0)
 			return 1;
@@ -205,7 +204,7 @@ public:
 		ComplexRationalNumber r (*this);
 		return (r += c);
 	}
-	
+
 	inline ComplexRationalNumber& operator+= (const ComplexRationalNumber& c) {
 		a += c.a;
 		b += c.b;
@@ -216,23 +215,23 @@ public:
 	 	ComplexRationalNumber r (*this);
 		return (r -= c);
 	}
-	
+
 	inline ComplexRationalNumber& operator-= (const ComplexRationalNumber& c) {
 		a -= c.a;
 		b -= c.b;
 		return *this;
 	}
-	
+
 	inline ComplexRationalNumber operator- () const {
 		ComplexRationalNumber r (-a, -b);
 		return r;
 	}
-	
+
 	inline ComplexRationalNumber operator* (const ComplexRationalNumber& c) const {
 		ComplexRationalNumber r (*this);
 		return (r *= c);
 	}
-	
+
 	inline ComplexRationalNumber& operator*= (const ComplexRationalNumber& c) {
 		mpq_class t = a*c.a - b*c.b;
 		mpq_class e = a*c.b + c.a*b;
@@ -240,13 +239,13 @@ public:
 		b = e;
 		return *this;
 	}
-	
+
 	inline ComplexRationalNumber& operator*= (const mpq_class& c) {
 		a *= c;
 		b *= c;
 		return *this;
 	}
-	
+
 	inline ComplexRationalNumber& operator*= (int c) {
 		a *= c;
 		b *= c;
@@ -297,12 +296,12 @@ public:
 		exit(1);
 		return ExpressionTree();
 	}
-	
+
 	inline ComplexRationalNumber operator/ (const ComplexRationalNumber& c) const {
 		ComplexRationalNumber r (*this);
 		return (r /= c);
 	}
-	
+
 	inline ComplexRationalNumber& operator/= (const ComplexRationalNumber& c) {
 		if (c.isZero()) {
 			std::cout << "BPAS: error, dividend is zero from ComplexRationalNumber."<< std::endl;
@@ -324,7 +323,7 @@ public:
 		*this = 0;
 		return *this;
 	}
-	
+
 	/**
 	 * GCD(a, b)
 	 *
@@ -338,7 +337,7 @@ public:
 			e.one();
 		return e;
 	}
-	
+
 	/**
 	 * Compute squarefree factorization of *this
 	 */
@@ -348,38 +347,35 @@ public:
 		return ret;
 	}
 
-	/** 
+	/**
 	 * Get the euclidean size of *this.
 	 */
-	inline ComplexRationalNumber euclideanSize() const {
-		//TODO
-		std::cerr << "ComplexRationalNumber::euclideanSize NOT YET IMPLEMENTED" << std::endl;
-		exit(1);
-		return ComplexRationalNumber();
+	inline Integer euclideanSize() const {
+		return Integer(1);
 	}
-	
+
 	/**
-	 * Perform the eucldiean division of *this and b. Returns the 
-	 * remainder. If q is not NULL, then returns the quotient in q. 
-	 */ 
+	 * Perform the eucldiean division of *this and b. Returns the
+	 * remainder. If q is not NULL, then returns the quotient in q.
+	 */
 	ComplexRationalNumber euclideanDivision(const ComplexRationalNumber& b, ComplexRationalNumber* q = NULL) const;
 
 	/**
-	 * Perform the extended euclidean division on *this and b. 
+	 * Perform the extended euclidean division on *this and b.
 	 * Returns the GCD. If s and t are not NULL, returns the bezout coefficients in them.
 	 */
 	ComplexRationalNumber extendedEuclidean(const ComplexRationalNumber& b, ComplexRationalNumber* s = NULL, ComplexRationalNumber* t = NULL) const;
-	
+
 	/**
 	 * Get the quotient of *this and b.
 	 */
 	ComplexRationalNumber quotient(const ComplexRationalNumber& b) const;
 
-	/** 
+	/**
 	 * Get the remainder of *this and b.
 	 */
 	ComplexRationalNumber remainder(const ComplexRationalNumber& b) const;
-     
+
 	inline ComplexRationalNumber inverse() const {
 		ComplexRationalNumber r;
 		mpq_class e = a * a + b * b;
@@ -391,11 +387,11 @@ public:
 	inline RationalNumber realPart() const {
 		return RationalNumber(a);
 	}
-	
+
 	inline RationalNumber imaginaryPart() const {
 		return RationalNumber(b);
 	}
-	
+
 	inline ComplexRationalNumber conjugate() const {
 		ComplexRationalNumber r(a, -b);
 		return r;

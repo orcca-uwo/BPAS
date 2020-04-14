@@ -23,8 +23,6 @@ class Integer : public BPASEuclideanDomain<Integer> {
 	private:
 		mpz_class _m;
 	public:
-		static mpz_class characteristic;
-		static RingProperties properties;		
 		// static bool isPrimeField;
 		// static bool isSmallPrimeField;
         // static bool isComplexField;
@@ -54,47 +52,47 @@ class Integer : public BPASEuclideanDomain<Integer> {
 		 * Copy assignment from another Integer.
 		 */
 		Integer (const Integer& a);
-		
+
 		/**
 		 * Attempts to construct an Integer from a rational number.
 		 * If the conversion is not exact, causes an error.
 		 */
 		explicit Integer (const RationalNumber& a);
-		
+
 		/**
 		 * Attempts to construct an Integer from a complex rational number.
 		 * If the conversion is not exact, causes an error.
 		 */
 		explicit Integer (const ComplexRationalNumber& a);
-		
+
 		/**
 		 * Attempts to construct an Integer from a SmallPrimeField.
 		 * If the conversion is not exact, causes an error.
-		 */		
+		 */
 		explicit Integer (const SmallPrimeField& a);
 
 		/**
 		 * Attempts to construct an Integer from a BigPrimeField.
 		 * If the conversion is not exact, causes an error.
-		 */				
+		 */
 		explicit Integer (const BigPrimeField& a);
 
 		/**
 		 * Attempts to construct an Integer from a GeneralizedFermatPrimeField.
 		 * If the conversion is not exact, causes an error.
-		 */		
+		 */
 		explicit Integer (const GeneralizedFermatPrimeField& a);
 
 		/**
 		 * Attempts to construct an Integer from a DenseUnivariateIntegerPolynomial.
 		 * If the conversion is not exact, causes an error.
-		 */		
+		 */
 		explicit Integer (const DenseUnivariateIntegerPolynomial& a);
 
 		/**
 		 * Attempts to construct an Integer from a DenseUnivariateRationalPolynomial.
 		 * If the conversion is not exact, causes an error.
-		 */		
+		 */
 		explicit Integer (const DenseUnivariateRationalPolynomial& a);
 
 		/**
@@ -106,13 +104,13 @@ class Integer : public BPASEuclideanDomain<Integer> {
 		/**
 		 * Attempts to construct an Integer from a SparseUnivariatePolynomial<RationalNumber>.
 		 * If the conversion is not exact, causes an error.
-		 */		
+		 */
 		explicit Integer (const SparseUnivariatePolynomial<RationalNumber>& a);
 
 		/**
 		 * Attempts to construct an Integer from a SparseUnivariatePolynomial<ComplexRationalNumber>.
 		 * If the conversion is not exact, causes an error.
-		 */		
+		 */
 		explicit Integer (const SparseUnivariatePolynomial<ComplexRationalNumber>& a);
 
 		/**
@@ -157,13 +155,13 @@ class Integer : public BPASEuclideanDomain<Integer> {
 
 		/**
 		 * Is a zero
-		 * 
+		 *
 		 * @param
-		 **/ 
+		 **/
 		inline bool isZero() const {
 			return (_m == 0);
 		}
-		
+
 		/**
 		 * Assign to zero
 		 *
@@ -172,7 +170,7 @@ class Integer : public BPASEuclideanDomain<Integer> {
 		inline void zero() {
 			_m = 0;
 		}
-		
+
 		/**
 		 * Is a 1
 		 *
@@ -186,7 +184,7 @@ class Integer : public BPASEuclideanDomain<Integer> {
 		 * Assign to one
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline void one() {
 			_m = 1;
 		}
@@ -208,7 +206,7 @@ class Integer : public BPASEuclideanDomain<Integer> {
 		inline void negativeOne() {
 			_m = -1;
 		}
-		
+
 		/**
 		 * Is a constant
 		 *
@@ -221,8 +219,8 @@ class Integer : public BPASEuclideanDomain<Integer> {
 		}
 
 		/**
-	     * Obtain the unit normal (a.k.a canonical associate) of an element. 
-	     * If either parameters u, v, are non-NULL then the units are returned such that 
+	     * Obtain the unit normal (a.k.a canonical associate) of an element.
+	     * If either parameters u, v, are non-NULL then the units are returned such that
 	     * b = ua, v = u^-1. Where b is the unit normal of a, and is the returned value.
 	     */
 	    Integer unitCanonical(Integer* u = NULL, Integer* v = NULL) const;
@@ -248,7 +246,7 @@ class Integer : public BPASEuclideanDomain<Integer> {
 	    	_m += i._m;
 	    	return *this;
 	    }
-	    
+
 	    /**
 	     * Subtraction.
 	     */
@@ -257,7 +255,7 @@ class Integer : public BPASEuclideanDomain<Integer> {
 	    	ret -= i;
 	    	return ret;
 	    }
-	    
+
 	    /**
 	     * Subtraction assignment.
 	     */
@@ -291,16 +289,16 @@ class Integer : public BPASEuclideanDomain<Integer> {
 	    	_m *= i._m;
 	    	return *this;
 	    }
-	    
+
 	    /**
 	     * Exponentiation.
 	     */
 	    inline Integer operator^ (long long int e) const {
 			Integer r;
 			mpz_pow_ui(r._m.get_mpz_t(), _m.get_mpz_t(), (unsigned long int) e);
-			return r;	    	
+			return r;
 	    }
-	    
+
 	    /**
 	     * Exponentiation assignment.
 	     */
@@ -370,7 +368,7 @@ class Integer : public BPASEuclideanDomain<Integer> {
 			if (mpz_divisible_p(_m.get_mpz_t(), i._m.get_mpz_t())) {
 				mpz_divexact(_m.get_mpz_t(), _m.get_mpz_t(), i._m.get_mpz_t());
 			} else {
-				std::cerr << "BPAS ERROR: Non-exact division in Integer: " << _m << " / " << i._m << std::endl;				
+				std::cerr << "BPAS ERROR: Non-exact division in Integer: " << _m << " / " << i._m << std::endl;
 				exit(1);
 			}
 			return *this;
@@ -407,7 +405,7 @@ class Integer : public BPASEuclideanDomain<Integer> {
 			return ret;
 		}
 
-		/** 
+		/**
 		 * Get the euclidean size of *this.
 		 */
 		inline Integer euclideanSize() const {
@@ -416,25 +414,25 @@ class Integer : public BPASEuclideanDomain<Integer> {
 			}
 			return *this;
 		}
-		
+
 		/**
-		 * Perform the eucldiean division of *this and b. Returns the 
-		 * remainder. If q is not NULL, then returns the quotient in q. 
-		 */ 
+		 * Perform the eucldiean division of *this and b. Returns the
+		 * remainder. If q is not NULL, then returns the quotient in q.
+		 */
 		Integer euclideanDivision(const Integer& b, Integer* q = NULL) const;
 
 		/**
-		 * Perform the extended euclidean division on *this and b. 
+		 * Perform the extended euclidean division on *this and b.
 		 * Returns the GCD. If s and t are not NULL, returns the bezout coefficients in them.
 		 */
 		Integer extendedEuclidean(const Integer& b, Integer* s = NULL, Integer* t = NULL) const;
-		
+
 		/**
 		 * Get the quotient of *this and b.
 		 */
 		Integer quotient(const Integer& b) const;
 
-		/** 
+		/**
 		 * Get the remainder of *this and b.
 		 */
 		Integer remainder(const Integer& b) const;
@@ -511,4 +509,4 @@ class Integer : public BPASEuclideanDomain<Integer> {
 
 };
 
-#endif 
+#endif

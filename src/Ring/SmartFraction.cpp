@@ -77,7 +77,7 @@ SmartFraction<Domain>& SmartFraction<Domain>::operator*=(const SmartFraction<Dom
 		FactorRefinement::MergeRefineTwoSeqEmptyToIdentity<Domain>(x,z,&num1,&num2,&num3);
 		FactorRefinement::MergeRefineTwoSeqEmptyToIdentity<Domain>(y,w,&den1,&den2,&den3);
 
-	
+
 		num1.insert(num1.end(),num2.begin(),num2.end());
 		num1.insert(num1.end(),num3.begin(),num3.end());
 
@@ -111,7 +111,7 @@ SmartFraction<Domain> SmartFraction<Domain>::unitCanonical(SmartFraction<Domain>
 		}
 		if(v!=NULL){
 			v->den = smart_one();
-			v->num = temp2;		
+			v->num = temp2;
 		}
 	}
 	return ret;
@@ -132,7 +132,7 @@ void SmartFraction<Domain>::normalize(){
 	smart_unitCanonical(den,&u,&C,&v);
 	num = smart_mul(num,v);
 	den = C;
-	
+
 }
 
 
@@ -395,20 +395,20 @@ SmartFraction<Domain> SmartFraction<Domain>::operator^(long long int e) const{
 		res.one();
 	else
 	{
-		
+
 		res = *this;
 	}
 	return res;
 
 
-	
+
 
 }
 
 template <class Domain>
 SmartFraction<Domain>& SmartFraction<Domain>::operator^=(long long int e){
     *this = *this ^ e;
-    return *this;	
+    return *this;
 
 }
 
@@ -428,11 +428,11 @@ SmartFraction<Domain> SmartFraction<Domain>::gcd(const SmartFraction<Domain>& b 
 	    	SmartFraction<Domain> ret;
     		if(isZero() == true &&b.isZero() == true){
     			ret.zero();
-    			
+
     		}
     		//otherwise is one
     		else{
-    			ret.one();	
+    			ret.one();
     		}
 
     		return ret;
@@ -440,15 +440,13 @@ SmartFraction<Domain> SmartFraction<Domain>::gcd(const SmartFraction<Domain>& b 
 
 
 template <class Domain>
-SmartFraction<Domain> SmartFraction<Domain>::euclideanSize() const{
+Integer SmartFraction<Domain>::euclideanSize() const{
 	    	if(isZero() == true){
     			std::cerr << "in Fraction<Domain>, zero does not have a euclidean size" << std::endl;
     			exit(1);
     		}
     		else{
-    			SmartFraction<Domain> ret;
-    			ret.zero();
-    			return ret;
+    			return Integer(1);
     		}
 }
 

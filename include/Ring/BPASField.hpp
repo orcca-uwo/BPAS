@@ -14,6 +14,8 @@ public:
 
 	/**
 	 * Get the inverse of *this.
+	 *
+	 * @return the inverse
 	 */
 	virtual Derived inverse() const = 0;
 };

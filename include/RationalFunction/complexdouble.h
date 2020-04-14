@@ -1,7 +1,6 @@
 #ifndef _COMPLEXDOUBLE
 #define _COMPLEXDOUBLE
 #include <complex>
-#include "../polynomial.h"
 #include "../ring.h"
 
 std::complex<double> CRN_to_complex_double(ComplexRationalNumber &a);

@@ -16,18 +16,21 @@ template <class Domain, class Derived>
 class BPASFieldOfFractions : public virtual BPASField<Derived>, private Derived_from<Domain, BPASGCDDomain<Domain>> {
 	public:
 
-		/** 
+		/**
 		 * Canonicalize this fraction, reducing terms as needed.
 		 */
 		virtual void canonicalize() = 0;
 
 		/**
 		 * Get the fraction's numerator.
+		 *
+		 * @return the numerator.
 		 */
 		virtual Domain numerator() const = 0;
-		
+
 		/**
 		 * Get the fraction's denominator.
+	 	 * @return the denominator
 		 */
 		virtual Domain denominator() const = 0;
 };

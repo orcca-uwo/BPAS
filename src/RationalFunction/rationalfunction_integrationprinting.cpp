@@ -1,4 +1,3 @@
-#include "../../include/polynomial.h"
 #include "../../include/ring.h"
 #include "../../include/RationalNumberPolynomial/urpolynomial.h"
 #include "../../include/RingPolynomial/upolynomial.h"
@@ -27,7 +26,7 @@ float absval(float a){
 std::string fieldToFPS<ComplexRationalNumber>(ComplexRationalNumber &c){
 	float a = (float) c.realPart().get_d();
 	float b = (float) c.imaginaryPart().get_d();
-	std::ostringstream buff;	
+	std::ostringstream buff;
 	if (b == 0) {
 		buff << a;
 	}
@@ -173,7 +172,7 @@ std::string SUPtoString(SparseUnivariatePolynomial<UnivariatePolynomial> &A, boo
 	if (prettyPrinting){
 		// strings to remove from output
 		std::string s1 = "*";
-		
+
 		int index;
 		while( (index = text.find(s1)) != std::string::npos)
 			text.erase(index,s1.length());
@@ -198,7 +197,7 @@ void _centreEqualSpacing(std::string *a, std::string *b){
 		smaller = *b;
 		isSwitched = true;
 	}
-	int spacer = larger.length() - smaller.length();		
+	int spacer = larger.length() - smaller.length();
 	spacer = floor(spacer/2.0);
 	for (int i=0; i<spacer; i++){
 		smaller.insert(smaller.begin(),' ');
@@ -210,15 +209,15 @@ void _centreEqualSpacing(std::string *a, std::string *b){
 	if (!isSwitched)
 		*a = smaller;
 	else
-		*b = smaller;	
+		*b = smaller;
 }
 
 template <class UnivariatePolynomialOverField, class Field>
 void _printFormalIntegral(UnivariatePolynomialOverField &A, UnivariatePolynomialOverField &D, UnivariatePolynomialOverField &P, std::vector<UnivariatePolynomialOverField> &G, std::vector<UnivariatePolynomialOverField> &U, std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverField> > &S, bool prettyPrinting, bool floatingPointPrinting, bool vectorDotPrinting){
 	int defaultWindowSize = 80;
-	
+
 	std::string mainVariable(A.variable().toString());
-	
+
 	// control variables:
 	// for printing linear logarithmic term
 	bool existsLinearLog = false;
@@ -228,7 +227,7 @@ void _printFormalIntegral(UnivariatePolynomialOverField &A, UnivariatePolynomial
 	}
 	// for printing plus/minus signs
 	bool arePreviousTerms = false;
-		
+
 	// code to determine how to centre integrand
 	int i = 0, j = 0;
 	int numRationalTerms = G.size()/2;
@@ -250,13 +249,13 @@ void _printFormalIntegral(UnivariatePolynomialOverField &A, UnivariatePolynomial
 		gDenText.push_back(sTemp);
 	}
 	//std::string c,d;
-	
+
 	_centreEqualSpacing(&aText,&dText);
 	for (i=0; i<numRationalTerms; i++){
 		_centreEqualSpacing(&gNumText[i],&gDenText[i]);
 	}
-	
-	
+
+
 	// code to display the result of the integration
 	std::cout << "  -" << std::endl;
 	std::cout << " / " << aText;
@@ -299,7 +298,7 @@ void _printFormalIntegral(UnivariatePolynomialOverField &A, UnivariatePolynomial
 	}
 	// print simple linear log terms if any //
 	/*if (existsLinearLog){  // NOT SURE THIS CONDITION IS REQUIRED
-		if (U.at(0).degree() == 1){ 
+		if (U.at(0).degree() == 1){
 			RationalNumber qTemp = -U.at(0).coefficient(0);
 			if (qTemp < 0){
 				if (arePreviousTerms)
@@ -374,13 +373,13 @@ void _printFormalIntegral(UnivariatePolynomialOverField &A, UnivariatePolynomial
 template <class UnivariatePolynomialOverField, class Field>
 void _printIntegral(UnivariatePolynomialOverField A, UnivariatePolynomialOverField D, UnivariatePolynomialOverField P, std::vector<UnivariatePolynomialOverField> G, std::vector<Field> h, std::vector<UnivariatePolynomialOverField> H, std::vector<Field> k, std::vector<UnivariatePolynomialOverField> K1, std::vector<UnivariatePolynomialOverField> K2, bool prettyPrinting, bool floatingPointPrinting, bool vectorDotPrinting, std::string outputFormatting){
 	int defaultWindowSize = 80;
-		
+
 	bool exteRationalNumberalOutput = true;
 	//bool vectorDot = false;
 	// formatting defined globally in global.cpp //
-		
+
 	std::string mainVariable(A.variable().toString());
-	
+
 	// control variables:
 	// for printing linear logarithmic term
 	bool existsLogTerm = false;
@@ -392,7 +391,7 @@ void _printIntegral(UnivariatePolynomialOverField A, UnivariatePolynomialOverFie
 		existsArctanTerm = true;
 	// for printing plus/minus signs
 	bool arePreviousTerms = false;
-		
+
 	// code to determine how to centre integrand
 	int i = 0, j = 0;
 	int numRationalTerms = G.size()/2;
@@ -417,15 +416,15 @@ void _printIntegral(UnivariatePolynomialOverField A, UnivariatePolynomialOverFie
 			sTemp = "1";
 		gDenText.push_back(sTemp);
 	}
-	
+
 	_centreEqualSpacing(&aText,&dText);
 	if (!exteRationalNumberalOutput){
 		for (i=0; i<numRationalTerms; i++){
 			_centreEqualSpacing(&gNumText[i],&gDenText[i]);
 		}
 	}
-	
-	
+
+
 	// code to display the result of the integration
 	std::cout << "  -" << std::endl;
 	std::cout << " / " << aText;

@@ -2,7 +2,7 @@
 #define _MMPolynomial_H_
 
 
-#include "../polynomial.h"
+#include "../Polynomial/BPASMultivarPolynomial.hpp"
 #include "../Utils/TemplateHelpers.hpp"
 #include "../Ring/BPASField.hpp"
 
@@ -29,7 +29,7 @@ inline void coef_mul_mod(Field* c, Field a, Field b, Field p) {
  * The class is templated by a Field which should be a BPASField.
  */
 template <class Field>
-class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePolynomial<Field,DistributedDenseMultivariateModularPolynomial<Field>>, 
+class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePolynomial<Field,DistributedDenseMultivariateModularPolynomial<Field>>,
 												      private Derived_from<Field, BPASField<Field>> {
 	private:
 		Symbol* names;     // Variable names
@@ -93,7 +93,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 			names = new Symbol[1];
 			names[0] = "1";
 		}
-		
+
 		/**
 		 * Constructor with number of variables and terms
 		 *
@@ -173,7 +173,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		 * Overload operator =
 		 *
 		 * @param b: A multivariate modular polynomial
-		 **/ 
+		 **/
 		DistributedDenseMultivariateModularPolynomial<Field>& operator= (const DistributedDenseMultivariateModularPolynomial<Field>& b) {
 			if (this != &b) {
 				delete [] coefs;
@@ -197,18 +197,27 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		}
 
 		/**
-		 * Overload operator =. Assign this to a be a base Field element. 
-		 */		
+		 * Overload operator =. Assign this to a be a base Field element.
+		 */
 		DistributedDenseMultivariateModularPolynomial<Field>& operator= (const Field& f) {
 			*this = DistributedDenseMultivariateModularPolynomial(f);
 			return *this;
 		}
 
+
+		/**
+	     * The characteristic of this ring class.
+		 */
+		mpz_class getCharacteristic() const override {
+			return DistributedDenseMultivariateModularPolynomial<Field>::characteristic;
+		}
+
+
 		/**
 		 * Is a zero polynomial
 		 *
 		 * @param
-		 **/ 
+		 **/
 		inline bool isZero() const {
 			for (int i = 0; i < n; ++i) {
 				if (coefs[i] != 0)
@@ -321,16 +330,18 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		 * Get the total degree.
 		 */
 		inline Integer degree() const {
-			std::cerr << "DistributedDenseMultivariateModularPolynomial::degree() NOT YET IMPLEMENTED" << std::endl;
-			//TODO
-			return 0;
+			Integer ret;
+			for (int i = 0; i < var; ++i) {
+				ret += degs[i];
+			}
+			return ret;
 		}
 
 		/**
 		 * Get a partial degree of variable x
 		 *
 		 * @param x: The variable name
-		 **/ 
+		 **/
 		inline Integer degree(const Symbol& x) const {
 			int k = 0, d = 0;
 			for (int i = 1; i <= var; ++i) {
@@ -376,14 +387,14 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 			return (f == 0);
 		}
 
-		inline DistributedDenseMultivariateModularPolynomial<Field> unitCanonical(DistributedDenseMultivariateModularPolynomial* u = NULL, 
+		inline DistributedDenseMultivariateModularPolynomial<Field> unitCanonical(DistributedDenseMultivariateModularPolynomial* u = NULL,
 																			      DistributedDenseMultivariateModularPolynomial* v = NULL) const {
 			Field lead = leadingCoefficient();
 			Field leadInv = lead.inverse();
 			DistributedDenseMultivariateModularPolynomial ret = *this * leadInv;
 			if (u != NULL) {
 				*u = lead;
-			} 
+			}
 			if (v != NULL) {
 				*v = leadInv;
 			}
@@ -457,7 +468,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		inline Field content() const {
 			//TODO
 			std::cerr << "BPAS ERROR: DistributedDenseMultivariateModularPolynomial::content() NOT YET IMPLEMENTED" << std::endl;
-			return Field(1); 
+			return Field(1);
 		}
 
 		inline DistributedDenseMultivariateModularPolynomial primitivePart() const {
@@ -470,7 +481,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		 * Overload operator ==
 		 *
 		 * @param b: A multivariate modular polynomial
-		 **/ 
+		 **/
 		inline bool operator== (const DistributedDenseMultivariateModularPolynomial<Field>& b) const {
 			if (var != b.var || p != b.p)
 				return 0;
@@ -582,17 +593,17 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 			*this = *this + b;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator +
 		 *
 		 * @param e: A constant
-		 **/ 
+		 **/
 		inline DistributedDenseMultivariateModularPolynomial<Field> operator+ (const Field& e) const {
 			DistributedDenseMultivariateModularPolynomial<Field> r (*this);
 			return (r += e);
 		}
-		
+
 		inline friend DistributedDenseMultivariateModularPolynomial<Field> operator+ (const Field& e, const DistributedDenseMultivariateModularPolynomial<Field>& f) {
 			return (f + e);
 		}
@@ -606,7 +617,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 			coef_add_mod(&coefs[0], coefs[0], e, p);
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator -
 		 *
@@ -670,7 +681,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 
 		/**
 		 * Overload operator -=
-		 * 
+		 *
 		 * @param b: A multivariate modular polynomial
 		 **/
 		inline DistributedDenseMultivariateModularPolynomial<Field>& operator-= (const DistributedDenseMultivariateModularPolynomial<Field>& b) {
@@ -771,7 +782,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 						int e = (j / b.acc[v]) % (b.degs[v] + 1);
 						if (v < var)
 							k += (ds[v] + e) * res.acc[v];
-						else 
+						else
 							k += e * res.acc[v];
 					}
 					for (int v = b.var; v < var; ++v)
@@ -789,7 +800,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 
 		/**
 		 * Overload operator *=
-		 * 
+		 *
 		 * @param b: A multivariate modular polynomial
 		 **/
 		inline DistributedDenseMultivariateModularPolynomial<Field>& operator*= (const DistributedDenseMultivariateModularPolynomial<Field>& b) {
@@ -855,7 +866,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 			DistributedDenseMultivariateModularPolynomial ret(*this);
 			ret /= e;
 			return ret;
-		}		
+		}
 
 		inline DistributedDenseMultivariateModularPolynomial<Field>& operator/= (const Field& e) {
 			//TODO
@@ -867,7 +878,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		 * Set variable names
 		 *
 		 * @param xs: Variable names
-		 **/ 
+		 **/
 		inline void setRingVariables (const std::vector<Symbol>& xs) {
 			int ns = xs.size();
 			if (ns != var) {
@@ -902,7 +913,7 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		 *
 		 * @param out: Stream object
 		 * @param b: The multivariate modular polynomial
-		 **/ 
+		 **/
 		inline void print(std::ostream &out) const {
 			bool isFirst = 0;
 			for (int i = 0; i < this->n; ++i) {
@@ -965,21 +976,21 @@ class DistributedDenseMultivariateModularPolynomial : public BPASMultivariatePol
 		inline DistributedDenseMultivariateModularPolynomial<Field> evaluate(const std::vector<Symbol>& syms, const std::vector<Field>& vals) const {
 			//TODO
 			std::cerr << "BPAS ERROR: DistributedDenseMultivariateModularPolynomial::evaluate NOT YET IMPLEMENTED" << std::endl;
-			return *this; 
+			return *this;
 		}
 
 		inline DistributedDenseMultivariateModularPolynomial<Field> evaluate(int n, const Symbol* syms, const Field* vals) const {
 			//TODO
 			std::cerr << "BPAS ERROR: DistributedDenseMultivariateModularPolynomial::evaluate NOT YET IMPLEMENTED" << std::endl;
-			return *this; 
+			return *this;
 		}
 
 		inline DistributedDenseMultivariateModularPolynomial<Field> gcd(const DistributedDenseMultivariateModularPolynomial<Field>& p) const {
 			//TODO
 			std::cerr << "BPAS ERROR: DistributedDenseMultivariateModularPolynomial::gcd NOT YET IMPLEMENTED" << std::endl;
 			return *this;
-		} 
-		
+		}
+
 		/**
 		 * Compute squarefree factorization of *this
 		 */

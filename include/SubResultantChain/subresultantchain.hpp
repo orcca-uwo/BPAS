@@ -1,15 +1,16 @@
 #ifndef _SUBRESULTANTCHAIN_H_
 #define _SUBRESULTANTCHAIN_H_
 
-#include "../polynomial.h"
-#include "RationalNumberPolynomial/mrpolynomial.h"
+#include "../Polynomial/BPASRecursivePolynomial.hpp"
+#include "../Polynomial/BPASUnivarPolynomial.hpp"
+#include "../RationalNumberPolynomial/mrpolynomial.h"
 
 /**
  * A data structure class for encoded a subresultant chain between
- * two polynomials over a ring. The polynomials must be 
+ * two polynomials over a ring. The polynomials must be
  * either univariate or a recursively-viewed polynomial.
  * This is enforced by the otherwise unnecessary inheriance.
- * 
+ *
  * Ring should be the ground ring of the polynomial ring defined
  * by Poly.
  */
@@ -24,14 +25,14 @@ public:
 	 *
 	 **/
 	SubResultantChain ();
-	
+
 	/**
 	 * Constructor: creates an empty subresultant chain with identified variable.
 	 *
 	 * @param v: variableName
 	 **/
 	SubResultantChain (const Symbol& v);
-	
+
 	/**
 	 * Default constructor: creates a subresultant chain from the input polynomials and their leading variable.
 	 *
@@ -43,7 +44,7 @@ public:
 
 	//TODO remove this one, it's so awkward.
 	SubResultantChain (const Poly& a, const Poly& b, const Symbol& v, std::vector<Symbol> vars);
-	
+
 	/**
 	 * Get the size of the subresultant chain.
 	 *
@@ -61,13 +62,13 @@ public:
 	 *
 	 **/
 	Symbol variableName() const;
-	
+
 	/**
 	 * Get the polynomials in the subresultant chain.
 	 *
 	 **/
 	std::vector<Poly> polynomials() const;
-	
+
 	/**
 	 * Select a subresultant given the index;
 	 * if no such polynomial exists, 0 is returned.
@@ -75,31 +76,31 @@ public:
 	 * @param i: index of the desired subresultant
 	 **/
 	Poly subResultantOfIndex(size_t i, bool lazy = 0) const;
-	
+
 	/**
 	 * Return the first polynomial in the chain.
 	 * That is, one of the two inputs of higher degree.
 	 *
 	 **/
 	Poly firstPolynomial() const;
-	
+
 	/**
 	 * Return the second polynomial in the chain.
 	 * That is, one of the two inputs of lower degree.
 	 *
 	 **/
 	Poly secondPolynomial() const;
-	
+
 	/**
 	 * Get the resultant of the subresultant chain.
 	 * The lazy parameter indicates whether to compute only the subresultant and no other part
 	 * of he subresultant chain. This is useful if, in the future, one never needs any subresultants.
 	 *
-	 * @param lazy, if true compute the resultant in a lazy way.
+	 * @param lazy: if true compute the resultant in a lazy way.
 	 *
 	 **/
 	Ring resultant(bool lazy = 0) const;
-	
+
 	/**
 	 * Select the leading coefficient of a subresultant given the index;
 	 * if no such polynomial exists, 0 is returned.
@@ -124,7 +125,7 @@ public:
     friend std::ostream& operator<< (std::ostream& ostream, const SubResultantChain<Ring,Poly>& d) {
     	d.print(ostream);
         return ostream;
-    }  
+    }
 
 	/**
 	 * Overload stream operator <<.

@@ -3,7 +3,8 @@
 
 #include <complex>
 #include <mps/mpc.h>
-#include "../polynomial.h"
+#include "BPASRationalFunction.hpp"
+#include "../RingPolynomial/upolynomial.h"
 #include "rationalfunction_euclideanmethods.h"
 #include "rationalfunction_symbolicintegration.h"
 #include "multiprecision_rootfinding.h"
@@ -16,7 +17,7 @@ struct IntegralTerm
 {
 	int Sindex;
 	int tindex;
-	
+
 	bool operator()(const IntegralTerm a,const IntegralTerm b) const {
 		if (a.Sindex > b.Sindex)
 			return 1;
@@ -29,7 +30,7 @@ struct IntegralTerm
 				return 0;
 		}
 	}
-	
+
 	bool operator<(const IntegralTerm b) const {
 		if (this->Sindex < b.Sindex)
 			return 1;
@@ -42,9 +43,9 @@ struct IntegralTerm
 				return 0;
 		}
 	}
-	
+
 	inline friend std::ostream& operator<< (std::ostream &out, IntegralTerm b) {
-			out << "[" << b.Sindex << "," << b.tindex << "]"; 
+			out << "[" << b.Sindex << "," << b.tindex << "]";
 			return out;
 		}
 };
@@ -65,8 +66,8 @@ typedef TermRootMap::const_iterator TRMIter;
 
 /**
  * A univariate rational function templated by a unvariate polynomial over a field.
- * The univariate polynomial and the coefficient BPASField must be passed separately 
- * and explicitly.  
+ * The univariate polynomial and the coefficient BPASField must be passed separately
+ * and explicitly.
  */
 template <class UnivariatePolynomialOverField, class Field>
 class UnivariateRationalFunction : public BPASRationalFunction<UnivariatePolynomialOverField, UnivariateRationalFunction<UnivariatePolynomialOverField,Field>>,
@@ -74,7 +75,7 @@ class UnivariateRationalFunction : public BPASRationalFunction<UnivariatePolynom
 	private:
 		UnivariatePolynomialOverField den;
 		UnivariatePolynomialOverField num;
-		
+
 		bool PROFILING;
 		bool ERROR_ANALYSIS;
 		bool PFD_LOG_PART;
@@ -89,12 +90,12 @@ class UnivariateRationalFunction : public BPASRationalFunction<UnivariatePolynom
 		mpz_class characteristic;
 		static bool isPrimeField;
 		static bool isSmallPrimeField;
-                static bool isComplexField;
+        static bool isComplexField;
 		/**
 		 * Construct the zero univariate rational function
 		 *
 		 * @param
-		 **/ 
+		 **/
 		UnivariateRationalFunction<UnivariatePolynomialOverField,Field> () {
 		  den.one();
 		  num.zero();
@@ -104,25 +105,25 @@ class UnivariateRationalFunction : public BPASRationalFunction<UnivariatePolynom
 		  floatingPointPrinting = false;
 		  outputFormatting = "MAPLE_OUTPUT";
 			UnivariatePolynomialOverField e;
-			characteristic = e.characteristic;
+			characteristic = e.getCharacteristic();
 		};
 
 		/**
 		 * Copy constructor
 		 *
 		 * @param b: A rational function
-		 **/ 
-		UnivariateRationalFunction<UnivariatePolynomialOverField,Field> (const UnivariateRationalFunction<UnivariatePolynomialOverField,Field>& b) : den(b.den), num(b.num), PROFILING(b.PROFILING), 
+		 **/
+		UnivariateRationalFunction<UnivariatePolynomialOverField,Field> (const UnivariateRationalFunction<UnivariatePolynomialOverField,Field>& b) : den(b.den), num(b.num), PROFILING(b.PROFILING),
 ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPrinting(b.floatingPointPrinting), outputFormatting(b.outputFormatting) {
 			characteristic = b.characteristic;
 		}
- 
+
 		/**
 		 *
 		 * @param a: the numerator
 		 * @param b: the denominator
 		 **/
-		UnivariateRationalFunction<UnivariatePolynomialOverField,Field> (UnivariatePolynomialOverField a, UnivariatePolynomialOverField b) {			
+		UnivariateRationalFunction<UnivariatePolynomialOverField,Field> (UnivariatePolynomialOverField a, UnivariatePolynomialOverField b) {
 		  if (a.variable() != b.variable()) {
 		    std::cout << "BPAS error: numerator and denominator must have the same variable." << std::endl;
                     exit(1);
@@ -138,7 +139,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 		  PFD_LOG_PART = false;
 		  floatingPointPrinting = false;
 		UnivariatePolynomialOverField e;
-		characteristic = e.characteristic;
+		characteristic = e.getCharacteristic();
 		  outputFormatting = "MAPLE_OUTPUT";
 		}
 
@@ -148,71 +149,71 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 		 * @param
 		 **/
 		~UnivariateRationalFunction<UnivariatePolynomialOverField,Field> () {}
-		
+
 		inline void setVariableName(Symbol name) {
 			num.setVariableName(name);
 			den.setVariableName(name);
 		}
-		
+
 		inline Symbol variable() {
 			return num.variable();
 		}
-		
+
 		inline bool isProfiling() {
 			return PROFILING;
 		}
-		
+
 		inline void setProfiling(bool a) {
 			PROFILING = a;
 		}
-		
+
 		inline bool isAnalyzingError() {
 			return ERROR_ANALYSIS;
 		}
-		
+
 		inline void setAnalyzingError(bool a) {
 			ERROR_ANALYSIS = a;
 		}
-		
+
 		inline bool isPFDLogPart() {
 			return PFD_LOG_PART;
 		}
-		
+
 		inline void setPFDLogPart(bool a) {
 			PFD_LOG_PART = a;
 		}
-		
+
 		inline bool isFloatingPointPrinting() {
 			return floatingPointPrinting;
 		}
-		
+
 		inline void setFloatingPointPrinting(bool a) {
 			floatingPointPrinting = a;
 		}
-		
+
 		inline bool isMapleOutput() {
 			if (outputFormatting == "MAPLE_OUTPUT")
 				return true;
 			else
 				return false;
 		}
-		
+
 		inline void setMapleOutput() {
 			outputFormatting = "MAPLE_OUTPUT";
 		}
-		
+
 		inline bool isMatlabOutput() {
 			if (outputFormatting == "MATLAB_OUTPUT")
 				return true;
 			else
 				return false;
 		}
-		
+
 		inline void setMatlabOutput() {
 			outputFormatting = "MATLAB_OUTPUT";
 		}
-		
-		inline void setNumerator(const UnivariatePolynomialOverField& b) {			
+
+		inline void setNumerator(const UnivariatePolynomialOverField& b) {
 			if (num.variable() != b.variable()) {
 				std::cout << "BPAS error: numerator and denominator must have the same variable." << std::endl;
 				exit(1);
@@ -220,8 +221,8 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			num = b;
 			canonicalize();
 		}
-		
-		inline void setDenominator(const UnivariatePolynomialOverField& b) {			
+
+		inline void setDenominator(const UnivariatePolynomialOverField& b) {
 			if (num.variable() != b.variable()) {
 				std::cout << "BPAS error: numerator and denominator must have the same variable." << std::endl;
 				exit(1);
@@ -229,8 +230,8 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			den = b;
 			canonicalize();
 		}
-		
-		inline void set(const UnivariatePolynomialOverField& a, const UnivariatePolynomialOverField& b) {			
+
+		inline void set(const UnivariatePolynomialOverField& a, const UnivariatePolynomialOverField& b) {
 			if (a.variable() != b.variable()) {
 				std::cout << "BPAS error: numerator and denominator must have the same variable." << std::endl;
 				exit(1);
@@ -239,15 +240,15 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			den = b;
 			canonicalize();
 		}
-		
+
 		inline UnivariatePolynomialOverField numerator() const {
 			return num;
 		}
-		
+
 		inline UnivariatePolynomialOverField denominator() const {
 			return den;
 		}
-		
+
 		inline Field evaluate(const Field& c) {
 			Field output;
 			output = num.evaluate(c);
@@ -285,7 +286,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 		  den *= g;
 		  num = r1;
 		  normalize();
-		  
+
 		  return *this;
 		}
 
@@ -312,7 +313,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 		  den *= g;
 		  num = r1;
 		  normalize();
- 
+
 		  return *this;
 		}
 
@@ -372,7 +373,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 		  r.normalize();
 		  return r;
 		}
-		
+
 		inline UnivariateRationalFunction<UnivariatePolynomialOverField,Field> operator* (const UnivariateRationalFunction<UnivariatePolynomialOverField,Field>& b) const {
 		  UnivariateRationalFunction<UnivariatePolynomialOverField,Field> r(*this);
 		  return (r *= b);
@@ -460,7 +461,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			temp = du*(num/g);
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> ret;
 			ret.num = temp;
-			ret.den = dc;	
+			ret.den = dc;
 			if (u != NULL || v!= NULL) {
 				UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp2;
 				temp2.one();
@@ -473,7 +474,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			}
 
 			return ret;
-		}	
+		}
 
 		/**
 		 * Overload operator =
@@ -502,7 +503,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 		 * @param b: The rational function
 		 **/
     	void print(std::ostream& ostream) const {
-			ostream << "(" << num << ")/(" << den << ")"; 
+			ostream << "(" << num << ")/(" << den << ")";
     	}
 
     	/*UnivariateRationalFunction<UnivariatePolynomialOverField, Field> unitCanonical(UnivariateRationalFunction<UnivariatePolynomialOverField,Field>* u = NULL,
@@ -513,7 +514,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			Field lc = tempDen.leadingCoefficient();
 			temp *= lc;
 			if (u != NULL) {
-				//TODO 
+				//TODO
 				*u = UnivariateRationalFunction<UnivariatePolynomialOverField,Field>();
 			}
 			if (v != NULL) {
@@ -525,7 +526,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			return ret;
     	}*/
 
-    	
+
     	/** BPASGCDDomain, BPASEuclideanDomain, BPASField virtual methods **/
 
     	/**
@@ -536,7 +537,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
     		//TODO
     		return *this;
     	}
-		
+
 		/**
 		 * Compute squarefree factorization of *this
 		 */
@@ -548,14 +549,11 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			return ret;
 		}
 
-    	UnivariateRationalFunction<UnivariatePolynomialOverField, Field> euclideanSize() const {
-			std::cerr << "UnivariateRationalFunction::euclideanSize NOT YET IMPLEMENTED" << std::endl;
-    		//TODO
-    		return *this;
-
+		Integer euclideanSize() const {
+			return Integer(1);
     	}
- 
-    	UnivariateRationalFunction<UnivariatePolynomialOverField, Field> euclideanDivision(const UnivariateRationalFunction<UnivariatePolynomialOverField,Field>& b, 
+
+    	UnivariateRationalFunction<UnivariatePolynomialOverField, Field> euclideanDivision(const UnivariateRationalFunction<UnivariatePolynomialOverField,Field>& b,
     																							 UnivariateRationalFunction<UnivariatePolynomialOverField,Field>* q = NULL) const {
 			std::cerr << "UnivariateRationalFunction::euclideanDivision NOT YET IMPLEMENTED" << std::endl;
     		//TODO
@@ -571,7 +569,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			return UnivariateRationalFunction<UnivariatePolynomialOverField, Field>(0,1);
     	}
 
-    	UnivariateRationalFunction<UnivariatePolynomialOverField, Field> extendedEuclidean(const UnivariateRationalFunction<UnivariatePolynomialOverField, Field>& b, 
+    	UnivariateRationalFunction<UnivariatePolynomialOverField, Field> extendedEuclidean(const UnivariateRationalFunction<UnivariatePolynomialOverField, Field>& b,
 																						     	 UnivariateRationalFunction<UnivariatePolynomialOverField, Field>* s = NULL,
 																						     	 UnivariateRationalFunction<UnivariatePolynomialOverField, Field>* t = NULL) const {
     		std::cerr << "UnivariateRationalFunction::extendedEuclidean NOT YET IMPLEMENTED" << std::endl;
@@ -586,13 +584,14 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 
     	inline UnivariateRationalFunction<UnivariatePolynomialOverField, Field>& operator%=(const UnivariateRationalFunction<UnivariatePolynomialOverField, Field>& b) {
     		*this = this->remainder(b);
+    		return *this;
     	}
 
 
 		void hermiteReduce(std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > *g, UnivariateRationalFunction<UnivariatePolynomialOverField,Field> *h) {
 			std::vector<UnivariatePolynomialOverField> gg,hh;
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp;
-			
+
 			temp.setVariableName(num.variable());
 			h->setVariableName(num.variable());
 			g->clear();
@@ -606,20 +605,20 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			temp.set(hh.at(0),hh.at(1));
 			*h = temp;
 		}
-		
+
 		void integrateRationalFunctionLogPart(std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverField> > *S, std::vector<UnivariatePolynomialOverField> *U) {
 			U->clear();
 			S->clear();
-		
+
 			_integrateRationalFunctionLogPart<UnivariatePolynomialOverField,Field>(S,U,num,den,PROFILING);
 		}
-		
+
 		void differentiate() {
 			/* Destructive rational function differentiation */
 			// input a/d
 			// output (a'*d-a*d')/d^2 = a'*e-a*f/d*e; e=d/g, f=d'/g, g=gcd(d,d')
-	
-			UnivariatePolynomialOverField D(den); // D = d	
+
+			UnivariatePolynomialOverField D(den); // D = d
 			UnivariatePolynomialOverField dD(den);
 			UnivariatePolynomialOverField temp;
 			//std::cout << "here?" << std::endl;
@@ -645,48 +644,48 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			//std::cout << "temp = " << temp << std::endl;
 			D *= den; 				// D = d*e
 			//std::cout << "D = " << D << std::endl;
-			
+
 			//std::cout << "here?" << std::endl;
 			num = temp;
 			den = D;
 			canonicalize();
 		}
-		
+
 		void integrate(UnivariatePolynomialOverField *P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > *g, std::vector<UnivariatePolynomialOverField> *U, std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverField> > *S) {
 			g->clear();
 			U->clear();
 			S->clear();
 			std::vector<UnivariatePolynomialOverField> G;
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp;
-			temp.setVariableName(num.variable());	
-	
+			temp.setVariableName(num.variable());
+
 			// Profiling variables
 			unsigned long long start;
 			float elapsed = 0;
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				std::cout << "integrate" << std::endl;
 				std::cout << "--------------------------------------" << std::endl;
 				startTimer(&start);
 			}
-					
+
 			_integrateRationalFunction<UnivariatePolynomialOverField,Field>(num,den,P,&G,U,S,PROFILING);
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				stopTimer(&start,&elapsed);
 				std::cout << "--------------------------------------" << std::endl;
 				std::cout << "integrate runtime: " << elapsed << " s" << std::endl;
 			}
-				
+
 			int i(0);
 			while (i<G.size()) {
 				temp.set(G.at(i),G.at(i+1));
 				g->push_back(temp);
 				i += 2;
 			}
-			
+
 		}
-		
+
 		void realSymbolicNumericIntegrate(UnivariatePolynomialOverField *P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > *g, std::vector<Field> *lg, std::vector<UnivariatePolynomialOverField> *Lg, std::vector<Field> *atn, std::vector<UnivariatePolynomialOverField> *Atn, int prec) {
 			P->zero();
 			g->clear();
@@ -697,7 +696,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			std::vector<UnivariatePolynomialOverField> G;
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp;
 			temp.setVariableName(num.variable());
-	
+
 		    std::cout << "[realSymbolicNumericIntegrate (snInt): Symbolic-Numeric Integration with BPAS and MPSolve]" << std::endl;
 		    std::cout << "[Integration method: Hermite reduction, LRT integration]" << std::endl;
 		    std::cout << "Starting..." << std::endl;
@@ -705,15 +704,15 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			// Profiling variables
 			unsigned long long start;
 			float elapsed = 0;
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				std::cout << "--------------------------------------" << std::endl;
 				startTimer(&start);
 			}
-		
+
 			_realSNIntegrate<UnivariatePolynomialOverField,Field>(num,den,P,&G,lg,Lg,atn,Atn,prec,PROFILING,PFD_LOG_PART,ERROR_ANALYSIS);
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				stopTimer(&start,&elapsed);
 				std::cout << "--------------------------------------" << std::endl;
 				std::cout << "realSymbolicNumericIntegrate runtime: " << elapsed << " s" << std::endl;
@@ -721,17 +720,17 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 				fs.open("perftiming.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 				fs << elapsed << std::endl;
 				fs.close();
-			}	
-		
+			}
+
 			int i(0);
 			while (i<G.size()) {
 				temp.set(G.at(i),G.at(i+1));
 				g->push_back(temp);
 				i += 2;
 			}
-		
+
 		}
-		
+
 		void realSymbolicNumericIntegrate(UnivariatePolynomialOverField *P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > *g, std::vector<Field> *lg, std::vector<UnivariatePolynomialOverField> *Lg, std::vector<Field> *atn, std::vector<UnivariatePolynomialOverField> *Atn1, std::vector<UnivariatePolynomialOverField> *Atn2, int prec) {
 			P->zero();
 			g->clear();
@@ -743,7 +742,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			std::vector<UnivariatePolynomialOverField> G;
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp;
 			temp.setVariableName(num.variable());
-	
+
 		    std::cout << "[realSymbolicNumericIntegrate (snInt): Symbolic-Numeric Integration with BPAS and MPSolve]" << std::endl;
 		    std::cout << "[Integration method: Hermite reduction, LRT integration]" << std::endl;
 		    std::cout << "Starting..." << std::endl;
@@ -751,15 +750,15 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			// Profiling variables
 			unsigned long long start;
 			float elapsed = 0;
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				std::cout << "--------------------------------------" << std::endl;
 				startTimer(&start);
 			}
-		
+
 			_realSNIntegrate<UnivariatePolynomialOverField,Field>(num,den,P,&G,lg,Lg,atn,Atn1,Atn2,prec,PROFILING,PFD_LOG_PART,ERROR_ANALYSIS);
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				stopTimer(&start,&elapsed);
 				std::cout << "--------------------------------------" << std::endl;
 				std::cout << "realSymbolicNumericIntegrate runtime: " << elapsed << " s" << std::endl;
@@ -767,17 +766,17 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 				fs.open("perftiming.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 				fs << elapsed << std::endl;
 				fs.close();
-			}	
-		
+			}
+
 			int i(0);
 			while (i<G.size()) {
 				temp.set(G.at(i),G.at(i+1));
 				g->push_back(temp);
 				i += 2;
 			}
-		
+
 		}
-		
+
 		void realSymbolicNumericIntegratePFD(UnivariatePolynomialOverField *P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > *g, std::vector<Field> *lg, std::vector<UnivariatePolynomialOverField> *Lg, std::vector<Field> *atn, std::vector<UnivariatePolynomialOverField> *Atn, int prec) {
 			P->zero();
 			g->clear();
@@ -788,7 +787,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			std::vector<UnivariatePolynomialOverField> G;
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp;
 			temp.setVariableName(num.variable());
-	
+
 		    std::cout << "[realSymbolicNumericIntegratePFD (snIntPFD): Symbolic-Numeric Integration with BPAS and MPSolve]" << std::endl;
 		    std::cout << "[Integration method: Hermite reduction, PFD integration]" << std::endl;
 		    std::cout << "Starting..." << std::endl;
@@ -796,15 +795,15 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			// Profiling variables
 			unsigned long long start;
 			float elapsed = 0;
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				std::cout << "--------------------------------------" << std::endl;
 				startTimer(&start);
 			}
-		
+
 			_realSNIntegratePFD<UnivariatePolynomialOverField,Field>(num,den,P,&G,lg,Lg,atn,Atn,prec,PROFILING,PFD_LOG_PART,ERROR_ANALYSIS);
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				stopTimer(&start,&elapsed);
 				std::cout << "--------------------------------------" << std::endl;
 				std::cout << "realSymbolicNumericIntegratePFD runtime: " << elapsed << " s" << std::endl;
@@ -812,17 +811,17 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 				fs.open("perftiming.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 				fs << elapsed << std::endl;
 				fs.close();
-			}	
-		
+			}
+
 			int i(0);
 			while (i<G.size()) {
 				temp.set(G.at(i),G.at(i+1));
 				g->push_back(temp);
 				i += 2;
 			}
-		
+
 		}
-		
+
 		void realSymbolicNumericIntegrateSimplePFD(UnivariatePolynomialOverField *P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > *g, std::vector<Field> *lg, std::vector<UnivariatePolynomialOverField> *Lg, std::vector<Field> *atn, std::vector<UnivariatePolynomialOverField> *Atn, int prec) {
 			P->zero();
 			g->clear();
@@ -833,7 +832,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			std::vector<UnivariatePolynomialOverField> G;
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp;
 			temp.setVariableName(num.variable());
-	
+
 		    std::cout << "[realSymbolicNumericIntegratePFD (snIntPFD): Symbolic-Numeric Integration with BPAS and MPSolve]" << std::endl;
 		    std::cout << "[Integration method: Hermite reduction, PFD integration]" << std::endl;
 		    std::cout << "Starting..." << std::endl;
@@ -841,15 +840,15 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			// Profiling variables
 			unsigned long long start;
 			float elapsed = 0;
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				std::cout << "--------------------------------------" << std::endl;
 				startTimer(&start);
 			}
-		
+
 			_realSNIntegrateSimplePFD<UnivariatePolynomialOverField,Field>(num,den,P,&G,lg,Lg,atn,Atn,prec,PROFILING,PFD_LOG_PART,ERROR_ANALYSIS);
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				stopTimer(&start,&elapsed);
 				std::cout << "--------------------------------------" << std::endl;
 				std::cout << "realSymbolicNumericIntegratePFD runtime: " << elapsed << " s" << std::endl;
@@ -857,17 +856,17 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 				fs.open("perftiming.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 				fs << elapsed << std::endl;
 				fs.close();
-			}	
-		
+			}
+
 			int i(0);
 			while (i<G.size()) {
 				temp.set(G.at(i),G.at(i+1));
 				g->push_back(temp);
 				i += 2;
 			}
-		
+
 		}
-		
+
 		/*void realSymbolicNumericIntegratePFD(UnivariatePolynomialOverField *P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > *g, std::vector<Field> *lg, std::vector<UnivariatePolynomialOverField> *Lg, std::vector<Field> *atn, std::vector<UnivariatePolynomialOverField> *Atn1, std::vector<UnivariatePolynomialOverField> *Atn2, int prec) {
 			P->zero();
 			g->clear();
@@ -879,7 +878,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			std::vector<UnivariatePolynomialOverField> G;
 			UnivariateRationalFunction<UnivariatePolynomialOverField,Field> temp;
 			temp.setVariableName(num.variable());
-	
+
 		    std::cout << "[realSymbolicNumericIntegratePFD (snIntPFD): Symbolic-Numeric Integration with BPAS and MPSolve]" << std::endl;
 		    std::cout << "[Integration method: Hermite reduction, PFD integration]" << std::endl;
 		    std::cout << "Starting..." << std::endl;
@@ -887,27 +886,27 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			// Profiling variables
 			unsigned long long start;
 			float elapsed = 0;
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				std::cout << "--------------------------------------" << std::endl;
 				startTimer(&start);
 			}
-		
+
 			_realSNIntegratePFD<UnivariatePolynomialOverField,Field>(num,den,P,&G,lg,Lg,atn,Atn1,Atn2,prec,PROFILING,PFD_LOG_PART,ERROR_ANALYSIS);
-	
-			if (PROFILING){	
+
+			if (PROFILING){
 				stopTimer(&start,&elapsed);
 				std::cout << "--------------------------------------" << std::endl;
 				std::cout << "realSymbolicNumericIntegratePFD runtime: " << elapsed << " s" << std::endl;
-			}	
-		
+			}
+
 			int i(0);
 			while (i<G.size()) {
 				temp.set(G.at(i),G.at(i+1));
 				g->push_back(temp);
 				i += 2;
 			}
-		
+
 		}*/
 
 		void printIntegral(UnivariatePolynomialOverField &P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > &g, std::vector<UnivariatePolynomialOverField> &U, std::vector< SparseUnivariatePolynomial<UnivariatePolynomialOverField> > &S){
@@ -918,7 +917,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			}
 			_printFormalIntegral<UnivariatePolynomialOverField,Field>(num,den,P,G,U,S, false, floatingPointPrinting, false);
 		}
-		
+
 		void printIntegral(UnivariatePolynomialOverField &P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > &g, std::vector<Field> &lg, std::vector<UnivariatePolynomialOverField> &Lg, std::vector<Field> &atn, std::vector<UnivariatePolynomialOverField> &Atn){
 			std::vector<UnivariatePolynomialOverField> G;
 			for (int i=0; i<g.size(); i++) {
@@ -928,7 +927,7 @@ ERROR_ANALYSIS(b.ERROR_ANALYSIS), PFD_LOG_PART(b.PFD_LOG_PART), floatingPointPri
 			std::vector<UnivariatePolynomialOverField> empty;
 			_printIntegral<UnivariatePolynomialOverField,Field>(num,den,P,G,lg,Lg,atn,Atn,empty, false, floatingPointPrinting, false, outputFormatting);
 		}
-		
+
 		void printIntegral(UnivariatePolynomialOverField &P, std::vector< UnivariateRationalFunction<UnivariatePolynomialOverField,Field> > &g, std::vector<Field> &lg, std::vector<UnivariatePolynomialOverField> &Lg, std::vector<Field> &atn, std::vector<UnivariatePolynomialOverField> &Atn1, std::vector<UnivariatePolynomialOverField> &Atn2){
 			std::vector<UnivariatePolynomialOverField> G;
 			for (int i=0; i<g.size(); i++) {

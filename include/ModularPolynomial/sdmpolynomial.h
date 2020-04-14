@@ -1,7 +1,7 @@
 #ifndef _SMALLMMPOLYNOMIAL_H_
 #define _SMALLMMPOLYNOMIAL_H_
 
-#include "../polynomial.h"
+#include "../Polynomial/BPASMultivarPolynomial.hpp"
 #include "../FFT/src/modpn.h"
 #include "../FFT/src/general_routine.h"
 #include "../FFT/src/basic_routine.h"
@@ -19,8 +19,10 @@
 /**
  * A multivariate polynomial with coefficients in a small prime field using a dense representation.
  */
-class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPASMultivariatePolynomial<sfixn,SmallPrimeFieldDistributedDenseMultivariateModularPolynomial>,
-																	 public BPASGCDDomain<SmallPrimeFieldDistributedDenseMultivariateModularPolynomial> {
+class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPASGCDDomain<SmallPrimeFieldDistributedDenseMultivariateModularPolynomial> {
+//TODO wrap sfixn in BPASRing class.
+//public BPASMultivariatePolynomial<sfixn,SmallPrimeFieldDistributedDenseMultivariateModularPolynomial>,
+
 	private:
 		Symbol* names;     // Variable names
 		int var;		// Number of variables
@@ -38,7 +40,6 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 
 	public:
 		static mpz_class characteristic;
-		static RingProperties properties;
 		// static bool isPrimeField;
 		// static bool isSmallPrimeField;
         // static bool isComplexField;
@@ -183,9 +184,15 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 		}
 
 		/**
+	     * The characteristic of this ring class.
+		 */
+		mpz_class getCharacteristic() const override {
+			return SmallPrimeFieldDistributedDenseMultivariateModularPolynomial::characteristic;
+		}
+
+		/**
 		 * Is a zero polynomial
 		 *
-		 * @param
 		 **/
 		inline bool isZero() const {
 			for (int i = 0; i < n; ++i) {
@@ -266,7 +273,7 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			else { return -1; }
 		}
 
-		inline SmallPrimeFieldDistributedDenseMultivariateModularPolynomial unitCanonical(SmallPrimeFieldDistributedDenseMultivariateModularPolynomial* u = NULL, 
+		inline SmallPrimeFieldDistributedDenseMultivariateModularPolynomial unitCanonical(SmallPrimeFieldDistributedDenseMultivariateModularPolynomial* u = NULL,
 																						  SmallPrimeFieldDistributedDenseMultivariateModularPolynomial* v = NULL) const {
 			sfixn leadCoef = this->leadingCoefficient();
 			mpz_class mpzLead(leadCoef);
@@ -327,7 +334,7 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 		}
 
 		/**
-		 * Total degree. 
+		 * Total degree.
 		 */
 		inline Integer degree() const {
 			std::cerr << "SmallPrimeFieldDistributedDenseMultivariateModularPolynomial::degree() NOT YET IMPLEMENTED" << std::endl;
@@ -481,30 +488,30 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			std::cerr << "BPAS ERROR: SDMP::variables() NOT YET IMPLEMENTED" << std::endl;
 			return ringVariables();
 		}
-		
+
 		/**
 		 * Convert current object to its k-th derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the derivative, k > 0
-		 **/ 
+		 **/
     	void differentiate(const Symbol& s, int k) {}
 
 		/**
 		 * Convert current object to its derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
     	inline void differentiate(const Symbol& s) {
     		this->differentiate(s,0);
     	}
-		
+
 		/**
 		 * Return k-th derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
 		 * @param k: Order of the k-th derivative, k > 0
-		 **/ 
+		 **/
 		inline SmallPrimeFieldDistributedDenseMultivariateModularPolynomial derivative(const Symbol& s, int k) const {
     		SmallPrimeFieldDistributedDenseMultivariateModularPolynomial a(*this);
     		a.differentiate(s,k);
@@ -514,11 +521,11 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 		 * Compute derivative
 		 *
 		 * @param s: Symbol to differentiate with respect to
-		 **/ 
+		 **/
     	inline SmallPrimeFieldDistributedDenseMultivariateModularPolynomial derivative(const Symbol& s) const {
     	 	return this->derivative(s,0);
     	 }
-        	 
+
 		/**
 		 * Evaluate f(x)
 		 *
@@ -547,7 +554,7 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 		 * @param b: A multivariate modular polynomial
 		 **/
 		bool operator== (const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& b) const;
-		
+
 		/**
 		 * Overload operator !=
 		 *
@@ -556,14 +563,14 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 		inline bool operator!= (const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& b) const {
 			return !(*this == b);
 		}
-		
+
 		/**
 		 * Overload operator +
 		 *
 		 * @param b: A multivariate modular polynomial
 		 **/
 		SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator+ (const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& b) const;
-		
+
 		/**
 		 * Overload operator +=
 		 *
@@ -573,7 +580,7 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			*this = *this + b;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator +
 		 *
@@ -583,25 +590,25 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			SmallPrimeFieldDistributedDenseMultivariateModularPolynomial r (*this);
 			return (r += e);
 		}
-		
+
 		inline friend SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator+ (const sfixn& e, const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& f) {
 			return (f + e);
 		}
-		
+
 		/**
 		 * Overload operator +=
 		 *
 		 * @param e: A constant
 		 **/
 		SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& operator+= (const sfixn& e);
-		
+
 		/**
 		 * Overload operator -
 		 *
 		 * @param b: A multivariate modular polynomial
 		 **/
 		SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator- (const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& b) const;
-		
+
 		/**
 		 * Overload operator -=
 		 *
@@ -611,7 +618,7 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			*this = *this - b;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator -
 		 *
@@ -621,39 +628,39 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			SmallPrimeFieldDistributedDenseMultivariateModularPolynomial r (*this);
 			return (r -= e);
 		}
-		
+
 		inline friend SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator- (const sfixn& e, const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& r) {
 			return (-r + e);
 		}
-		
+
 		/**
 		 * Overload operator -=
 		 *
 		 * @param e: A constant
 		 **/
 		SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& operator-= (const sfixn& e);
-		
+
 		/**
 		 * Overload operator -, negate
 		 *
 		 * @param
 		 **/
 		SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator- () const;
-		
+
 		/**
 		 * Negate, f(-x)
 		 *
 		 * @param
 		 **/
 		void negate();
-		
+
 		/**
 		 * Overload operator *
 		 *
 		 * @param b: A multivariate modular polynomial
 		 **/
 		SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator* (const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& b) const;
-		
+
 		/**
 		 * Overload operator *=
 		 *
@@ -663,17 +670,17 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			*this = *this * b;
 			return *this;
 		}
-		
+
 		/**
 		 * Overload operator *
 		 *
 		 * @param e: A constant
-		 **/ 
+		 **/
 		inline SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator* (const sfixn& e) const {
 			SmallPrimeFieldDistributedDenseMultivariateModularPolynomial r(*this);
 			return (r *= e);
 		}
-		
+
 		inline friend SmallPrimeFieldDistributedDenseMultivariateModularPolynomial operator* (const sfixn& e, const SmallPrimeFieldDistributedDenseMultivariateModularPolynomial& f) {
 			return (f * e);
 		}
@@ -750,7 +757,7 @@ class SmallPrimeFieldDistributedDenseMultivariateModularPolynomial : public BPAS
 			//TODO
 			return *this;
 		}
-		
+
 		/**
 		 * Compute squarefree factorization of *this
 		 */

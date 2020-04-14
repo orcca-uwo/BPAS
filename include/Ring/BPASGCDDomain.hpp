@@ -17,11 +17,16 @@ public:
 
 	/**
 	 * Get GCD of *this and other.
+	 *
+	 * @param other: the other element to get a gcd with.
+	 * @return the gcd.
 	 */
 	virtual Derived gcd(const Derived& other) const = 0;
-	
+
 	/**
-	 * Compute squarefree factorization of *this
+	 * Compute squarefree factorization of *this.
+	 *
+	 * @return the square free factorization as a Factors object.
 	 */
 	virtual Factors<Derived> squareFree() const = 0;
 

@@ -1,6 +1,5 @@
 #include <string>
 
-#include "../../include/polynomial.h"
 #include "../../include/ring.h"
 #include "../../include/RationalNumberPolynomial/urpolynomial.h"
 #include "../../include/RingPolynomial/upolynomial.h"
@@ -10,14 +9,14 @@ template <class UnivariatePolynomialOverField, class Field>
 void _euclideanDivide(UnivariatePolynomialOverField &a, UnivariatePolynomialOverField &b, UnivariatePolynomialOverField *q, UnivariatePolynomialOverField *r){
 	if (b.isZero())
 		throw std::invalid_argument( "euclideanDivide: attempt to divide by zero polynomial" );
-		
+
 	Integer delta;
 	Field c;
 	UnivariatePolynomialOverField t;
 	UnivariatePolynomialOverField temp;
 	t.setVariableName(a.variable());
 	temp.setVariableName(a.variable());
-	
+
 	q->zero();
 	*r = a;
 	delta = r->degree()-b.degree();
@@ -38,14 +37,14 @@ template <class UnivariatePolynomialOverField, class Field>
 void _quotient(UnivariatePolynomialOverField &a, UnivariatePolynomialOverField &b, UnivariatePolynomialOverField *q){
 	if (b.isZero())
 		throw std::invalid_argument( "quotient: attempt to divide by zero polynomial" );
-		
+
 	Integer delta;
 	Field c;
 	UnivariatePolynomialOverField t,temp;
 	UnivariatePolynomialOverField r(a);
 	t.setVariableName(a.variable());
 	temp.setVariableName(a.variable());
-	
+
 	delta = r.degree()-b.degree();
 	while (!(r.isZero()) && delta >= 0){
 		c = r.leadingCoefficient();
@@ -64,14 +63,14 @@ template <class UnivariatePolynomialOverField, class Field>
 void _remainder(UnivariatePolynomialOverField &a, UnivariatePolynomialOverField &b, UnivariatePolynomialOverField *r){
 	if (b.isZero())
 		throw std::invalid_argument( "remainder: attempt to divide by zero polynomial" );
-		
+
 	Integer delta;
 	Field c;
 	UnivariatePolynomialOverField t,temp,q;
 	t.setVariableName(a.variable());
 	temp.setVariableName(a.variable());
 	q.setVariableName(a.variable());
-	
+
 	*r = a;
 	delta = r->degree()-b.degree();
 	while (!(r->isZero()) && delta >= 0){
@@ -91,8 +90,8 @@ template <class UnivariatePolynomialOverField, class Field>
 void _halfExtendedEuclidean(UnivariatePolynomialOverField &A, UnivariatePolynomialOverField &B, UnivariatePolynomialOverField *s, UnivariatePolynomialOverField *g){
 	/* halfExtendendEuclidean(a,b,s,g)                   */
 	/* Given UPoF A and B, return UPoF s and g such that */
-	/* g = gcd(A,B) and s*a equiv g (mod B)              */	
-	
+	/* g = gcd(A,B) and s*a equiv g (mod B)              */
+
 	UnivariatePolynomialOverField a(A);	// a = A
 	UnivariatePolynomialOverField b(B);	// b = B
 	UnivariatePolynomialOverField q,r,r1,a1,b1;
@@ -103,7 +102,7 @@ void _halfExtendedEuclidean(UnivariatePolynomialOverField &A, UnivariatePolynomi
 	a1.setVariableName(A.variable());
 	b1.setVariableName(A.variable());
 	Field c;
-	
+
 	a1.one();
 	b1.zero();
 	while (!b.isZero()){
@@ -128,13 +127,13 @@ void _halfExtendedEuclidean(UnivariatePolynomialOverField &a, UnivariatePolynomi
 	/* halfExtendendEuclidean(a,b,c,s) - diophantine version */
 	/* Given UPoF a, b and c, with c in the ideal (a,b),     */
 	/* return UPof s such that s*a equiv c (mod b) and       */
-	/* either s = 0 or degree(s) < degree(b)                 */	
-	
+	/* either s = 0 or degree(s) < degree(b)                 */
+
 	UnivariatePolynomialOverField g,q,r;
 	g.setVariableName(a.variable());
 	q.setVariableName(a.variable());
 	r.setVariableName(a.variable());
-	
+
 	_halfExtendedEuclidean<UnivariatePolynomialOverField,Field>(a,b,s,&g);	// s*a equiv g (mod b)
 	_euclideanDivide<UnivariatePolynomialOverField,Field>(c,g,&q,&r);			// c = gq + r
 	if (!(r.isZero()))
@@ -150,12 +149,12 @@ template <class UnivariatePolynomialOverField, class Field>
 void _extendedEuclidean(UnivariatePolynomialOverField &A, UnivariatePolynomialOverField &B, UnivariatePolynomialOverField *s, UnivariatePolynomialOverField *t, UnivariatePolynomialOverField *g){
 	/* extendendEuclidean(a,b,c,s,t)                       */
 	/* Given UPoF a, b, return UPoF s, t, g, such that     */
-	/* g = gcd(A,B) and s*A + t*B = g.                     */	
-	
+	/* g = gcd(A,B) and s*A + t*B = g.                     */
+
 	UnivariatePolynomialOverField temp,temp2;
 	temp.setVariableName(A.variable());
 	temp2.setVariableName(A.variable());
-	
+
 	_halfExtendedEuclidean<UnivariatePolynomialOverField,Field>(A,B,s,g);		// s*A equiv g (mod B)
 	temp = *s;
 	temp *= -A;
@@ -168,11 +167,11 @@ void _extendedEuclidean(UnivariatePolynomialOverField &A, UnivariatePolynomialOv
 	/* extendendEuclidean(a,b,c,s,t) - diophantine version */
 	/* Given DenseUnivariateRationalPolynomial a, b and c, with c in the ideal (a,b),   */
 	/* return DenseUnivariateRationalPolynomial s and t such that s*a + t*b = c and     */
-	/* either s = 0 or degree(s) < degree(b)               */	
-	
+	/* either s = 0 or degree(s) < degree(b)               */
+
 	UnivariatePolynomialOverField temp;
 	temp.setVariableName(A.variable());
-	
+
 	_halfExtendedEuclidean<UnivariatePolynomialOverField,Field>(A,B,C,s);		// s*A equiv C (mod B)
 	temp = *s;
 	temp *= -A;

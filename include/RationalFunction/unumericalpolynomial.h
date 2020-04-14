@@ -1,21 +1,21 @@
 #ifndef _UNUMERICALPOLYNOMIAL
 #define _UNUMERICALPOLYNOMIAL
 #include <complex>
-#include "../../include/polynomial.h"
-#include "../../include/ring.h"
-#include "../../include/RationalFunction/urationalfunction.h"
+#include "../RingPolynomial/upolynomial.h"
+#include "../ring.h"
+#include "urationalfunction.h"
 
 /**
  * A univariate polynomial with numerical coefficients represented sparsely.
  * The template determines the type of the numerical coefficients.
- */ 
+ */
 template<class NumericalType>
 class SparseUnivariateDoublePolynomial
 {
 	private:
 		std::vector<NumericalType> coef;
 		std::vector<int> degs;
-		
+
 		template<class UnivariatePolynomialOverRealField>
 		NumericalType evaluateRealPolynomial(UnivariatePolynomialOverRealField& A, NumericalType& a) {
 			// need a check here that input is a real field
@@ -24,7 +24,7 @@ class SparseUnivariateDoublePolynomial
 			for (int i=A.degree().get_si()-1; i>-1; i--){
 				out *= a;
 				if (A.coefficient(i) != 0){
-					out += NumericalType(A.coefficient(i).get_d()); 
+					out += NumericalType(A.coefficient(i).get_d());
 				}
 			}
 			return out;
@@ -37,12 +37,12 @@ class SparseUnivariateDoublePolynomial
 				out *= a;
 				if (!A.coefficient(i).isZero()){
 					value = A.coefficient(i);
-					out += std::complex<double>(value.realPart().get_d(),value.imaginaryPart().get_d()); 
+					out += std::complex<double>(value.realPart().get_d(),value.imaginaryPart().get_d());
 				}
 			}
 			return out;
 		}
-	
+
 	public:
 		SparseUnivariateDoublePolynomial(DenseUnivariateRationalPolynomial& A) {
 			// need a check here that input is a real field
@@ -176,7 +176,7 @@ class SparseUnivariateMPComplexPolynomial
 	private:
 		std::vector<complexMPF> coef;
 		std::vector<int> degs;
-		
+
 	public:
 		SparseUnivariateMPComplexPolynomial(DenseUnivariateRationalPolynomial& A, int prec) {
 			complexMPF value;
@@ -204,7 +204,7 @@ class SparseUnivariateMPComplexPolynomial
 				}
 			}
 		}
-		
+
 		complexMPF evaluate(complexMPF t, int prec){
 			complexMPF out;
 			mpc_init2(out.c,4*prec);
