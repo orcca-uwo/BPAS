@@ -218,7 +218,7 @@ typedef struct AltArr {
 #define AA_ALLOC(A) ((A)->alloc)
 
 static inline void freePolynomial_AA(AltArr_t* aa) {
-    if (aa == NULL || aa->size == 0){
+    if (aa == NULL){
 		return;
     }
 
@@ -331,7 +331,7 @@ static inline AltArr_t* makeConstIntPolynomial_AA(int allocSize, int nvar, int n
 	return newAA;
 }
 
-static inline int isZero_AA(AltArr_t* aa) {
+static inline int isZero_AA(const AltArr_t* aa) {
     if (aa == NULL || aa->size == 0) {
     	return 1;
     }
@@ -346,7 +346,7 @@ static inline int isZero_AA(AltArr_t* aa) {
 	return ret;
 }
 
-static inline int isOne_AA(AltArr_t* aa) {
+static inline int isOne_AA(const AltArr_t* aa) {
 	if (aa != NULL) {
 		int ret = aa->unpacked ? isZeroExponentVector_unpk(aa->elems[0].degs, aa->nvar) : isZeroExponentVector(aa->elems[0].degs);
 		ret = ret && mpq_cmp_ui(aa->elems[0].coef, 1ul, 1ul) == 0;
@@ -355,7 +355,7 @@ static inline int isOne_AA(AltArr_t* aa) {
     return 0;
 }
 
-static inline int isNegativeOne_AA(AltArr_t* aa) {
+static inline int isNegativeOne_AA(const AltArr_t* aa) {
 	if (aa != NULL) {
 		int ret = aa->unpacked ? isZeroExponentVector_unpk(aa->elems[0].degs, aa->nvar) : isZeroExponentVector(aa->elems[0].degs);
 		ret = ret && mpq_cmp_si(aa->elems[0].coef, -1l, 1l) == 0;
@@ -364,7 +364,7 @@ static inline int isNegativeOne_AA(AltArr_t* aa) {
     return 0;
 }
 
-static inline int isConstant_AA(AltArr_t* aa) {
+static inline int isConstant_AA(const AltArr_t* aa) {
     if (aa == NULL || aa->size == 0) {
         return 1;
     }
@@ -424,6 +424,30 @@ static inline void partialDegreesTerm_AA(const AltArr_t* aa, int idx, degree_t* 
 		const int* sizes = getExpOffsetArray(aa->nvar);
 		for (int k = 0; k < aa->nvar; ++k ) {
 			degs[k] = GET_NTH_EXP(aa->elems[idx].degs, masks[k], sizes[k]);
+		}
+	}
+}
+
+/**
+ * Get the total degree of the term of index idx in the polynomial aa.
+ *
+ * @return the total degree of term of index idx, or 0 if no term of index idx exists.
+ */
+static inline degree_t totalDegreeTerm_AA(const AltArr_t* aa, int idx) {
+	if (isZero_AA(aa) || idx >= aa->size) {
+		return 0;
+	}
+
+	degree_t tdeg = 0;
+	if (aa->unpacked) {
+		for (int k = 0; k < aa->nvar; ++k ) {
+			tdeg += ((degree_t*) aa->elems[idx].degs)[k];
+		}
+	} else {
+		const degrees_t* masks = getExpMaskArray(aa->nvar);
+		const int* sizes = getExpOffsetArray(aa->nvar);
+		for (int k = 0; k < aa->nvar; ++k ) {
+			tdeg += GET_NTH_EXP(aa->elems[idx].degs, masks[k], sizes[k]);
 		}
 	}
 }
@@ -560,6 +584,13 @@ int isEqualWithVariableOrdering_AA(AltArr_t* a, AltArr_t* b, const int* xs, int 
  * Get the term of a at index idx. Returns the term as a single term polynomial.
  */
 AltArr_t* termAtIdx_AA(AltArr_t* a, int idx);
+
+/**
+ * Get the homogeneous part of the polynomial a with total degree tdeg.
+ *
+ * @return a homogenous polynomial with total degree tdeg.
+ */
+AltArr_t* homogeneousPart_AA(AltArr_t* a, int tdeg);
 
 /**
  * Determine if the constant term of a is zero.
@@ -800,6 +831,11 @@ void exactDividePolynomials_AA (AltArr_t* c, AltArr_t* b, AltArr_t** res_a, regi
  * Multiply through a polynomial by a single rational number.
  */
 void multiplyByRational_AA_inp(AltArr_t* aa, const mpq_t z);
+
+/**
+ * Divide through a polynomial by a single rational number.
+ */
+void divideByRational_AA_inp(AltArr_t* aa, const mpq_t z);
 
 /**
  * Evaluate a polynomial represented as an alternating array.
@@ -1401,6 +1437,12 @@ AltArr_t* primitivePartAndContent_AA(AltArr_t* aa, mpq_t cont);
  * Convert the input aa to its primitive part in place.
  */
 void primitivePart_AA_inp(AltArr_t* aa);
+
+/**
+ * Convert the input aa to its primitive part in place and
+ * return its content in the initialized mpq_t content.
+ */
+void primitivePartAndContent_AA_inp(AltArr_t* aa, mpq_t content);
 
 /**
  * Given to polynomials, both with 1 variable, get their GCD.

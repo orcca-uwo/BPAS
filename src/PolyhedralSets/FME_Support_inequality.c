@@ -18,7 +18,7 @@ int allocInequality(int varNum, inequality_t* newIneq)
 	return(EXIT_SUCCESS);
 }
 
-void setInequality(inequality_t * newIneq , const mpz_t * coeffData , const mpz_t constantData)
+void setInequality(inequality_t * newIneq , mpz_t * coeffData , mpz_t constantData)
 {
 	int varNum = newIneq->dimension;
 
@@ -29,7 +29,7 @@ void setInequality(inequality_t * newIneq , const mpz_t * coeffData , const mpz_
 }
 
 
-void copyInequality(const inequality_t * source , inequality_t * dest)
+void copyInequality(inequality_t * source , inequality_t * dest)
 {
 	for(int i = 0 ; i < source->dimension ; i++)
 		mpz_set(dest->coeff[i] , source->coeff[i]);

@@ -271,10 +271,15 @@ void printPositiveDegs_AA(FILE* fp, degrees_t degs, const char** syms, int nvar,
 }
 
 void printPolyOptions_AA(FILE* fp, const AltArr_t* aa, const char** syms, int nvar, int positiveDegsOnly) {
-	if (aa == NULL || aa->size == 0) {
-		fprintf(stderr, "0\n");
+	if (isZero_AA(aa)) {
+		fprintf(stderr, "0");
 		return;
 	}
+	if (isConstant_AA(aa)) {
+		gmp_fprintf(stderr, "%Qd", aa->elems[0].coef);
+		return;
+	}
+
 	if (aa->unpacked) {
 		printPoly_AA_unpk(fp, aa, syms, nvar);
 		return;
@@ -355,6 +360,7 @@ degrees_t calculateMaxDegs_AA(const AltArr_t* aa) {
 	for (register int j = 0; j < nvar; ++j) {
 		max |= maxList[j];
 	}
+	free(maxList);
 
 	return max;
 }
@@ -791,6 +797,50 @@ AltArr_t* termAtIdx_AA(AltArr_t* a, int idx) {
 	localA.elems = localA.elems + idx;
 	localA.size = 1;
 	return deepCopyPolynomial_AA(&localA);
+}
+
+AltArr_t* homogeneousPart_AA(AltArr_t* a, int tdeg) {
+	if (isZero_AA(a)) {
+		return NULL;
+	}
+
+	int curAlloc = 10;
+	int curIdx = 0;
+	int nvar = a->nvar;
+	AltArr_t* ret = makePolynomial_AA(curAlloc, nvar);
+	int size = a->size;
+
+	//try to do this in a way which is agnostic to packed or unpacked.
+	degree_t degs[a->nvar];
+	int k;
+	degree_t termtdeg;
+	for (int i = 0; i < size; ++i) {
+		partialDegreesTerm_AA(a, i, degs);
+		termtdeg = 0;
+		for (k = 0; k < nvar; ++k) {
+			termtdeg += degs[k];
+		}
+		if (termtdeg == tdeg) {
+			if (curIdx >= curAlloc) {
+				curAlloc *= 2;
+				resizePolynomial_AA(ret, curAlloc);
+			}
+			setDegrees_AA_inp(ret, curIdx, degs, nvar);
+			mpq_init(ret->elems[curIdx].coef);
+			mpq_set(ret->elems[curIdx].coef, a->elems[i].coef);
+			++curIdx;
+		}
+	}
+
+
+	if (curIdx == 0) {
+		freePolynomial_AA(ret);
+		return NULL;
+	}
+
+	ret->size = curIdx;
+	mergeSortPolynomial_AA(ret);
+	return ret;
 }
 
 int isConstantTermZero_AA(AltArr_t* a) {
@@ -1400,6 +1450,9 @@ void condensePolyomial_AA(AltArr_t* aa) {
 }
 
 void negatePolynomial_AA(AltArr_t* aa) {
+	if (isZero_AA(aa)) {
+		return;
+	}
 	int size = AA_SIZE(aa);
 	AAElem_t* elems = aa->elems;
 	for (int i = 0; i < size; ++i) {
@@ -4306,6 +4359,16 @@ void multiplyByRational_AA_inp(AltArr_t* aa, const mpq_t z) {
 	}
 }
 
+void divideByRational_AA_inp(AltArr_t* aa, const mpq_t z) {
+	if (aa == NULL || aa->size == 0) {
+		return;
+	}
+
+	for (int i = 0; i < aa->size; ++i) {
+		mpq_div(aa->elems[i].coef, aa->elems[i].coef, z);
+	}
+}
+
 void univariatePseudoDividePolynomials_AA(AltArr_t* c, AltArr_t* b, AltArr_t** res_a, AltArr_t** res_r, int* e, int lazy) {
 
 	if (b == NULL || b->size == 0) {
@@ -4980,12 +5043,16 @@ AltArr_t* primitivePartAndContent_AA(AltArr_t* aa, mpq_t cont) {
 }
 
 void primitivePart_AA_inp(AltArr_t* aa) {
+	mpq_t content;
+	mpq_init(content);
+	primitivePartAndContent_AA_inp(aa, content);
+	mpq_clear(content);
+}
+
+void primitivePartAndContent_AA_inp(AltArr_t* aa, mpq_t content) {
 	if (aa == NULL || aa->size <= 0) {
 		return;
 	}
-
-	mpq_t content;
-	mpq_init(content);
 
 	integralContent_AA(aa, content);
 
@@ -4994,8 +5061,6 @@ void primitivePart_AA_inp(AltArr_t* aa) {
 	for (int i = 0; i < size; ++i) {
 		mpq_div(elems[i].coef, elems[i].coef, content);
 	}
-
-	mpq_clear(content);
 }
 
 AltArr_t* univariateGCD_AA(AltArr_t* a, AltArr_t* b) {

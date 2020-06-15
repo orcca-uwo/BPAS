@@ -73,14 +73,19 @@ include_directories( ${CDDGMP_INCLUDES} )
 
 
 set(BPAS_POLYHEDRAL_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_fme_dnc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_fmeDS.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_fmeDS_dnc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_inequalityOperations.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_linAlg.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_projection_dnc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_redundancyTest.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_unrolledll_dnc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_inequality.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_kohler.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_projection.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_projection.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_fme.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_linAlg.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_balas.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_unrolledll.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_blockElimination.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PolyhedralSets/FME_Support_extreme.c
 )
 mark_as_advanced(BPAS_POLYHEDRAL_SRCS)

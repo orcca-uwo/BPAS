@@ -11,6 +11,8 @@
 
 #include <memory>
 
+/* Debugging utils  */
+
 extern int intersectDepth;
 extern int regularGCDDepth;
 extern int intersectFreeDepth;
@@ -49,6 +51,8 @@ extern float cleanSetTime;
 extern float tsCopyTime;
 extern float rcCopyTime;
 extern float zdrcCopyTime;
+
+#define RC_TRIANGULARIZE_TASKTREEDATA 1
 
 
 /* forward declares */
@@ -109,6 +113,10 @@ class RegularChain : public TriangularSet<Field,RecursivePoly>,
 		using TriangularSet<Field,RecursivePoly>::variableIndex;
 		using TriangularSet<Field,RecursivePoly>::canComputeInDimensionZero;
 		using TriangularSet<Field,RecursivePoly>::isZeroDimensionalMathematically;
+
+#if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
+		mutable int RegChain_UniqueID;
+#endif
 
 		int regularChainOptions = CONSTRUCT_FACTORIZE;
 

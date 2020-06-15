@@ -1645,14 +1645,14 @@ int multiTermPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** 
 		mulPolynomialsInForm_spX (c, sigmas[0], &prod, Pptr);
 
 		// TEST
-		fprintf(stderr, "[before] prod = \n");
-		printPolynomialOutForm_spX (prod, Pptr);
+		//fprintf(stderr, "[before] prod = \n");
+		//printPolynomialOutForm_spX (prod, Pptr);
 
 		plainRemPolynomialsInForm_spX_inp(&prod, tmp_sp, Pptr);
 
 		// TEST
-		fprintf(stderr, "[after] prod = \n");
-		printPolynomialOutForm_spX (prod, Pptr);
+		//fprintf(stderr, "[after] prod = \n");
+		//printPolynomialOutForm_spX (prod, Pptr);
 
 		symmetricPadicUpdate(liftedF[0], prod, mod, Pptr, halfP, workZ);
 		freePolynomial_spX (&prod);
@@ -1661,18 +1661,18 @@ int multiTermPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** 
 			mulPolynomialsInForm_spX (c, sigmas[i], &prod, Pptr);
 
 			// TEST
-			fprintf(stderr, "[2-before] prod = \n");
-			printPolynomialOutForm_spX (prod, Pptr);
+			//fprintf(stderr, "[2-before] prod = \n");
+			//printPolynomialOutForm_spX (prod, Pptr);
 
 			// TEST
-			fprintf(stderr, "[2-before] f[i] = \n");
-			printPolynomialOutForm_spX (f[i], Pptr);
+			//fprintf(stderr, "[2-before] f[i] = \n");
+			//printPolynomialOutForm_spX (f[i], Pptr);
 
 			plainRemPolynomialsInForm_spX_inp(&prod, f[i], Pptr);
 
 			// TEST
-			fprintf(stderr, "[2-after] prod = \n");
-			printPolynomialOutForm_spX (prod, Pptr);
+			//fprintf(stderr, "[2-after] prod = \n");
+			//printPolynomialOutForm_spX (prod, Pptr);
 
 			symmetricPadicUpdate(liftedF[i], prod, mod, Pptr, halfP, workZ);
 			freePolynomial_spX (&prod);

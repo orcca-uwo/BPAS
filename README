@@ -43,6 +43,8 @@
 
         make doc
 
+    Then, the documentation is available in BPAS/help. 
+
 <A> Optional Library Extensions: 
 
   Polyhedral Sets and Fourier–Motzkin elimination:

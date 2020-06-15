@@ -27,9 +27,9 @@ typedef struct
 
 int allocInequality(int varNum, inequality_t * newIneq);
 
-void setInequality(inequality_t * newIneq , const mpz_t * coeffData , const mpz_t constantData);
+void setInequality(inequality_t * newIneq , mpz_t * coeffData , mpz_t constantData);
 
-void copyInequality(const inequality_t * source , inequality_t * dest);
+void copyInequality(inequality_t * source , inequality_t * dest);
 
 void printInequality(inequality_t * input , char var);
 

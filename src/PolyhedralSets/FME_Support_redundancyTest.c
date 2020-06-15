@@ -57,7 +57,7 @@ void extendMatrix(matrix_t source , matrix_t * dest)
 	}
 }
 //A_0^{-1} , c are the inputs
-void remVarMat(const matrix_t inputMat , const matrix_t inputVec , matrix_t * outMat , int varNum)
+void remVarMat(matrix_t inputMat , matrix_t inputVec , matrix_t * outMat , int varNum)
 {
 	int m = inputMat.rowNum;
 	int n = varNum;
@@ -97,7 +97,7 @@ void remVarMat(const matrix_t inputMat , const matrix_t inputVec , matrix_t * ou
 	free(matTrans);
 }
 //A_0^{-1} , c are the inputs
-void elimVarMat(const matrix_t inputMat , const matrix_t inputVec , matrix_t * outMat , int varNum)
+void elimVarMat(matrix_t inputMat , matrix_t inputVec , matrix_t * outMat , int varNum)
 {
 	int m = inputMat.rowNum;
 	int n = varNum;
@@ -129,7 +129,7 @@ void elimVarMat(const matrix_t inputMat , const matrix_t inputVec , matrix_t * o
 	mpq_clear(tmpRn);
 }
 
-void blocElimination(const matrix_t inputMat , matrix_t * extrMat , matrix_t * outMat)
+void blocElimination(matrix_t inputMat , matrix_t * extrMat , matrix_t * outMat)
 {
 	int extrNum = extrMat->rowNum;
 	int varNum = extrMat->colNum;
@@ -182,7 +182,7 @@ void initialTestCone(inequality_t * inputSys , int ineqNum , matrix_t * initTest
 	free(extremeRays);
 }
 
-void testCone(const matrix_t * initialCone , int step , matrix_t * output)
+void testCone(matrix_t * initialCone , int step , matrix_t * output)
 {
 	int rowNum = initialCone->rowNum;
 	int colNum = initialCone->colNum;

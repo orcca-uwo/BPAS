@@ -1,12 +1,12 @@
 
 /*****
- * Supporting methods for sparse multivariate ratioanl polynomials written in 
- * pure C. 
+ * Supporting methods for sparse multivariate ratioanl polynomials written in
+ * pure C.
  *
  * Throughout this it is assumed that polynomials are compatiable. They must have
- * the same number of variables and the same variable ordering. 
+ * the same number of variables and the same variable ordering.
  *
- * Lexicographical ordering is used for term ordering throughout. 
+ * Lexicographical ordering is used for term ordering throughout.
  *
  * Functions assume that the number of variables is at least 1. But, in the most
  * basic case, a NULL exponent vector encodes nvar = 0. Similar to how Node* = NULL
@@ -68,7 +68,7 @@ static inline void freePolynomial_AAZ(AltArrZ_t* aa) {
 			degree_t* degs_unpk = (degree_t*) aa->elems[0].degs;
 			free(degs_unpk);
 		}
-		
+
 		free(aa->elems);
 		free(aa);
 	}
@@ -109,7 +109,7 @@ static inline AltArrZ_t* makePolynomial_AAZ(int allocSize, int nvar) {
 		return NULL;
 	}
 	AltArrZ_t* newAA = (AltArrZ_t*) malloc(sizeof(AltArrZ_t));
-	newAA->size = 0; 
+	newAA->size = 0;
 	newAA->alloc = allocSize;
 	newAA->nvar = nvar;
 	newAA->unpacked = 0;
@@ -122,11 +122,11 @@ static inline AltArrZDegList_t* makePolynomial_AAZDL(int allocSize, int nvar) {
 		return NULL;
 	}
 	AltArrZDegList_t* newAA = (AltArrZDegList_t*) malloc(sizeof(AltArrZDegList_t));
-	newAA->size = 0; 
+	newAA->size = 0;
 	newAA->alloc = allocSize;
 	newAA->nvar = nvar;
 	newAA->elems = (AAZElem_DegList_t*) malloc(sizeof(AAZElem_DegList_t)*allocSize);
-	return newAA;	
+	return newAA;
 }
 
 static inline AltArrZ_t* makeConstPolynomial_AAZ(int allocSize, int nvar, const mpz_t coef) {
@@ -259,13 +259,13 @@ int isInOrder_AAZ(const AltArrZ_t* aa);
 
 /**
  * Re-pack the exponent vectors of aa so that they have newNvar number of variables.
- * Expansion is done to the right. That is, exponents are packed into indices 
+ * Expansion is done to the right. That is, exponents are packed into indices
  * in the new exponent vector starting from 0.
  */
 void expandNumVars_AAZ(AltArrZ_t* aa, int newNvar);
 
 /**
- * Determine if two polynomials are exactly equal. 
+ * Determine if two polynomials are exactly equal.
  * This function does NOT check whether two polynomials are mathematically equal
  * for instance, if they have a different number of variables. The polynomials
  * must match exactly.
@@ -284,20 +284,20 @@ void nonZeroVariables_AAZ(AltArrZ_t* aa, int* vars);
  */
 degree_t totalDegree_AAZ(const AltArrZ_t* aa);
 
-/** 
+/**
  * Get the partial degree of the kth-variable.
  * returns 0 if aa is zero or k >= nvar.
  */
 degree_t partialDegree_AAZ(const AltArrZ_t* aa, int k);
 
 /**
- * Get the partial degrees of each variable in aa. 
+ * Get the partial degrees of each variable in aa.
  * The partial degree of variable i is returned in degs[i].
  */
 void partialDegrees_AAZ(const AltArrZ_t* aa, degree_t* degs);
 
 /**
- * Get the main degree of aa. In particular, the 
+ * Get the main degree of aa. In particular, the
  * partial degree of the first variable whose partial
  * degree is positive.
  */
@@ -322,7 +322,7 @@ void setCoefficient_AAZ(AltArrZ_t* aa, const degree_t* degs, int nvar, const mpz
 
 /**
  * Determine if two polynomials are equal given a mapping between thier variables in xs.
- * variable xs[2*j]-1 in a matches variable xs[2*j+1]-1 in b. If xs[2*j] is 0 then 
+ * variable xs[2*j]-1 in a matches variable xs[2*j+1]-1 in b. If xs[2*j] is 0 then
  * the variable in b of xs[2*j+1] does not appear in a, and vice versa.
  */
 int isEqualWithVariableOrdering_AAZ(AltArrZ_t* a, AltArrZ_t* b, const int* xs, int xsSize);
@@ -340,24 +340,24 @@ int isConstantTermZero_AAZ(AltArrZ_t* a);
 
 /**
  * Re-pack the exponent vectors of aa so that they have newNvar number of variables.
- * Expansion is done to the left. That is, exponents are packed so that the the 
+ * Expansion is done to the left. That is, exponents are packed so that the the
  * leading exponents in the new exponent vector are 0.
  */
 void expandNumVarsLeft_AAZ(AltArrZ_t* aa, int newNvar);
 
 /**
- * Re-pack the exponent vectors of aa so they have one less variable. 
- * This re-packing is done such that the exponent at index idx is discarded completely. 
+ * Re-pack the exponent vectors of aa so they have one less variable.
+ * This re-packing is done such that the exponent at index idx is discarded completely.
  * NOTE sorting may be needed after a call to this function, depending on the circumstances.
  * No combination of like-terms or re-ordering is done here.
  */
 void shrinkNumVarsAtIdx_AAZ(AltArrZ_t* aa, int idx);
 
 /**
- * Like reorderVars except that the varMap can map to indices less than 0. That is, 
+ * Like reorderVars except that the varMap can map to indices less than 0. That is,
  * if varMap[i] < 0 then variable at index i is removed from the exponent vector.
  *
- * It is assumed that the polynomial aa has zero exponents for all such i. 
+ * It is assumed that the polynomial aa has zero exponents for all such i.
  */
 void shrinkAndReorderVars_AAZ(AltArrZ_t* aa, int* varMap, int varmapSize);
 
@@ -434,7 +434,7 @@ static inline int computeShrinkMapPolys_AAZ(const AltArrZ_t* aa, const AltArrZ_t
 }
 
 /**
- * Given a variable mapping, varMap, which was used exclusively to remove variables, 
+ * Given a variable mapping, varMap, which was used exclusively to remove variables,
  * not re-order variables, compute its reverse map.
  *
  * @param originalSize, the number of variables before shrinking
@@ -454,7 +454,7 @@ static inline void reverseShrinkMap_AAZ(int originalSize, int shrunkSize, int* v
  *
  * @param aa, the polynomial from which to remove variables.
  * @param[out] varMap, the variable map causing the shrink, preallocated.
- * 
+ *
  * @return the new number of variables.
  *
  */
@@ -467,14 +467,14 @@ int tryShrinkVariables_AAZ_inp(AltArrZ_t* aa, int* varMap);
  * @param aa, the polynomial whose variables should be expanded.
  * @param originalSize, the number of variables aa should have after expanding.
  * @param varMap, the original variable map used to shrink the number of variables.
- * 
+ *
  * @return the new number of variables.
  *
  */
 int reverseShrinkVariables_AAZ_inp(AltArrZ_t* aa, int originalSize, int* varMap);
 
 /**
- * Set the exponent vector of aa's term at index idx to the degrees in 
+ * Set the exponent vector of aa's term at index idx to the degrees in
  * degsList.
  * Note that no sorting or canonicalization is performed.
  *
@@ -514,26 +514,26 @@ static inline void resizePolynomial_AAZ(AltArrZ_t* aa, int allocSize) {
 /**
  * Construct an alternating array polynomial representation from a Node rep.
  *
- * returns the new alternating array pointer. 
+ * returns the new alternating array pointer.
  */
 AltArrZ_t* deepCopyPolynomial_AAZFromNode(Node* a, int nvar);
 
 /**
  * Construct an linked list polynomial representation from an alternating array rep.
  *
- * returns the head node pointer of the linked list. 
+ * returns the head node pointer of the linked list.
  */
 Node* deepCopyPolynomial_NodeFromAAZ(AltArrZ_t* aa);
 
 /**
  * Construct an alternating array with un-packed exponents from an alternating
- * array with packed exponents. 
+ * array with packed exponents.
  */
 AltArrZDegList_t* deepCopyPolynomial_AAZDegListFromAA(AltArrZ_t* aa);
 
-/** 
+/**
  * Create a deep copy of the polynomial represented by the alternating array aa.
- * 
+ *
  * returns a pointer to the new alternating array.
  */
 AltArrZ_t* deepCopyPolynomial_AAZ(const AltArrZ_t* aa);
@@ -558,7 +558,7 @@ AltArrZ_t* deepCopyPolynomial_AAZFromAA(AltArr_t* aa);
  * Create a deep copy of this integer polynomial and return it as a rational
  * number polynomial.
  *
- * returns a pointer to the new rational number alternating array. 
+ * returns a pointer to the new rational number alternating array.
  */
 AltArr_t* deepCopyPolynomial_AAFromAAZ(AltArrZ_t* aa);
 
@@ -575,20 +575,20 @@ AltArrZ_t* sortPolynomial_AAZ(AltArrZ_t* aa);
 void mergeSortPolynomial_AAZ(AltArrZ_t* aa);
 
 /**
- * Given a polynomial in sorted order but with possible monomial duplicates, 
+ * Given a polynomial in sorted order but with possible monomial duplicates,
  * combine like terms and condense the polynomial.
  */
 void condensePolynomial_AAZ(AltArrZ_t* aa);
 
 /**
  * Remove all terms with a zero coefficient from aa, shrinking its
- * size as needed. If the polynomial is not null but identically 0, 
+ * size as needed. If the polynomial is not null but identically 0,
  * one zero term will remain.
  */
 void removeZeroTerms_AAZ(AltArrZ_t* aa);
 
 /**
- * Given some polynomial which is a collection of coefficient-monomial pairs, 
+ * Given some polynomial which is a collection of coefficient-monomial pairs,
  * transform it into canonical form. This includes removing pairs with
  * a zero coefficeint, sorting the terms by monomial, and ensuring
  * each monomial is unique.
@@ -629,20 +629,20 @@ AltArrZ_t* multiplyByInteger_AAZ(AltArrZ_t* a, mpz_t div);
 
 /**
  * Divide a through by integer divisor d. It is assumed that
- * div divides content(a). 
+ * div divides content(a).
  */
 AltArrZ_t* divideByInteger_AAZ(AltArrZ_t* a, mpz_t div);
 
 /**
  * Apply a modulo to all of the integer coefficients of the polynomial p,
- * modifying the polynomial in place. 
- * 
+ * modifying the polynomial in place.
+ *
  * @param p the polynomial which to apply the modulo.
  * @param mod the modulo.
  *
  */
 void applyModuloSymmetric_AAZ_inp(AltArrZ_t* p, const mpz_t mod);
- 
+
 /**
  * Evaluate a polynomial represented as an alternating array.
  * This method returns the rational number vlaue in res.
@@ -653,8 +653,8 @@ void evalPolyToVal_AAZ(const AltArrZ_t* aa, const mpz_t* vals, short nvar, mpz_t
 /**
  * Evaluate a polynomial represented as an alternating array.
  * This method returns another polynomial as not all variables need
- * to have values supplied. But, if they do, a constant term will be returned. 
- * both active and vals are arrays of size nvar. active[i] determines if 
+ * to have values supplied. But, if they do, a constant term will be returned.
+ * both active and vals are arrays of size nvar. active[i] determines if
  * the variable at degs[i] is to be evaluated using vals[i] as value.
  */
 AltArrZ_t* evaluatePoly_AAZ(const AltArrZ_t* aa, const int* active, const mpz_t* vals, short nvar);
@@ -667,9 +667,9 @@ AltArrZ_t* swappingExponents_AAZ (AltArrZ_t* aa, int idx1, int idx2);
 
 /**
  * (right) shift main variable of polynomial aa of size n.
- */ 
+ */
 AltArrZ_t* mainLShiftPolynomial_AAZ (AltArrZ_t* aa, int n);
-AltArrZ_t* mainLShiftPolynomial_AAZ_inp (AltArrZ_t* aa, int n);   
+AltArrZ_t* mainLShiftPolynomial_AAZ_inp (AltArrZ_t* aa, int n);
 /**
  * Given polynomial a, return the leading term
  */
@@ -684,35 +684,35 @@ int leadingVariable_AAZ (AltArrZ_t* aa);
 
 /**
  * Main Leading Degree
- * given a sorted multivariable polynomial aa, this function returns 
+ * given a sorted multivariable polynomial aa, this function returns
  * the maximum value of the main variable of aa.
- */ 
+ */
 int mainLeadingDegree_AAZ (AltArrZ_t* aa);
-    
+
 /**
  * Main Leading Coefficient
- * given a multivariable polynomial aa, this function returns 
+ * given a multivariable polynomial aa, this function returns
  * the leading coefficient of aa w.r.t the main variable.
- * NOTE: This function is NOT inplace! 
- */ 
+ * NOTE: This function is NOT inplace!
+ */
 AltArrZ_t* mainLeadingCoefficient_AAZ (AltArrZ_t* aa);
 
 /**
  * Main Leading Coefficient w.r.t the e-th variable
  * given a multivariable polynomial aa and index of a variable,
- *  this function returns the leading coefficient of aa w.r.t 
+ *  this function returns the leading coefficient of aa w.r.t
  * the special variable.
- * NOTE: This function is NOT inplace! 
- */ 
+ * NOTE: This function is NOT inplace!
+ */
 AltArrZ_t* mainCoefficientAtIdx_AAZ (AltArrZ_t* aa, int e);
 
 /**
  * Make a List of Leading Coefficients w.r.t the idx-th variable
  * given a multivariable polynomial aa and index of a variable,
- * this function returns the list of leading coefficients of aa w.r.t 
+ * this function returns the list of leading coefficients of aa w.r.t
  * the special variable.
- * NOTE: This function is NOT inplace! 
- */ 
+ * NOTE: This function is NOT inplace!
+ */
 void mainCoefficientListAtIdx_AAZ (AltArrZ_t* aa, int idx, AltArrZ_t*** cList, int *sz);
 
 /**
@@ -728,7 +728,7 @@ AltArrZ_t* maxPolynomials_AAZ (AltArrZ_t* a, AltArrZ_t* b);
 AltArrZ_t* maxPolynomials_AAZ_inp (AltArrZ_t* a, AltArrZ_t* b);
 
 /**
- * Get maximum absolute coefficient in a. Inifinity norm. 
+ * Get maximum absolute coefficient in a. Inifinity norm.
  */
 static inline void infinityNorm_AAZ (const AltArrZ_t* a, mpz_t c) {
 	if (a == NULL || a->size == 0) {
@@ -745,7 +745,7 @@ static inline void infinityNorm_AAZ (const AltArrZ_t* a, mpz_t c) {
 	}
 }
 
-    
+
 /*****************
  * SMQP Addition
  *****************/
@@ -785,20 +785,20 @@ AltArrZ_t* subPolynomials_AAZ(AltArrZ_t* a, AltArrZ_t* b, int nvar);
 AltArrZ_t* subPolynomials_AAZ_inp(AltArrZ_t* a, AltArrZ_t* b, int nvar);
 
 /**
- * Subtract the polynomial contained in bb from the polynomial a, 
+ * Subtract the polynomial contained in bb from the polynomial a,
  * returning the difference back in the polynomial contained in bb.
  * This operation re-uses the allocation of the polynomial
- * pointed to by bb to store the difference. 
+ * pointed to by bb to store the difference.
  *
  * @param a the polynomial to subtract from
  * @param[in,out] a pointer to the polynomial which is subtracted from a, as well as where the difference is stored.
  * @param nvar the number of variables in both a and b.
- * 
+ *
  */
 void subPolynomials_AAZ_inpRHS(const AltArrZ_t* a, AltArrZ_t** bb);
 
 /**
- * the following subPolynomial is used in DucosSubresultantChainZ 
+ * the following subPolynomial is used in DucosSubresultantChainZ
  * implemented in SMZP_Support_Recursive.c
  */
 AltArrZ_t* CFDucosOptZ_subPolynomials_AAZ_inp (AltArrZ_t* a, AltArrZ_t* b, int nvar,
@@ -840,7 +840,7 @@ typedef struct ProductHeap_AAZ {
 
 
 /**
- * Make an element for the product heap, combining a and b as the 
+ * Make an element for the product heap, combining a and b as the
  * element's product.
  */
 #if SMQP_INT_PRODHEAP
@@ -877,11 +877,11 @@ static inline void prodheapFree_AAZ(ProductHeap_AAZ* h) {
 		prodheapFreeChain_AAZ(elems[i].chain);
 	}
 	free(h->elements);
-	free(h); 
+	free(h);
 }
 
 /**
- * Create an empty product heap. 
+ * Create an empty product heap.
  */
 static inline ProductHeap_AAZ* prodheapCreate_AAZ(int nvar) {
 	ProductHeap_AAZ* h = (ProductHeap_AAZ*) malloc(sizeof(ProductHeap_AAZ));
@@ -897,12 +897,12 @@ static inline ProductHeap_AAZ* prodheapCreate_AAZ(int nvar) {
  * Initialize the product heap with the two polynomials to multiply, a and b.
  *
  * We know the maximum heap size is numTerms(a) as at most one of a_i*b
- * is in the heap at once. 
+ * is in the heap at once.
  */
 ProductHeap_AAZ* prodheapInit_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int nvar);
 
 /**
- * Increase the capacity of the heap to newAllocSize. 
+ * Increase the capacity of the heap to newAllocSize.
  */
 static inline void prodheapResize_AAZ(ProductHeap_AAZ* h, int newAllocSize) {
 	h->elements = (ProductHeapElem_AAZ*) realloc(h->elements, sizeof(ProductHeapElem_AAZ)*newAllocSize);
@@ -939,9 +939,9 @@ ProductHeapChain_AAZ* prodheapRemoveMax_AAZ(ProductHeap_AAZ* h);
 
 /**
  * Multiply two polynomials a and b, returning their product.
- * This algorithm makes use of heaps as an efficient search data structure. 
+ * This algorithm makes use of heaps as an efficient search data structure.
  * It is assumed that both a and b have compatible exponent vectors (i.e. the same number of variables).
- * 
+ *
  * nvar: number of elements in the exponent vectors.
  *
  * returns a pointer to the head Node of the product polynomial.
@@ -954,7 +954,7 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
  * The pointer cc should (but not necessarily) point to a pre-allocated polynomial
  * whose space is used to store the product.
  * Polynomials a and b should have compatible exponent vectors (i.e. same number of variables).
- * 
+ *
  * @note cc should not point to one of a or b.
  *
  * @param a the multiplicand polynomial.
@@ -967,7 +967,7 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
  * Multiply two polynomials in-place wrt the first polynomial.
  * That is, the multiplication occurs, reusing elements of a as much as possible
  * and the previous content of a is destroyed in the process.
- * It is assumed that a and b have the same sized exponent vectors. 
+ * It is assumed that a and b have the same sized exponent vectors.
  *
  *
  * nvar: number of elements in the exponent vectors.
@@ -979,8 +979,8 @@ AltArrZ_t* multiplyPolynomials_AAZ_inp(AltArrZ_t* a, const AltArrZ_t* b, int nva
 
 /**
  * Multiply all the polynomials in the list polys, of size n,
- * into a single product. 
- * 
+ * into a single product.
+ *
  * @param polys the list of polynomials to multiply.
  * @param n the size of the list polys.
  *
@@ -993,17 +993,17 @@ AltArrZ_t* multiplyManyPolynomials_AAZ(AltArrZ_t const * const * polys, int n);
  * Multiply all the polynomials in the list polys, of size n,
  * into a single product. Reuse the space pointed to by prod
  * to store the resulting product.
- * 
+ *
  * @param polys the list of polynomials to multiply.
  * @param n the size of the list polys.
- * @param[out] prod a pointer to a potentially allocated polynomial to store the product. 
+ * @param[out] prod a pointer to a potentially allocated polynomial to store the product.
  *
  */
 void multiplyManyPolynomialsPreAlloc_AAZ(AltArrZ_t const* const* polys, int n, AltArrZ_t** prod);
 
 /**
  * Multiply together all the polynomials in the list polys, of size n,
- * exlucding the polynomial at index idx. 
+ * exlucding the polynomial at index idx.
  * The single AltArrZ_t product polynomial is returned.
  *
  * @param polys an array of DUZP_t polys of size n.
@@ -1014,15 +1014,15 @@ void multiplyManyPolynomialsPreAlloc_AAZ(AltArrZ_t const* const* polys, int n, A
  */
 AltArrZ_t* multiplyAllButOnePolynomials_AAZ(AltArrZ_t const*const* polys, int n, int idx);
 
-/** 
- * Multiply polynomial, aa, by X_{idx}^n where 0 <= idx < nvar. 
+/**
+ * Multiply polynomial, aa, by X_{idx}^n where 0 <= idx < nvar.
  * Note this works inplace.
- */ 
+ */
 void multiplyPolynomialAtIdxByXn_AAZ_inp (AltArrZ_t* aa, int idx, int n, int nvar);
 
 
 /*****************
- * Polynomial exponentiation 
+ * Polynomial exponentiation
  *****************/
 
 
@@ -1049,22 +1049,22 @@ AltArrZ_t* exponentiatePoly_AAZ(AltArrZ_t* a, unsigned int n, int nvar);
  * This process continues as long as the next element in the heap has the same
  * product degree_t
  */
-#if SMQP_INT_PRODHEAP 
+#if SMQP_INT_PRODHEAP
 void divisionGetNextTerm_AAZ(ProductHeap_AAZ* h, const AAZElem_t* __restrict__ aElems, const AAZElem_t* __restrict__ bElems, mpz_t* retCoef);
-#else 
+#else
 void divisionGetNextTerm_AAZ(ProductHeap_AAZ* h, mpz_t* retCoef);
 #endif
 
-/** 
+/**
  * Given a polynomial, c, and a term, b, determine polynomials a and r
  * such that c = b*a + r.
- * a and r are returned in res_a and res_r, respectively. 
+ * a and r are returned in res_a and res_r, respectively.
  */
 void divideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int nvar);
 
-/** 
+/**
  * Given two polynomials, c and b, find their quotient and remainder such that
- * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r 
+ * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r
  * Based on Stephen Johnson's "Sparse Polynomial Arithmetic".
  */
 void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int nvar);
@@ -1080,16 +1080,16 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 
 /**
  * Determine if a polynomial, c, is exactly divisble by another, b.
- * If the division is exact, returns the quoteint in res_a. 
+ * If the division is exact, returns the quoteint in res_a.
  * Otherwise, the value of res_a is undefined.
  * returns 1 iff division is exact. 0 otherwise.
  */
 int divideTest_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar);
 int divideTestSingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar);
- 
+
 /**
  * Given two polynomials, c and b, to compute the remainder and quotient
- * of leading terms of c and b such that lt(c) = lt(b)*res_a + res_r.   
+ * of leading terms of c and b such that lt(c) = lt(b)*res_a + res_r.
  */
 void divideByLeadingTerms_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int nvar);
 
@@ -1106,12 +1106,12 @@ void divideByLeadingTerms_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, Al
 AltArrZ_t* derivative_AAZ(const AltArrZ_t* aa, int idx, int k);
 
 /**
- * Turn the polynomial pointed to by aa into its k'th partial derivative 
+ * Turn the polynomial pointed to by aa into its k'th partial derivative
  * with respect to the varibale at index idx.
  *
  * @param[in,out] aa a pointer to the polynomial whose partial derivative is to be computed, also the place where the resulting derivative is stored.
  * @param idx the index of the variable with respect to which the partial derviative is taken.
- * @param k the order of the derivative. 
+ * @param k the order of the derivative.
  *
  */
 void derivative_AAZ_inp(AltArrZ_t** aa, int idx, int k);
@@ -1156,7 +1156,7 @@ AltArrZ_t* primitivePart_AAZ(const AltArrZ_t* aa);
 AltArrZ_t* primitivePartAndContent_AAZ(const AltArrZ_t* aa, mpz_t cont);
 
 /**
- * Get the primitive part, a primitive integer polynomial, 
+ * Get the primitive part, a primitive integer polynomial,
  * from a rational number polynomial aa.
  * Returns the content in cont.
  *
@@ -1174,7 +1174,7 @@ void primitivePart_AAZ_inp(AltArrZ_t* aa);
  * Convert the input aa to its primitive part in place and
  * return its content in the mpz_t content.
  */
-void primitivePartContent_AAZ_inp(AltArrZ_t* aa, mpz_t content);
+void primitivePartAndContent_AAZ_inp(AltArrZ_t* aa, mpz_t content);
 
 /**
  * Given two polynomials, both with 1 variable, get their GCD using a heuristic method.
@@ -1185,7 +1185,7 @@ void primitivePartContent_AAZ_inp(AltArrZ_t* aa, mpz_t content);
 AltArrZ_t* univariateHeuristicGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
 
 /**
- * Given two polynomials, both with 1 variable and both primitive, 
+ * Given two polynomials, both with 1 variable and both primitive,
  * get their GCD using a heuristic method.
  * Returns NULL if the heuristic fails or if both inputs encode 0.
  *
@@ -1200,7 +1200,7 @@ AltArrZ_t* univariateHeuristicPrimitiveGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
  */
 AltArrZ_t* univariateGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
 
-/** 
+/**
  * Given two polynomials, both with 1 variable, get their GCD as a primitive polynomial.
  * Is s or t is non-null then returns the corresponding bezout coefficient as well such that
  * s*a + t*b = g.
@@ -1220,7 +1220,7 @@ void integerPolynomialTest_AAZ(AltArrZ_t* aa, mpz_t mpzG);
  * If factored is not NULL then the input polynomial with common factor removed
  * is returned in factored.
  *
- * returns the common factor. 
+ * returns the common factor.
  */
 AltArrZ_t* commonFactor_AAZ(const AltArrZ_t* a, AltArrZ_t** factored);
 
@@ -1231,20 +1231,20 @@ AltArrZ_t* commonFactor_AAZ(const AltArrZ_t* a, AltArrZ_t** factored);
  *****************/
 
 /**
- * Evaluate a univariate polynomial at the point, point. The result is 
+ * Evaluate a univariate polynomial at the point, point. The result is
  * returned as a multi-precision rational number, res.
  */
 void univarEvaluate_AAZ(AltArrZ_t* aa, const mpz_t point, mpz_t res);
 
- 
+
 
 
 /****************
 * Normal Form (Multi-Divisor Division (MDD))
 *****************/
 
-/** 
- * Normal Form (or Multi-Divisor Division (MDD)) 
+/**
+ * Normal Form (or Multi-Divisor Division (MDD))
  * Given the dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
  * Return (by reference) the remainder and the quotient set Q[s] = {q_0, ..., q_{s-1}},
@@ -1252,7 +1252,7 @@ void univarEvaluate_AAZ(AltArrZ_t* aa, const mpz_t point, mpz_t res);
  * Note the variable type is determining the type of normal form algorithm such that
  *  if type = 0 then using the naive normal form algorithm which works with general divisor-sets
  *  if type > 0 then using the normal form algorithm which is specialized for triangular-sets works recursively
- * Note the triangular-set normal form algorithm over recursive representation of polynoimials 
+ * Note the triangular-set normal form algorithm over recursive representation of polynoimials
  *  is implemented in SMQP_Support_Recurisve-AA.h
  */
 void multiDivisorDivision_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar, int type);
@@ -1260,9 +1260,9 @@ void multiDivisorDivision_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltAr
 /**
  * The specific Normal Form algorithm to compute only the normal form of f w.r.t G
  */
-AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar); 
+AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar);
 
-/** 
+/**
  * Multi-Divisor Division (MDD) using Heap (Johnson's) Division
  * Given the dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
@@ -1271,7 +1271,7 @@ AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar);
 void normalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar);
 void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar);
 
-/** 
+/**
  * Multi-Divisor Division (MDD) where the divisor-set is a Triangular Set
  * Given the  dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
@@ -1280,9 +1280,9 @@ void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int
 void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar);
 void recTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar);
 
-/** 
+/**
  * Multi-Divisor Division (MDD) where the divisor-set is a Triangular Set
- * with using primitive factorization techniques 
+ * with using primitive factorization techniques
  * Given the dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
  * Return (by reference) the remainder and the quotient set Q[s] = {q_0, ..., q_{s-1}}.
@@ -1290,8 +1290,8 @@ void recTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArr
 void primitiveFactorTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar);
 
 /**
- * given the number of variables, nvar, and return a recursive loop of the routine doing 
- * in triangular-set normal form algorithm  
+ * given the number of variables, nvar, and return a recursive loop of the routine doing
+ * in triangular-set normal form algorithm
  */
 static inline int* recursiveLoopZ (int nvar)
 {
@@ -1313,13 +1313,13 @@ static inline int* recursiveLoopZ (int nvar)
     }
 }
 
-/** 
- * Check the input triangular set is normalized or not, 
- * s is the size of the triangular set and nvar is the number of variables 
+/**
+ * Check the input triangular set is normalized or not,
+ * s is the size of the triangular set and nvar is the number of variables
  */
 int isNormalizedTriangularSet_AAZ (AltArrZ_t** G, int s, int nvar);
 
-/** 
+/**
  * The verification algorithm to test the correctness of normal form algorithms.
  */
 int multiDivisorDivisionVerification_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t* r, AltArrZ_t* hPow, int nSet, int tnvar);

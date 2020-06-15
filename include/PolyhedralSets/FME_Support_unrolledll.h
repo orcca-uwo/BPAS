@@ -33,7 +33,7 @@ typedef struct unrolledLl_t
 
 void allocNode(int varNum , inequalityNode_t * newIneq);
 
-void copyNode(const inequalityNode_t source  , inequalityNode_t * destination);
+void copyNode(inequalityNode_t source  , inequalityNode_t * destination);
 
 void freeNode(inequalityNode_t * a);
 
@@ -41,7 +41,7 @@ void allocList(int varNum , unrolledLl_t * newList);
 
 
 void specificAdd(unrolledLl_t * l, inequalityNode_t ** current, int * index,
-		const inequality_t * newIneq);
+		inequality_t * newIneq);
 
 int getListSize(unrolledLl_t * d);
 

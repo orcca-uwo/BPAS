@@ -164,6 +164,10 @@ include( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/BPAS_RegularChain.cmake/ )
 include( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/BPAS_Parser.cmake/ )
 
 # --------------------------------------
+# PowerSeries
+include( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/BPAS_PowerSeries.cmake/ )
+
+# --------------------------------------
 # RationalFunction
 include( ${CMAKE_CURRENT_SOURCE_DIR}/cmake/BPAS_RationalFunction.cmake/ )
 

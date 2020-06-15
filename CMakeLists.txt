@@ -511,6 +511,10 @@ include( ${CMAKE_SOURCE_DIR}/cmake/BPAS_RationalFunction.cmake/ )
 include( ${CMAKE_SOURCE_DIR}/cmake/BPAS_Parser.cmake/ )
 
 # --------------------------------------
+# PowerSeries
+include( ${CMAKE_SOURCE_DIR}/cmake/BPAS_PowerSeries.cmake/ )
+
+# --------------------------------------
 # Utils
 include( ${CMAKE_SOURCE_DIR}/cmake/BPAS_Utils.cmake/ )
 

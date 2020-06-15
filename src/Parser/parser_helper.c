@@ -71,8 +71,8 @@ void fill_term_exponent(char **orderedVarArray, degree_t *exponentToFill, char* 
             exponentToFill[pos] = currentExp;
         }
     }else{
-        // TODO: printf("new varaiable is discovered\n"); 
-        //if the variable used unspecified, mostly the code resides here 
+        // TODO: printf("new varaiable is discovered\n");
+        //if the variable used unspecified, mostly the code resides here
         //to enumirate through the array to update the exponents
         // printf("variable is not found ::)\n");
         // This condition is useful if the data structure linked-list
@@ -134,7 +134,7 @@ void add_unpacked_term_to_smqp_aa(AltArr_t* aa, const degree_t* deg, ratNum_t co
 }
 
 // void add_packed_degree_term_to_smqp_aa(AltArr_t *aa, degree_t *deg, ratNum_t coef, int numvar){
-    
+
 //     if(numvar == 0){ //will dump error message in the console complaining EXP and NVARS are empty
 //         numvar = 1;
 //     }
@@ -156,7 +156,7 @@ degree_t* unpacked_degs(degrees_t packed_degs, int numvars){
     }
     const degrees_t* __restrict__ oldmasks = getExpMaskArray(numvars);
     const int* __restrict__ oldsizes = getExpOffsetArray(numvars);
-    
+
     degree_t* ret = (degree_t*)calloc(numvars, sizeof(degree_t));
     if(!ret){
         fprintf(stderr, "%s\n", "error callocing");
@@ -164,7 +164,7 @@ degree_t* unpacked_degs(degrees_t packed_degs, int numvars){
     }
     for(int j=0; j<numvars; j++){
         ret[j] = GET_NTH_EXP(packed_degs, oldmasks[j], oldsizes[j]);
-    } 
+    }
     return ret;
 }
 
@@ -180,13 +180,13 @@ char* strip_comments(const char* buf, size_t size){
                     break;
                 }
                 i++;
-            }                
-            i = i+2;            
+            }
+            i = i+2;
         }
         newbuf[j] = buf[i];
         j++;
         i++;
     }
-    
+
     return newbuf;
 }

@@ -7,7 +7,7 @@
 #include "PolyhedralSets/FME_Support_extreme.h"
 
 
-void findExtremeRays(const matrix_t in , matrix_t * out)
+void findExtremeRays(matrix_t in , matrix_t * out)
 {
 	printf("Enter finding extrem rays\n");
 	dd_MatrixPtr A , G;

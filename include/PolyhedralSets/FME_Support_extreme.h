@@ -18,6 +18,6 @@
  * using CDD library.
  */
 
-void findExtremeRays(const matrix_t coeffMat , matrix_t * extrRays);
+void findExtremeRays(matrix_t coeffMat , matrix_t * extrRays);
 
 #endif

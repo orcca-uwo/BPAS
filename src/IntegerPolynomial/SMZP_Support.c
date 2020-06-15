@@ -58,7 +58,7 @@ void printPoly_AAZ(FILE* fp, const AltArrZ_t* aa, const char** syms, int nvar) {
 			printDegs_AA(fp, aa->elems[aa->size-1].degs, syms, nvar, masks, sizes);
 		}
 	}
-	
+
 	//fprintf(fp, "\n");
 
 }
@@ -109,7 +109,7 @@ degrees_t calculateMaxDegs_AAZ(const AltArrZ_t* aa) {
 	}
 	for (i = 0; i < size; ++i) {
 		for (j = 0; j < nvar; ++j) {
-			maxList[j] = (elems[i].degs & masks[j]) > (maxList[j]) ? (elems[i].degs & masks[j]) : maxList[j];  
+			maxList[j] = (elems[i].degs & masks[j]) > (maxList[j]) ? (elems[i].degs & masks[j]) : maxList[j];
 		}
 	}
 
@@ -169,7 +169,7 @@ void nonZeroVariables_AAZ(AltArrZ_t* aa, int* foundVar) {
 
     if (aa->unpacked) {
     	nonZeroVariables_AAZ_unpk(aa, foundVar);
-    	return; 
+    	return;
     }
 
     int nvar = aa->nvar;
@@ -245,7 +245,7 @@ degree_t partialDegree_AAZ(const AltArrZ_t* aa, int k) {
     if (k == 0) {
     	dMax = GET_NTH_EXP(aa->elems->degs, masks[k], sizes[k]);
     } else {
-		degree_t d = 0; 
+		degree_t d = 0;
 		for (int i = 0; i < aa->size; ++i) {
 			d = GET_NTH_EXP(aa->elems[i].degs, masks[k], sizes[k]);
 			if (d > dMax) {
@@ -285,7 +285,7 @@ degree_t mainDegree_AAZ(AltArrZ_t* aa) {
 
     int nvar = aa->nvar;
 	const degrees_t* masks = getExpMaskArray(nvar);
-    const int* sizes = getExpOffsetArray(nvar); 
+    const int* sizes = getExpOffsetArray(nvar);
     int ret = 0;
     for (int j = 0; j < nvar; ++j) {
         if ((aa->elems->degs & masks[j]) != 0) {
@@ -332,7 +332,7 @@ void coefficient_AAZ(AltArrZ_t* aa, const degree_t* degsList, int nvar, mpz_t re
 		return coefficient_AAZ_unpk(aa, degsList, nvar, retCoef);
 	}
 
-    const int* sizes = getExpOffsetArray(nvar);    
+    const int* sizes = getExpOffsetArray(nvar);
     const degrees_t* maxExps = getMaxExpArray(nvar);
 
     degrees_t degs = 0;
@@ -380,7 +380,7 @@ void setCoefficient_AAZ(AltArrZ_t* aa, const degree_t* degsList, int nvar, const
     	return;
     }
 
-    const int* sizes = getExpOffsetArray(nvar);    
+    const int* sizes = getExpOffsetArray(nvar);
     const degrees_t* maxExps = getMaxExpArray(nvar);
 
     degrees_t degs = 0;
@@ -411,7 +411,7 @@ void setCoefficient_AAZ(AltArrZ_t* aa, const degree_t* degsList, int nvar, const
             aa->elems[i].degs = degs;
             mpz_set(aa->elems[i].coef, coef);
             ++(aa->size);
-            return; 
+            return;
         }
     }
 
@@ -455,7 +455,7 @@ int isEqualWithVariableOrdering_AAZ(AltArrZ_t* a, AltArrZ_t*b, const int* xs, in
 
     const int* aSizes = getExpOffsetArray(nvar);
     const int* bSizes = getExpOffsetArray(bnvar);
-    
+
     int ret = 1;
     degree_t adeg, bdeg;
     for (int i = 0; i < a->size; ++ i){
@@ -477,7 +477,7 @@ int isEqualWithVariableOrdering_AAZ(AltArrZ_t* a, AltArrZ_t*b, const int* xs, in
                 break;
             }
         }
-        
+
     }
 
     return ret;
@@ -509,7 +509,7 @@ int isConstantTermZero_AAZ(AltArrZ_t* a) {
 void expandNumVars_AAZ(AltArrZ_t* aa_in, int newNvar) {
 	if (aa_in == NULL) {
 		return;
-	} 
+	}
 	if (aa_in->size == 0 || aa_in->alloc == 0) {
 		aa_in->nvar = newNvar;
 		return;
@@ -544,19 +544,19 @@ void expandNumVars_AAZ(AltArrZ_t* aa_in, int newNvar) {
 		degs = aa->elems[i].degs;
 		aa->elems[i].degs = 0;
 		for (int j = 0; j < aa->nvar; ++j) {
-			curDeg = GET_NTH_EXP(degs, oldMasks[j], oldSizes[j]); 
+			curDeg = GET_NTH_EXP(degs, oldMasks[j], oldSizes[j]);
 			if (curDeg > maxExps[j]) {
 				//TODO
 				freePolynomial_AAZ(aa);
 				unpackExponentVectors_AAZ_inp(aa_in);
 				expandNumVars_AAZ_unpk(aa_in, newNvar);
 				return;
-				
+
 				// int diff = newNvar - aa->nvar;
 				// fprintf(stderr, "SMZP ERROR: Overflow in exponent packing for expand at index %d; %lld > %lld.\n", j+diff, curDeg, maxExps[j+diff]);
 				// exit(1);
 			}
-			aa->elems[i].degs |= (curDeg << newSizes[j]);  
+			aa->elems[i].degs |= (curDeg << newSizes[j]);
 		}
 	}
 
@@ -605,7 +605,7 @@ void expandNumVarsLeft_AAZ(AltArrZ_t* aa_in, int newNvar) {
 		degs = aa->elems[i].degs;
 		aa->elems[i].degs = 0;
 		for (int j = 0; j < aa->nvar; ++j) {
-			curDeg = GET_NTH_EXP(degs, oldMasks[j], oldSizes[j]); 
+			curDeg = GET_NTH_EXP(degs, oldMasks[j], oldSizes[j]);
 			if (curDeg > maxExps[j+diff]) {
 				//TODO
 				freePolynomial_AAZ(aa);
@@ -615,7 +615,7 @@ void expandNumVarsLeft_AAZ(AltArrZ_t* aa_in, int newNvar) {
 				// fprintf(stderr, "SMQP ERROR: Overflow in exponent packing for expand at index %d; %lld > %lld.\n", j+diff, curDeg, maxExps[j+diff]);
 				// exit(1);
 			}
-			aa->elems[i].degs |= (curDeg << newSizes[j+diff]);  
+			aa->elems[i].degs |= (curDeg << newSizes[j+diff]);
 		}
 	}
 
@@ -665,7 +665,7 @@ void shrinkNumVarsAtIdx_AAZ(AltArrZ_t* aa, int idx) {
 		curDegs = elems[i].degs;
 		newDegs = 0;
 		//iterate this current nvar, skipping j = idx, repacking exponents.
-		//when j > idx, exponents are shifted to be at an index one less than 
+		//when j > idx, exponents are shifted to be at an index one less than
 		//originally.
 		for (j = 0; j < idx; ++j) {
 			deg = GET_NTH_EXP(curDegs, oldMasks[j], oldSizes[j]);
@@ -688,7 +688,7 @@ void shrinkAndReorderVars_AAZ(AltArrZ_t* aa, int* varMap, int varmapSize) {
 	}
 	if (varmapSize > aa->nvar) {
 		return;
-	} 
+	}
 
 	if (aa->unpacked) {
 		shrinkAndReorderVars_AAZ_unpk(aa, varMap, varmapSize);
@@ -710,7 +710,7 @@ void shrinkAndReorderVars_AAZ(AltArrZ_t* aa, int* varMap, int varmapSize) {
 			}
 		}
 	}
-	
+
 	if (aa->size < 1) {
 		aa->nvar = newNvar;
 		return;
@@ -752,7 +752,7 @@ void shrinkAndReorderVars_AAZ(AltArrZ_t* aa, int* varMap, int varmapSize) {
 				// exit(1);
 			}
 			newDegs |= (curDeg << newSizes[varMap[j]]);
-		} 
+		}
 		elems[i].degs = newDegs;
 	}
 
@@ -800,7 +800,7 @@ void reorderVars_AAZ(AltArrZ_t* aa_in, int* varMap, int varmapSize) {
 				reorderVars_AAZ_unpk(aa_in, varMap, varmapSize);
 				return;
 				// fprintf(stderr, "SMQP ERROR: Overflow in exponent packing for reorder at index %d; %lld > %lld.\n", varMap[j], curDeg, maxExps[varMap[j]]);
-				// exit(1);	
+				// exit(1);
 			}
 			aa->elems[i].degs |= (curDeg << sizes[varMap[j]]);
 		}
@@ -860,7 +860,7 @@ void setDegrees_AAZ_inp(AltArrZ_t* aa, int idx, const degree_t* degsList, int nv
 			// exit(1);
 		}
 
-		aa->elems[idx].degs |= ((degrees_t) degsList[k] << sizes[k]);  
+		aa->elems[idx].degs |= ((degrees_t) degsList[k] << sizes[k]);
 	}
 }
 
@@ -883,7 +883,7 @@ void setExponentTerm_AAZ_inp(AltArrZ_t* aa, int idx, degree_t deg, int k) {
 		setExponentTerm_AAZ_inp_unpk(aa, idx, deg, nvar);
 	} else {
 		aa->elems[idx].degs = aa->elems[idx].degs & ~(masks[k]);
-		aa->elems[idx].degs |= ((degrees_t) deg << sizes[k]); 
+		aa->elems[idx].degs |= ((degrees_t) deg << sizes[k]);
 	}
 }
 
@@ -895,7 +895,7 @@ AltArrZ_t* deepCopyPolynomial_AAZFromNode(Node* a, int nvar) {
 	polysize_t asize = numberOfTermsNode(a);
 	AltArrZ_t* newAA = makePolynomial_AAZ(asize, nvar);
 	AA_SIZE(newAA) = asize;
-	
+
 	int size = AA_SIZE(newAA);
 	AAZElem_t* elems = newAA->elems;
 	for (int i = 0; i < size && a != NULL; ++i) {
@@ -903,7 +903,7 @@ AltArrZ_t* deepCopyPolynomial_AAZFromNode(Node* a, int nvar) {
 		mpz_set(elems[i].coef, mpq_numref(a->coef));
 		elems[i].degs = a->degs;
 		a = a->next;
-	}	
+	}
 
 	return newAA;
 }
@@ -917,9 +917,9 @@ Node* deepCopyPolynomial_NodeFromAAZ(AltArrZ_t* aa) {
 		fprintf(stderr, "Cannot make Node from unpacked AltArr_t\n");
 		exit(1);
 	}
-	
+
 	int asize = AA_SIZE(aa);
-	
+
 	AAZElem_t* elems = aa->elems;
 	mpq_t qCoef;
 	mpq_init(qCoef);
@@ -929,7 +929,7 @@ Node* deepCopyPolynomial_NodeFromAAZ(AltArrZ_t* aa) {
 	for (int i = 1; i < asize; ++i) {
 		mpz_set(mpq_numref(qCoef), elems[i].coef);
 		tail = addTerm(tail, elems[i].degs, qCoef);
-	}	
+	}
 	mpq_clear(qCoef);
 	return head;
 }
@@ -1057,7 +1057,7 @@ void deepCopyPolynomial_AAZ_inp(const AltArrZ_t* aa, AltArrZ_t** bb){
 		if (!isZero_AAZ(*bb)) {
 			freePolynomial_AAZ(*bb);
 		}
-		return; 
+		return;
 	}
 
 	if (aa->unpacked || (bb != NULL && (*bb)->unpacked)) {
@@ -1128,7 +1128,7 @@ static void mergeAAZElems(AAZElem_t* __restrict__ a, AAZElem_t* __restrict__ end
 	int i = 0;
 	while (a < endA && b < endB) {
 		if (isGreaterExponentVectors(a->degs, b->degs)) {
-			sorted[i] = *a; 
+			sorted[i] = *a;
 			++a;
 		} else {
 			sorted[i] = *b;
@@ -1214,7 +1214,7 @@ void condensePolynomial_AAZ(AltArrZ_t* aa) {
 		} else if (mpz_sgn(elems[insertIdx].coef) != 0) {
 			++insertIdx;
 		}
-		++compareIdx;		
+		++compareIdx;
 	}
 
 	if (mpz_sgn(elems[insertIdx].coef) != 0) {
@@ -1244,7 +1244,7 @@ void removeZeroTerms_AAZ(AltArrZ_t* aa) {
 		if (mpz_cmp_ui(elems[i].coef, 0ul) != 0) {
 			if (i != curIdx) {
 				mpz_swap(elems[curIdx].coef, elems[i].coef);
-				elems[curIdx].degs = elems[i].degs;	
+				elems[curIdx].degs = elems[i].degs;
 			}
 			++curIdx;
 		}
@@ -1282,14 +1282,14 @@ AltArrZ_t* mainLShiftPolynomial_AAZ (AltArrZ_t* aa, int n)
     if (n < 1){
 		return deepCopyPolynomial_AAZ (aa);
     }
-    
+
     if (aa->unpacked) {
     	return mainLShiftPolynomial_AAZ_unpk(aa, n);
     }
 
     int nvar = aa->nvar;
     int mvarDegOffset = getMVarExpOffset (nvar);
-    
+
     degrees_t nDegs = (degrees_t) n << mvarDegOffset;
     int fitsPacked = monomialMultFitsPacked(aa->elems->degs, nDegs, nvar);
     if (!fitsPacked) {
@@ -1312,7 +1312,7 @@ AltArrZ_t* mainLShiftPolynomial_AAZ (AltArrZ_t* aa, int n)
 		mpz_set (selems[i].coef, aelems[i].coef);
 		selems[i].degs = aelems[i].degs;
 		selems[i].degs += ((degrees_t) n << mvarDegOffset);
-    }   
+    }
     return shifted;
 }
 
@@ -1328,10 +1328,10 @@ AltArrZ_t* mainLShiftPolynomial_AAZ_inp (AltArrZ_t* aa, int n)
     if (aa->unpacked) {
     	return mainLShiftPolynomial_AAZ_inp_unpk(aa, n);
     }
-    
+
     int nvar = aa->nvar;
     int mvarDegOffset = getMVarExpOffset (nvar);
-    
+
     degrees_t nDegs = (degrees_t) n << mvarDegOffset;
     int fitsPacked = monomialMultFitsPacked(aa->elems->degs, nDegs, nvar);
     if (!fitsPacked) {
@@ -1343,7 +1343,7 @@ AltArrZ_t* mainLShiftPolynomial_AAZ_inp (AltArrZ_t* aa, int n)
 
     for (int i = 0; i < aa->size; ++i){
 		aelems[i].degs += ((degrees_t) n << mvarDegOffset);
-    }   
+    }
     return aa;
 }
 
@@ -1396,7 +1396,7 @@ void applyModuloSymmetric_AAZ_inp(AltArrZ_t* p, const mpz_t mod) {
 	AAZElem_t* elems = p->elems;
 	for (i = 0; i < size; ++i) {
 		// fprintf(stderr, "moding poly %p at %ld\n",p, i);
-		mpz_mod(elems[insertIdx].coef, elems[i].coef, mod); 
+		mpz_mod(elems[insertIdx].coef, elems[i].coef, mod);
 		if(mpz_cmp(elems[insertIdx].coef, halfMod) > 0) {
 			mpz_sub(elems[insertIdx].coef, elems[insertIdx].coef, mod);
 		}
@@ -1432,7 +1432,7 @@ void evalPolyToVal_AAZ(const AltArrZ_t* aa, const mpz_t* vals, short nvar, mpz_t
 
 	if (aa->unpacked) {
 		evalPolyToVal_AAZ_unpk(aa, vals, nvar, res);
-		return; 
+		return;
 	}
 
 	const int* sizes = getExpOffsetArray(nvar);
@@ -1456,7 +1456,7 @@ void evalPolyToVal_AAZ(const AltArrZ_t* aa, const mpz_t* vals, short nvar, mpz_t
 	}
 
 	mpz_set_ui(res, 0ul);
-	mpz_t acc; 
+	mpz_t acc;
 	mpz_init(acc);
 
 	int size = aa->size;
@@ -1507,7 +1507,7 @@ AltArrZ_t* evaluatePoly_AAZ(const AltArrZ_t* aa, const int* active, const mpz_t*
 		AltArrZ_t* ret = makeConstPolynomial_AAZ(1, 0, res);
 		mpz_clear(res);
 		return ret;
-	} 
+	}
 
 	const int* sizes = getExpOffsetArray(nvar);
 	const degrees_t* masks = getExpMaskArray(nvar);
@@ -1590,7 +1590,7 @@ AltArrZ_t* swappingExponents_AAZ (AltArrZ_t* aa, int idx1, int idx2)
   if (aa == NULL)
       return NULL;
 
-  
+
   AltArrZ_t* cPoly = deepCopyPolynomial_AAZ (aa);
   if (idx1 == idx2){
       return cPoly;
@@ -1620,7 +1620,7 @@ AltArrZ_t* leadingTerm_AAZ (AltArrZ_t* aa, int nvar)
 
 	AltArrZ_t* lt = makeConstPolynomial_AAZ (1, aa->nvar, aa->elems->coef);
 	lt->elems->degs = aa->elems->degs;
-	
+
 	return lt;
 }
 
@@ -1633,7 +1633,7 @@ int leadingVariable_AAZ (AltArrZ_t* aa)
 	if (aa->unpacked) {
 		return leadingVariable_AAZ_unpk(aa);
 	}
-	
+
 	const degrees_t* masks = getExpMaskArray(aa->nvar);
 	for (int i = 0; i < aa->nvar; ++i){
 		if ((aa->elems[0].degs & masks[i]) != 0) {
@@ -1654,10 +1654,10 @@ int mainLeadingDegree_AAZ (AltArrZ_t* aa)
     if (aa->unpacked) {
     	return mainLeadingDegree_AAZ_unpk(aa);
     }
-    
+
     int mvarDegOffset = getMVarExpOffset (aa->nvar);
     degrees_t mvarMask = getMVarExpMask (aa->nvar);
-    
+
     return GET_NTH_EXP(aa->elems->degs, mvarMask, mvarDegOffset);
 }
 
@@ -1671,20 +1671,20 @@ AltArrZ_t* mainLeadingCoefficient_AAZ (AltArrZ_t* aa)
 	if (aa->unpacked) {
 		return mainLeadingCoefficient_AAZ_unpk(aa);
 	}
-    
+
     int mvarDegOffset = getMVarExpOffset (aa->nvar);
     degrees_t mvarMask = getMVarExpMask(aa->nvar);
-    
+
     AAZElem_t* elems = aa->elems;
     degree_t mvarDeg = (elems[0].degs & mvarMask) >> mvarDegOffset;
     degree_t curDeg = mvarDeg;
-    
+
     int polyElemsAlloc = 10;
     int polyElemsSize = 0;
     AAZElem_t* polyElems = (AAZElem_t*) malloc (sizeof(AAZElem_t) * polyElemsAlloc);
-    
+
     for (int i = 0; (mvarDeg == curDeg) && i < AA_SIZE (aa); ++i){
-	
+
 		if (polyElemsSize + 1 > polyElemsAlloc){
 		    polyElemsAlloc += 10;
 		    polyElems = (AAZElem_t*) realloc (polyElems, sizeof (AAZElem_t) * polyElemsAlloc);
@@ -1694,7 +1694,7 @@ AltArrZ_t* mainLeadingCoefficient_AAZ (AltArrZ_t* aa)
 		mpz_set (polyElems[i].coef, elems[i].coef);
 		polyElems[i].degs = (elems[i].degs & (~mvarMask));
 		++polyElemsSize;
-			
+
 		if (i+1 < AA_SIZE(aa)){
 		    curDeg = (elems[i+1].degs & mvarMask) >> mvarDegOffset;
 		} else {
@@ -1724,7 +1724,7 @@ AltArrZ_t* mainCoefficientAtIdx_AAZ (AltArrZ_t* aa, int e)
     if (aa->unpacked) {
     	return mainCoefficientAtIdx_AAZ_unpk(aa, e);
     }
-    
+
     int mvarDegOffset = getMVarExpOffset (aa->nvar);
     degrees_t mvarMask = getMVarExpMask(aa->nvar);
 
@@ -1732,50 +1732,50 @@ AltArrZ_t* mainCoefficientAtIdx_AAZ (AltArrZ_t* aa, int e)
     degree_t mvarDeg = e;
     degree_t curDeg = (elems[0].degs & mvarMask) >> mvarDegOffset;
     int begin = -1;
-    
+
     if (mvarDeg > curDeg){
         return NULL;
     }
-    
+
     int polyElemsAlloc = 10;
     int polyElemsSize = 0;
     AAZElem_t* polyElems = (AAZElem_t*) malloc (sizeof(AAZElem_t) * polyElemsAlloc);
-    
+
     for (int i = 0; i < AA_SIZE (aa); ++i){
 	if (mvarDeg == curDeg){
 	    if (polyElemsSize + 1 > polyElemsAlloc) {
 		polyElemsAlloc += 10;
 		polyElems = (AAZElem_t*) realloc (polyElems, sizeof (AAZElem_t)*polyElemsAlloc);
 	    }
-	    
+
 	    mpz_init (polyElems[polyElemsSize].coef);
 	    mpz_set (polyElems[polyElemsSize].coef, elems[i].coef);
 	    polyElems[polyElemsSize].degs = elems[i].degs & (~mvarMask);
 	    ++polyElemsSize;
-	    
+
 	    if (begin == -1) {
 		begin = i;
 	    }
 	}
-	
+
 	if (begin != -1 && mvarDeg != curDeg){
 	    break;
 	}
-	
+
 	if (i+1 < AA_SIZE(aa)){
 	    curDeg = (elems[i+1].degs & mvarMask) >> mvarDegOffset;
 	} else {
 	    curDeg = -1;
 	}
     }
-    
+
     AltArrZ_t* poly = (AltArrZ_t*) malloc(sizeof(AltArrZ_t));
     poly->alloc = polyElemsAlloc;
     poly->size = polyElemsSize;
     poly->elems = polyElems;
     poly->unpacked = 0;
     poly->nvar = aa->nvar;
-    
+
     return poly;
 }
 
@@ -1786,7 +1786,7 @@ void mainCoefficientListAtIdx_AAZ (AltArrZ_t* aa, int idx, AltArrZ_t*** cList, i
 		*cList = NULL;
 		return;
 	}
-	
+
 	if (idx < 0) {
 		*sz = 0;
 		*cList = NULL;
@@ -1803,7 +1803,7 @@ void mainCoefficientListAtIdx_AAZ (AltArrZ_t* aa, int idx, AltArrZ_t*** cList, i
 	AltArrZ_t* AA = aa;
 	int isExpand = 0;
 	int nnvar;
-	
+
 	if (idx > 0) {
 		AA = deepCopyPolynomial_AAZ (aa);
 
@@ -1817,12 +1817,12 @@ void mainCoefficientListAtIdx_AAZ (AltArrZ_t* aa, int idx, AltArrZ_t*** cList, i
 		varmap[0] = idx+1;
 		varmap[idx+1] = 0;
 		reorderVars_AAZ (AA, varmap, nnvar);
-		
+
 		isExpand = 1;
 	} else {
 		nnvar = AA->nvar;
 	}
-	    
+
     int mvarDegOffset = getMVarExpOffset (nnvar);
     degrees_t mvarMask = getMVarExpMask(nnvar);
 
@@ -1860,7 +1860,7 @@ void mainCoefficientListAtIdx_AAZ (AltArrZ_t* aa, int idx, AltArrZ_t*** cList, i
 				polyElemsAlloc += 10;
 				polyElems = (AAZElem_t*) realloc (polyElems, sizeof (AAZElem_t) * polyElemsAlloc);
 			}
-			
+
 			/* fprintf (stderr, "[SMQP] i = %d\n", i); // TEST */
 			mpz_init (polyElems[polyElemsSize].coef);
 			mpz_set (polyElems[polyElemsSize].coef, elems[i].coef);
@@ -1872,10 +1872,10 @@ void mainCoefficientListAtIdx_AAZ (AltArrZ_t* aa, int idx, AltArrZ_t*** cList, i
 			} else {
 				curDeg = -1;
 			}
-			
+
 			start++;
 		}
-		
+
 		poly = (AltArrZ_t*) malloc (sizeof (AltArrZ_t));
 		poly->alloc = polyElemsAlloc;
 		poly->size = polyElemsSize;
@@ -1886,12 +1886,12 @@ void mainCoefficientListAtIdx_AAZ (AltArrZ_t* aa, int idx, AltArrZ_t*** cList, i
 		if (isExpand) {
 		    shrinkNumVarsAtIdx_AAZ (poly, 0);
 		}
-		
+
 		/* printAAZ (poly); // TEST		 */
 		mCoefs[expDeg] = poly;
 		len++;
-	}	
-	
+	}
+
 	*cList = mCoefs;
 	*sz = len;
 
@@ -1989,7 +1989,7 @@ void addInteger_AAZ_inp(AltArrZ_t* aa, const mpz_t coef) {
     if (isZeroExponentVector(aa->elems[aa->size-1].degs)) {
         mpz_add(aa->elems[aa->size-1].coef, aa->elems[aa->size-1].coef, coef);
         return;
-    } 
+    }
 
     if (aa->size >= aa->alloc) {
         resizePolynomial_AAZ(aa, aa->alloc+10);
@@ -2017,8 +2017,8 @@ AltArrZ_t* addPolynomials_AAZ(AltArrZ_t* a, AltArrZ_t* b, int nvar) {
 	}
 
 	register int asize = AA_SIZE(a);
-	register int bsize = AA_SIZE(b); 
-	
+	register int bsize = AA_SIZE(b);
+
 	AltArrZ_t* c = makePolynomial_AAZ(asize + bsize, nvar);
 
 	AAZElem_t* aElems = a->elems;
@@ -2101,8 +2101,8 @@ AltArrZ_t* addPolynomials_AAZ_inp(AltArrZ_t* a, AltArrZ_t* b, int nvar) {
 	}
 
 	register int asize = AA_SIZE(a);
-	register int bsize = AA_SIZE(b); 
-	
+	register int bsize = AA_SIZE(b);
+
 	AltArrZ_t* c = makePolynomial_AAZ(asize + bsize, nvar);
 
 	AAZElem_t* aElems = a->elems;
@@ -2181,8 +2181,8 @@ AltArrZ_t* subPolynomials_AAZ(AltArrZ_t* a, AltArrZ_t* b, int nvar) {
 	}
 
 	register int asize = AA_SIZE(a);
-	register int bsize = AA_SIZE(b); 
-	
+	register int bsize = AA_SIZE(b);
+
 	AltArrZ_t* c = makePolynomial_AAZ(asize + bsize, nvar);
 
 	AAZElem_t* aElems = a->elems;
@@ -2265,8 +2265,8 @@ AltArrZ_t* subPolynomials_AAZ_inp(AltArrZ_t* a, AltArrZ_t* b, int nvar) {
 	}
 
 	register int asize = AA_SIZE(a);
-	register int bsize = AA_SIZE(b); 
-	
+	register int bsize = AA_SIZE(b);
+
 	AltArrZ_t* c = makePolynomial_AAZ(asize + bsize, nvar);
 
 	AAZElem_t* aElems = a->elems;
@@ -2280,7 +2280,7 @@ AltArrZ_t* subPolynomials_AAZ_inp(AltArrZ_t* a, AltArrZ_t* b, int nvar) {
 	register int k = 0;
 	register int i = 0;
 	register int j = 0;
-	
+
 	while(i < asize && j < bsize) {
 		if (isLessExponentVectors(aElems[i].degs, bElems[j].degs)) {
 			//a < b
@@ -2348,7 +2348,7 @@ void subPolynomials_AAZ_inpRHS(const AltArrZ_t* a, AltArrZ_t** bb) {
 	if (bb == NULL) {
 		return;
 	}
-	
+
 	if (isZero_AAZ(a)) {
 		negatePolynomial_AAZ(*bb);
 		return;
@@ -2370,8 +2370,8 @@ void subPolynomials_AAZ_inpRHS(const AltArrZ_t* a, AltArrZ_t** bb) {
 	}
 
 	register int asize = AA_SIZE(a);
-	register int bsize = AA_SIZE(b); 
-	
+	register int bsize = AA_SIZE(b);
+
 	AAZElem_t* cElems = (AAZElem_t*) malloc(sizeof(AAZElem_t) * (asize + bsize));
 
 	AAZElem_t* aElems = a->elems;
@@ -2380,7 +2380,7 @@ void subPolynomials_AAZ_inpRHS(const AltArrZ_t* a, AltArrZ_t** bb) {
 	register int k = 0;
 	register int i = 0;
 	register int j = 0;
-	
+
 	while(i < asize && j < bsize) {
 		if (isLessExponentVectors(aElems[i].degs, bElems[j].degs)) {
 			//a < b
@@ -2444,7 +2444,7 @@ AltArrZ_t* CFDucosOptZ_subPolynomials_AAZ_inp (AltArrZ_t* a, AltArrZ_t* b, int n
 {
 	if (a == NULL && b == NULL) {
 		*Pe = NULL;
-		return NULL;	
+		return NULL;
 	}
 
 	if (a->unpacked || b->unpacked) {
@@ -2452,10 +2452,10 @@ AltArrZ_t* CFDucosOptZ_subPolynomials_AAZ_inp (AltArrZ_t* a, AltArrZ_t* b, int n
 	}
 
 	register int asize = a == NULL ? 0 : AA_SIZE(a);
-	register int bsize = b == NULL ? 0 : AA_SIZE(b); 
+	register int bsize = b == NULL ? 0 : AA_SIZE(b);
 
 	AltArrZ_t* c = makePolynomial_AAZ(asize + bsize, nvar);
-	
+
 	AAZElem_t* aElems = a == NULL ? NULL : a->elems;
 	AAZElem_t* bElems = b == NULL ? NULL : b->elems;
 	AAZElem_t* cElems = c->elems;
@@ -2474,7 +2474,7 @@ AltArrZ_t* CFDucosOptZ_subPolynomials_AAZ_inp (AltArrZ_t* a, AltArrZ_t* b, int n
 	register int k = 0;
 	register int i = 0;
 	register int j = 0;
-	
+
 	while(i < asize && j < bsize) {
 		if (isLessExponentVectors(aElems[i].degs, bElems[j].degs)) {
 	    //a < b
@@ -2578,20 +2578,20 @@ AltArrZ_t* CFDucosOptZ_subPolynomials_AAZ_inp (AltArrZ_t* a, AltArrZ_t* b, int n
 	poly->unpacked = 0;
 	poly->nvar = a->nvar;
 
-	*Pe = poly;	
+	*Pe = poly;
 	return c;
 }
 
 void subByLeadingTerm_AAZ (AltArrZ_t** a, int nvar)
 {
 	AltArrZ_t* aa = *a;
-	
+
 	if (aa == NULL || aa->size == 0) {
 		return;
 	}
-	
+
 	if (AA_SIZE (aa) == 1) {
-		freePolynomial_AAZ (aa);		
+		freePolynomial_AAZ (aa);
 		*a = NULL;
 		return;
 	}
@@ -2602,12 +2602,12 @@ void subByLeadingTerm_AAZ (AltArrZ_t** a, int nvar)
 		freePolynomial_AAZ (lt);
 		return;
 	}
-	
+
 	AltArrZ_t* ret = makePolynomial_AAZ (AA_ALLOC(aa), nvar);
 	memcpy (ret->elems, aa->elems + 1, sizeof (AAZElem_t)*(AA_SIZE(aa)-1));
-	
+
 	AA_SIZE (ret) = AA_SIZE (aa) - 1;
-	
+
 	mpz_clear (aa->elems->coef);
 	free (aa);
 
@@ -2627,7 +2627,7 @@ ProductHeap_AAZ* prodheapInit_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int nv
 
 	h->elements[0].chain = prodheapMakeChain_AAZ(0, 0, NULL);
 	addExponentVectors(a->elems->degs, b->elems->degs, h->elements->degs);
-	
+
 	h->heapSize = 1;
 	h->maxHeapSize = AA_SIZE(a);
 	h->nvar = nvar;
@@ -2657,30 +2657,30 @@ void prodheapInsert_AAZ(ProductHeap_AAZ* h, ProductHeapChain_AAZ* chain, registe
 		elems[0].degs = degs;
 		elems[0].chain = chain;
 		h->heapSize = 1;
-		return;		
+		return;
 	}
-	
+
 	//first check if we can chain off the root
 	if (isEqualExponentVectors(elems[0].degs, degs)) {
 		chain->next = elems[0].chain;
 		elems[0].chain = chain;
 		return;
-	} 
+	}
 
 	//otherwise, we must search the heap to find the new product's insertion point
 	//note that since we are looking for chains we cannot use the simple swim method
 	//we sort of fake the swimming, looking for a chain to be made or the eventual
 	//place where the swim would stop. At this point, we insert the new elem
-	//in that spot, and "push" the entire path we took down a level. Assuming 
+	//in that spot, and "push" the entire path we took down a level. Assuming
 	//that we insert e and it ends up at the root, we push down the 'x' path
 	//                                      //
 	//     x     --->    e                  //
-	//    / \           / \                 //     
+	//    / \           / \                 //
 	//   x   o         x   o
 	//                /
  	//               x
 
-	register int i = (s-1) >> 1; //i is parent 
+	register int i = (s-1) >> 1; //i is parent
 	register int j = s;       //j is current insertion point
 	register long long unsigned int path = 1;
 	while (j > 0) {
@@ -2692,7 +2692,7 @@ void prodheapInsert_AAZ(ProductHeap_AAZ* h, ProductHeapChain_AAZ* chain, registe
 			path <<= 1;
 			if (!(j & 1)) {
 				//set the trailing bit to 1 to distinguish left/right of path
-				path += 1; 
+				path += 1;
 			}
 			j = i;
 			i = (i-1) >> 1;
@@ -2730,7 +2730,7 @@ ProductHeapChain_AAZ* prodheapRemoveMax_AAZ(ProductHeap_AAZ* h) {
 	register int i = 0;
 	register int j = 1;
 	register int s = --(h->heapSize);
-	
+
 	//promote largest children
 	while (j < s) {
 		if (j+1 < s && isLessExponentVectors(elems[j].degs, elems[j+1].degs)) {
@@ -2740,7 +2740,7 @@ ProductHeapChain_AAZ* prodheapRemoveMax_AAZ(ProductHeap_AAZ* h) {
 		i = j;
 		j = (j << 1) + 1;
 	}
-	//now place last element into i and swim up to make tree complete 
+	//now place last element into i and swim up to make tree complete
 	j = (i-1) >> 1;
 	while(i > 0) {
 		if (isLessExponentVectors(elems[s].degs, elems[j].degs)) {
@@ -2750,16 +2750,16 @@ ProductHeapChain_AAZ* prodheapRemoveMax_AAZ(ProductHeap_AAZ* h) {
 		i = j;
 		j = (j-1) >> 1;
 	}
-	elems[i] = elems[s]; 
+	elems[i] = elems[s];
 
 	return maxElem;
 }
 
 /**
  * Multiply two polynomials given their head Nodes, a and b.
- * This algorithm makes use of heaps as an efficient search data structure. 
+ * This algorithm makes use of heaps as an efficient search data structure.
  * It is assumed that both a and b have compatible exponent vectors.
- * 
+ *
  * nvar: number of elements in the exponent vectors.
  *
  * returns a pointer to the head Node of the product polynomial.
@@ -2777,7 +2777,7 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 	degrees_t bMax = calculateMaxDegs_AAZ(b);
 
 	if (!monomialMultFitsPacked(aMax, bMax, nvar)) {
-		//TODO!!! 
+		//TODO!!!
 		//for now just call old method for hard exit
 		// checkValidMonomialMult(aMax,bMax,nvar);
 
@@ -2792,7 +2792,7 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 		return ret;
 	}
 
-	// reorder to obtain smaller as a. 
+	// reorder to obtain smaller as a.
 	if (b->size < a->size) {
 		const AltArrZ_t* temp = a;
 		a = b;
@@ -2802,13 +2802,13 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 	ProductHeap_AAZ* h = prodheapInit_AAZ(a,b,nvar);
 	// mpz_t ccoef;
 	// mpz_init(ccoef);
-	
+
 	//TODO smarter allocation here? dynamic reallocating?
 	register unsigned long long int allocC = AA_SIZE(a)*AA_SIZE(b);
 	allocC = allocC > 60000000 ? 60000000 : allocC;
 	AltArrZ_t* c = makePolynomial_AAZ(allocC, nvar);
 // fprintf(stderr, "alloced c at  : %llu\n", allocC);
-	
+
 	//k is c, i is a, j is b.
 	register int k = 0;
 	// register int i = 0;
@@ -2819,8 +2819,8 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 
 	AAZElem_t* aElems = a->elems;
 	register int lastA = AA_SIZE(a) - 1;
-	register int lastB = AA_SIZE(b) - 1; 
-	register int firstB = 0; 	
+	register int lastB = AA_SIZE(b) - 1;
+	register int firstB = 0;
 
 	ProductHeapChain_AAZ* maxElem = NULL;
 	ProductHeapChain_AAZ* nextMaxElem = NULL;
@@ -2831,7 +2831,7 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 		mpz_init(cElems[k].coef);
 
 		while (nextDegs != NULL && isEqualExponentVectors(cElems[k].degs, *nextDegs)) {
-			//we will extract and accumulate the coefficents 
+			//we will extract and accumulate the coefficents
 			//oldMaxElem and maxElem are both chains. We must merge both chains.
 			//we do this by taking the head of maxElem and, as necessary, push it
 			//to the head of the oldMaxElem chain
@@ -2850,10 +2850,10 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 				}
 #endif
 
-				//cache next before freeing or overwriting 
+				//cache next before freeing or overwriting
 				nextMaxElem = maxElem->next;
 
-				//If the extracted term has another product in the stream, 
+				//If the extracted term has another product in the stream,
 				//update the product and push onto the oldMaxElem chain
 				if(maxElem->b != lastB) {
 					++(maxElem->b);
@@ -2869,9 +2869,9 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 			}
 
 			//reset head of maxElem list
-			maxElem = oldMaxElem;	
+			maxElem = oldMaxElem;
 
-			nextDegs = prodheapPeek_AAZ(h);		
+			nextDegs = prodheapPeek_AAZ(h);
 		}
 
 		//Commit new term to the product.
@@ -2881,7 +2881,7 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 			//reset accumulator variables and do not increment k.
 			mpz_clear(cElems[k].coef);
 		}
-		
+
 		//Insert all successors of previously extracted products
 		while(maxElem != NULL) {
 			//clear maxElem->next before inserting
@@ -2910,9 +2910,9 @@ AltArrZ_t* multiplyPolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, int n
 
 /**
  * Multiply two polynomials given their head Nodes, a and b.
- * This algorithm makes use of heaps as an efficient search data structure. 
+ * This algorithm makes use of heaps as an efficient search data structure.
  * It is assumed that both a and b have compatible exponent vectors.
- * 
+ *
  * nvar: number of elements in the exponent vectors.
  *
  * returns a pointer to the head Node of the product polynomial.
@@ -2937,7 +2937,7 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 	if (a->nvar != b->nvar) {
 		fprintf(stderr, "Polynomials are incompatible in multiplyPolynomialPreAlloc\n" );
 		free((int*) -1);
-		exit(1);		
+		exit(1);
 	}
 
 	int nvar = a->nvar;
@@ -2958,7 +2958,7 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 		return;
 	}
 
-	// reorder to obtain smaller as a. 
+	// reorder to obtain smaller as a.
 	if (b->size < a->size) {
 		const AltArrZ_t* temp = a;
 		a = b;
@@ -2968,20 +2968,20 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 	ProductHeap_AAZ* h = prodheapInit_AAZ(a,b,nvar);
 	// mpz_t ccoef;
 	// mpz_init(ccoef);
-	
+
 	register unsigned long long int allocC = AA_SIZE(a)*AA_SIZE(b);
 	allocC = allocC > 60000000 ? 60000000 : allocC;
 
 	AltArrZ_t* c = *cc;
 	if (c == NULL) {
 		c = makePolynomial_AAZ(allocC, nvar);
-		*cc = c;		
+		*cc = c;
 	} else {
 		allocC = c->alloc;
 	}
 
 	c->nvar = nvar; //since we're packed we can just do this
-	
+
 	//k is c, i is a, j is b.
 	register polysize_t k = 0;
 	register polysize_t cSize = c->size;
@@ -2993,8 +2993,8 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 
 	AAZElem_t* aElems = a->elems;
 	register int lastA = AA_SIZE(a) - 1;
-	register int lastB = AA_SIZE(b) - 1; 
-	register int firstB = 0; 	
+	register int lastB = AA_SIZE(b) - 1;
+	register int firstB = 0;
 
 	ProductHeapChain_AAZ* maxElem = NULL;
 	ProductHeapChain_AAZ* nextMaxElem = NULL;
@@ -3009,7 +3009,7 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 		}
 
 		while (nextDegs != NULL && isEqualExponentVectors(cElems[k].degs, *nextDegs)) {
-			//we will extract and accumulate the coefficents 
+			//we will extract and accumulate the coefficents
 			//oldMaxElem and maxElem are both chains. We must merge both chains.
 			//we do this by taking the head of maxElem and, as necessary, push it
 			//to the head of the oldMaxElem chain
@@ -3028,10 +3028,10 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 				}
 #endif
 
-				//cache next before freeing or overwriting 
+				//cache next before freeing or overwriting
 				nextMaxElem = maxElem->next;
 
-				//If the extracted term has another product in the stream, 
+				//If the extracted term has another product in the stream,
 				//update the product and push onto the oldMaxElem chain
 				if(maxElem->b != lastB) {
 					++(maxElem->b);
@@ -3047,9 +3047,9 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 			}
 
 			//reset head of maxElem list
-			maxElem = oldMaxElem;	
+			maxElem = oldMaxElem;
 
-			nextDegs = prodheapPeek_AAZ(h);		
+			nextDegs = prodheapPeek_AAZ(h);
 		}
 
 		//Commit new term to the product.
@@ -3063,7 +3063,7 @@ void multiplyPolynomialsPreAlloc_AAZ(const AltArrZ_t* a, const AltArrZ_t* b, Alt
 				mpz_set_ui(cElems[k].coef, 0ul);
 			}
 		}
-		
+
 		//Insert all successors of previously extracted products
 		while(maxElem != NULL) {
 			//clear maxElem->next before inserting
@@ -3200,13 +3200,13 @@ void multiplyPolynomialAtIdxByXn_AAZ_inp (AltArrZ_t* aa, int idx, int n, int nva
 	if (aa == NULL) {
 		return;
 	}
-	
+
 	if (idx < 0 || idx >= nvar) {
 		return;
 	}
-	
+
 	if (aa->unpacked) {
-		// TODO 
+		// TODO
 	    // multiplyPolynomialByXnAtIdx_AAZ_inp_unpk(aa, idx, degsList, nvar);
     	fprintf(stderr, "SMQP Error, multiplyPolynomialByXnAtIdx_AAZ_inp not yet implemented with exponent unpacking!\n");
     	exit (EXIT_FAILURE);
@@ -3215,21 +3215,21 @@ void multiplyPolynomialAtIdxByXn_AAZ_inp (AltArrZ_t* aa, int idx, int n, int nva
 
 	const int* sizes = getExpOffsetArray (nvar);
 	const degrees_t* maxDegs = getMaxExpArray(nvar);
-	
+
 	if (n > maxDegs[idx]) {
     	fprintf(stderr, "SMQP Error, multiplyPolynomialByXnAtIdx_AAZ_inp doesn't work when n > maxDegs[idx] !\n");
-    	exit (EXIT_FAILURE);		
+    	exit (EXIT_FAILURE);
 	}
-	
+
 	for (int i = 0; i < AA_SIZE(aa); i++) {
-		
+
 		aa->elems[i].degs += ((degrees_t) n << sizes[idx]);
 	}
 
 }
 
 /*****************
- * Polynomial exponentiation 
+ * Polynomial exponentiation
  *****************/
 
 
@@ -3249,7 +3249,7 @@ AltArrZ_t* exponentiatePoly_AAZ(AltArrZ_t* a, unsigned int n, int nvar) {
 	AltArrZ_t* b = deepCopyPolynomial_AAZ(a);
 	while (n > 1) {
 		if (n & 1) {
-			r = (r == NULL) ? deepCopyPolynomial_AAZ(b) : multiplyPolynomials_AAZ_inp(r, b, nvar); 
+			r = (r == NULL) ? deepCopyPolynomial_AAZ(b) : multiplyPolynomials_AAZ_inp(r, b, nvar);
 		}
 		b = multiplyPolynomials_AAZ_inp(b, b, nvar);
 		n >>= 1;
@@ -3290,7 +3290,7 @@ void divisionGetNextTerm_AAZ(ProductHeap_AAZ* h, const AAZElem_t* __restrict__ a
 
 	while ( nextDegs != NULL && isEqualExponentVectors(maxDegs, *nextDegs)) {
 		maxElem = prodheapRemoveMax_AAZ(h);
-				
+
 		while (maxElem != NULL) {
 			nextMaxElem = maxElem->next;
 
@@ -3339,7 +3339,7 @@ void divideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltAr
 		if(mpz_divisible_p(c->elems->coef, b->elems->coef)) {
 			*res_a = makeConstPolynomial_AAZ(1, 0, c->elems->coef);
 			mpz_divexact((*res_a)->elems->coef, (*res_a)->elems->coef, b->elems->coef);
-			*res_r = NULL; 
+			*res_r = NULL;
 		} else {
 			*res_a = NULL;
 			*res_r = makeConstPolynomial_AAZ(1, 0, c->elems->coef);
@@ -3358,7 +3358,7 @@ void divideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltAr
 
 	int maxSize = AA_SIZE(c) + 1;
 	register int i = 0;
-	register int j = 0; 
+	register int j = 0;
 
 	AltArrZ_t* a = makePolynomial_AAZ(maxSize, nvar);
 	AltArrZ_t* r = makePolynomial_AAZ(maxSize, nvar);
@@ -3388,8 +3388,8 @@ void divideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltAr
 	mpz_clear(curA->coef);
 	mpz_clear(curR->coef);
 
-	AA_SIZE(a) = i; 
-	AA_SIZE(r) = j; 
+	AA_SIZE(a) = i;
+	AA_SIZE(r) = j;
 	a->alloc = maxSize;
 	r->alloc = maxSize;
 
@@ -3397,9 +3397,9 @@ void divideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltAr
 	*res_r = r;
 }
 
-/** 
+/**
  * Given two polynomials, c and b, find their quotient and remainder such that
- * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r 
+ * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r
  * Based on Stephen Johnson's "Sparse Polynomial Arithmetic".
  */
 void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, register int nvar) {
@@ -3434,7 +3434,7 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 	register int maxASize = AA_SIZE(c) < 5 ? 5 : AA_SIZE(c);
 	register int maxRSize = maxASize;
 	register int i = 0;
-	register int j = 0; 
+	register int j = 0;
 
 	AltArrZ_t* a = makePolynomial_AAZ(maxASize, nvar);
 	AltArrZ_t* r = makePolynomial_AAZ(maxRSize, nvar);
@@ -3443,7 +3443,7 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 	mpz_init(curA->coef);
 	mpz_init(curR->coef);
 
-	
+
 	register degrees_t beta = b->elems->degs;
 
 
@@ -3456,7 +3456,7 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 		if (j >= maxRSize) {
 			maxRSize <<= 1;
 			r->elems = (AAZElem_t*) realloc(r->elems, maxRSize*sizeof(AAZElem_t));
-			curR = r->elems + j - 1; 	
+			curR = r->elems + j - 1;
 		}
 		++(curR);
 		mpz_init(curR->coef);
@@ -3475,7 +3475,7 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 
 		*res_a = a;
 		*res_r = r;
-		return; 
+		return;
 	}
 
 	subtractExponentVectors(k->degs, beta, curA->degs);
@@ -3493,11 +3493,11 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 	++curA;
 	mpz_init(curA->coef);
 
-	degrees_t* delta = prodheapPeek_AAZ(h); 
+	degrees_t* delta = prodheapPeek_AAZ(h);
 	register degrees_t eps;
 	register cmpExp_t cmp;
 	while(delta != NULL || k != lenK) {
-		
+
 		if (k == lenK) {
 			if (delta == NULL) {
 				break;
@@ -3513,7 +3513,7 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 			eps = *delta;
 			divisionGetNextTerm_AAZ(h, a->elems, b->elems, &(curA->coef));
 			if (mpz_sgn(curA->coef) == 0) {
-				//in this case, the term with degree delta ended up 
+				//in this case, the term with degree delta ended up
 				//having its coffeicient cancelled out (i.e. 0)
 				delta = prodheapPeek_AAZ(h);
 				continue;
@@ -3547,7 +3547,7 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 				maxASize <<= 1;
 				a->elems = (AAZElem_t*) realloc(a->elems, maxASize*sizeof(AAZElem_t));
 				curA = a->elems + i;
-				//prodheap maximum size should be equal to the size of a  	
+				//prodheap maximum size should be equal to the size of a
 				prodheapResize_AAZ(h, maxASize);
 			}
 			prodheapInsert_AAZ(h, prodheapMakeChain_AAZ(i, 1, NULL), curA->degs + b2Elem->degs);
@@ -3563,7 +3563,7 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 			if (j >= maxRSize) {
 				maxRSize <<= 1;
 				r->elems = (AAZElem_t*) realloc(r->elems, maxRSize*sizeof(AAZElem_t));
-				curR = r->elems + j - 1; 	
+				curR = r->elems + j - 1;
 			}
 			++(curR);
 			mpz_init(curR->coef);
@@ -3585,10 +3585,10 @@ void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArr
 
 	*res_a = a;
 	*res_r = r;
-} 
+}
 
 void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, register int nvar)
-{   
+{
 	if (b == NULL || AA_SIZE(b) == 0) {
 	//division by zero
 		fprintf (stderr, "Division by zero! Exiting...");
@@ -3622,7 +3622,7 @@ void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, 
 	register int maxASize = AA_SIZE(c) < 5 ? 5 : AA_SIZE(c);
     // register int maxRSize = maxASize;
 	register int i = 0;
-	// register int j = 0; 
+	// register int j = 0;
 
 	AltArrZ_t* a = makePolynomial_AAZ (maxASize, nvar);
     // AltArrZ_t* r = makePolynomial_AAZ(maxRSize, nvar);
@@ -3635,14 +3635,14 @@ void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, 
 
     //init a with lt(c)/lt(b);
 	DivTest_ptr divTest = getMonomialDivideTestFuncPtr(nvar);
-    // while (k != lenK) { // && !( (*divTest)(k->degs, beta) && mpz_divisible_p(k->coef, b->elems->coef)) 
+    // while (k != lenK) { // && !( (*divTest)(k->degs, beta) && mpz_divisible_p(k->coef, b->elems->coef))
     // mpz_set(curR->coef, k->coef);
     // curR->degs = k->degs;
     // ++j;
     // if (j >= maxRSize) {
     // maxRSize <<= 1;
     //  r->elems = (AAZElem_t*) realloc(r->elems, maxRSize*sizeof(AAZElem_t));
-    //   curR = r->elems + j - 1; 	
+    //   curR = r->elems + j - 1;
     // }
     // ++(curR);
     // mpz_init(curR->coef);
@@ -3661,7 +3661,7 @@ void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, 
 
 		*res_a = a;
 	// *res_r = r;
-		return; 
+		return;
 	}
 
 	subtractExponentVectors (k->degs, beta, curA->degs);
@@ -3679,7 +3679,7 @@ void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, 
 	++curA;
 	mpz_init (curA->coef);
 
-	degrees_t* delta = prodheapPeek_AAZ (h); 
+	degrees_t* delta = prodheapPeek_AAZ (h);
 	register degrees_t eps;
 	register cmpExp_t cmp;
 	while (delta != NULL || k != lenK) {
@@ -3699,7 +3699,7 @@ void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, 
 			eps = *delta;
 			divisionGetNextTerm_AAZ (h, a->elems, b->elems, &(curA->coef));
 			if (mpz_sgn (curA->coef) == 0) {
-		//in this case, the term with degree delta ended up 
+		//in this case, the term with degree delta ended up
 		//having its coffeicient cancelled out (i.e. 0)
 				delta = prodheapPeek_AAZ (h);
 				continue;
@@ -3733,7 +3733,7 @@ void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, 
 				maxASize <<= 1;
 				a->elems = (AAZElem_t*) realloc(a->elems, maxASize*sizeof(AAZElem_t));
 				curA = a->elems + i;
-				//prodheap maximum size should be equal to the size of a  	
+				//prodheap maximum size should be equal to the size of a
 				prodheapResize_AAZ(h, maxASize);
 			}
 			prodheapInsert_AAZ(h, prodheapMakeChain_AAZ(i, 1, NULL), curA->degs + b2Elem->degs);
@@ -3802,7 +3802,7 @@ void univariatePseudoDivideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_
 
 	int maxSize = AA_SIZE(c) + 1;
 	register int i = 0;
-	register int j = 0; 
+	register int j = 0;
 
 	AltArrZ_t* a = makePolynomial_AAZ(maxSize, nvar);
 	AltArrZ_t* r = makePolynomial_AAZ(maxSize, nvar);
@@ -3842,8 +3842,8 @@ void univariatePseudoDivideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_
 	mpz_clear(curA->coef);
 	mpz_clear(curR->coef);
 
-	AA_SIZE(a) = i; 
-	AA_SIZE(r) = j; 
+	AA_SIZE(a) = i;
+	AA_SIZE(r) = j;
 	a->alloc = maxSize;
 	r->alloc = maxSize;
 
@@ -3918,7 +3918,7 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 	register int maxASize = AA_SIZE(c) < 5 ? 5 : AA_SIZE(c);
 	register int maxRSize = maxASize;
 	register int i = 0;
-	register int j = 0; 
+	register int j = 0;
 
 	AltArrZ_t* a = makePolynomial_AAZ(maxASize, nvar);
 	AltArrZ_t* r = makePolynomial_AAZ(maxRSize, nvar);
@@ -3940,7 +3940,7 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 	} else {
 		mpz_divexact(curA->coef, k->coef, b->elems->coef);
 	}
-	
+
 	++k;
 
 	//init multiplication between a (quotient) and b (divisor)
@@ -3953,7 +3953,7 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 	a->size = 1;
 	mpz_init(curA->coef);
 
-	degrees_t* delta = prodheapPeek_AAZ(h); 
+	degrees_t* delta = prodheapPeek_AAZ(h);
 	register degrees_t eps;
 	register cmpExp_t cmp;
 	while(delta != NULL || k != lenK) {
@@ -3972,7 +3972,7 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 			eps = *delta;
 			divisionGetNextTerm_AAZ(h, a->elems, b->elems, &(curA->coef));
 			if (mpz_sgn(curA->coef) == 0) {
-				//in this case, the term with degree delta ended up 
+				//in this case, the term with degree delta ended up
 				//having its coffeicient cancelled out (i.e. 0)
 				delta = prodheapPeek_AAZ(h);
 				continue;
@@ -4004,7 +4004,7 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 				multiplyByInteger_AAZ_inp(c, b->elems->coef);
 				multiplyByInteger_AAZ_inp(a, b->elems->coef);
 				++multSteps;
-			
+
 			} else {
 				mpz_divexact(curA->coef, curA->coef, b->elems->coef);
 			}
@@ -4014,7 +4014,7 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 				maxASize <<= 1;
 				a->elems = (AAZElem_t*) realloc(a->elems, maxASize*sizeof(AAZElem_t));
 				curA = a->elems + i;
-				//prodheap maximum size should be equal to the size of a  	
+				//prodheap maximum size should be equal to the size of a
 				prodheapResize_AAZ(h, maxASize);
 			}
 			prodheapInsert_AAZ(h, prodheapMakeChain_AAZ(i, 1, NULL), curA->degs + b2Elem->degs);
@@ -4030,7 +4030,7 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
 			if (j >= maxRSize) {
 				maxRSize <<= 1;
 				r->elems = (AAZElem_t*) realloc(r->elems, maxRSize*sizeof(AAZElem_t));
-				curR = r->elems + j - 1; 	
+				curR = r->elems + j - 1;
 			}
 			++(curR);
 			mpz_init(curR->coef);
@@ -4093,7 +4093,7 @@ int divideTestSingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int 
 	if (c->unpacked || b->unpacked) {
 		return divideTestSingleTerm_AAZ_unpk(c, b, res_a, nvar);
 	}
-	
+
 	AAZElem_t* k = c->elems;
 	AAZElem_t* lenK = k + AA_SIZE(c);
 
@@ -4122,7 +4122,7 @@ int divideTestSingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int 
 
 	mpz_clear(curA->coef);
 
-	AA_SIZE(a) = i; 
+	AA_SIZE(a) = i;
 	a->alloc = maxSize;
 
 	if (res_a != NULL) {
@@ -4135,7 +4135,7 @@ int divideTestSingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int 
 }
 
 int divideTest_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar) {
-	
+
 	if (b == NULL || AA_SIZE(b) == 0) {
 		return 0;
 	}
@@ -4168,7 +4168,7 @@ int divideTest_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar) {
 	AltArrZ_t* a = makePolynomial_AAZ(maxASize, nvar);
 	AAZElem_t* __restrict__ curA = a->elems;
 	mpz_init(curA->coef);
-	
+
 	//init a with lt(c)/lt(b);
 	subtractExponentVectors(k->degs, beta, curA->degs);
 	mpz_divexact(curA->coef, k->coef, b->elems->coef);
@@ -4187,7 +4187,7 @@ int divideTest_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar) {
 	register degrees_t eps;
 	register cmpExp_t cmp;
 	while(k != lenK || delta != NULL) {
-		
+
 		if (k == lenK) {
 			if (delta == NULL) {
 				break;
@@ -4203,7 +4203,7 @@ int divideTest_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar) {
 			eps = *delta;
 			divisionGetNextTerm_AAZ(h, a->elems, b->elems, &(curA->coef));
 			if (mpz_sgn(curA->coef) == 0) {
-				//in this case, the term with degree delta ended up 
+				//in this case, the term with degree delta ended up
 				//having its coffeicient cancelled out (i.e. 0)
 				delta = prodheapPeek_AAZ(h);
 				continue;
@@ -4237,18 +4237,18 @@ int divideTest_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar) {
 				maxASize <<= 1;
 				a->elems = (AAZElem_t*) realloc(a->elems, maxASize*sizeof(AAZElem_t));
 				curA = a->elems + i;
-				//prodheap maximum size should be equal to the size of a  	
+				//prodheap maximum size should be equal to the size of a
 				prodheapResize_AAZ(h, maxASize);
 			}
 			prodheapInsert_AAZ(h, prodheapMakeChain_AAZ(i, 1, NULL), curA->degs + b2Elem->degs);
-			
+
 			++i;
 			++(curA);
 			mpz_init(curA->coef);
 		} else {
 
 		    //divide test fails
-		    
+
 		    prodheapFree_AAZ(h);
 		    a->size = i;
 		    freePolynomial_AAZ(a);
@@ -4313,15 +4313,15 @@ void divideByLeadingTerms_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, Al
 		mpz_set_si (a->elems->coef, 1l);
 		a->elems->degs = 0l;
 		AA_SIZE (a) = 1;
-		
-		// r: 
+
+		// r:
 		r = makePolynomial_AAZ (1, nvar);
 		mpz_init (r->elems->coef);
 		mpz_set(r->elems->coef, c->elems->coef);
 		r->elems->degs = c->elems->degs;
 		AA_SIZE (r) = 1;
 	}
-	
+
 	*res_a = a;
 	*res_r = r;
 }
@@ -4375,8 +4375,8 @@ AltArrZ_t* derivative_AAZ(const AltArrZ_t* aa, int idx, int k) {
 
 		mpz_set_ui(mpzDeg, deg);
 		for (int j = 0; j < k; ++j) {
-			mpz_mul(retElems[insertIdx].coef, retElems[insertIdx].coef, mpzDeg);			
-			--deg;	
+			mpz_mul(retElems[insertIdx].coef, retElems[insertIdx].coef, mpzDeg);
+			--deg;
 			mpz_sub(mpzDeg, mpzDeg, mpzOne);
 		}
 		retElems[insertIdx].degs |= (deg << sizes[idx]);
@@ -4438,8 +4438,8 @@ void derivative_AAZ_inp(AltArrZ_t** aa_p, int idx, int k) {
 		mpz_set(elems[insertIdx].coef, elems[i].coef);
 
 		for (int j = 0; j < k; ++j) {
-			mpz_mul_ui(elems[insertIdx].coef, elems[insertIdx].coef, (unsigned long) deg);			
-			--deg;	
+			mpz_mul_ui(elems[insertIdx].coef, elems[insertIdx].coef, (unsigned long) deg);
+			--deg;
 		}
 		elems[insertIdx].degs |= (deg << sizes[idx]);
 
@@ -4502,26 +4502,26 @@ void integralContent_AAZ(const AltArrZ_t* aa, mpz_t ret) {
 	const AAZElem_t* elems = aa->elems;
 	int size = aa->size;
 	mpz_set_ui(ret, 1ul);
-	
+
 	mpz_t one;
 	mpz_init(one);
 	mpz_set_si(one, 1l);
-	
-	mpz_t cont; 
+
+	mpz_t cont;
 	mpz_init(cont);
 	mpz_abs(cont, elems->coef);
-	
+
 	for (int i = 1; i < size; ++i) {
 	    if (mpz_cmp(one, cont) == 0) {
 			break;
 	    }
 	    mpz_gcd(cont, cont, elems[i].coef);
 	}
-	
+
 	if (mpz_sgn(elems->coef) < 0 && mpz_sgn(cont) > 0) {
 	    mpz_neg(cont, cont);
 	}
-	
+
 	mpz_set(ret, cont);
 	mpz_clear(cont);
 	mpz_clear(one);
@@ -4534,20 +4534,20 @@ AltArrZ_t* primitivePart_AAZ(const AltArrZ_t* aa) {
 
     mpz_t content;
     mpz_init(content);
-    
+
     integralContent_AAZ(aa, content);
-    
+
     AltArrZ_t* res = deepCopyPolynomial_AAZ(aa);
     if (mpz_cmp_si(content, 1l) == 0) {
 		return res;
     }
-    
+
     AAZElem_t* elems = res->elems;
     int size = res->size;
     for (int i = 0; i < size; ++i) {
 		mpz_divexact(elems[i].coef, elems[i].coef, content);
     }
-    
+
     mpz_clear(content);
     return res;
 }
@@ -4596,7 +4596,7 @@ AltArrZ_t* primitivePartAndContent_AAZFromAA(AltArr_t* aa, mpq_t cont) {
 	for (int i = 0; i < size; ++i) {
 		mpq_div(tmp, elems[i].coef, cont);
 		mpz_init_set(reselems[i].coef, mpq_numref(tmp));
-		reselems[i].degs = elems[i].degs; 
+		reselems[i].degs = elems[i].degs;
 	}
 
 	mpq_clear(tmp);
@@ -4628,7 +4628,7 @@ void primitivePart_AAZ_inp(AltArrZ_t* aa) {
 	mpz_clear(content);
 }
 
-void primitivePartContent_AAZ_inp(AltArrZ_t* aa, mpz_t content) {
+void primitivePartAndContent_AAZ_inp(AltArrZ_t* aa, mpz_t content) {
 	if (aa == NULL || aa->size <= 0) {
 		return;
 	}
@@ -4646,7 +4646,7 @@ void primitivePartContent_AAZ_inp(AltArrZ_t* aa, mpz_t content) {
 }
 
 /**
- * Returns GCD g where s*a + t*b = g. 
+ * Returns GCD g where s*a + t*b = g.
  * If s or t are NULL then those bezout coefficients are not returned.
  */
 // AltArrZ_t* extendedEuclidean(AltArrZ_t* a, AltArrZ_t* b, AltArrZ_t** s, AltArrZ_t** t) {
@@ -4704,11 +4704,11 @@ void primitivePartContent_AAZ_inp(AltArrZ_t* aa, mpz_t content) {
 // 		r2 = NULL;
 
 // 		mpz_pow_ui(c0, r0->elems->coef, (unsigned long) e);
-// 		// primitivePartContent_AAZ_inp(quo, c1);
+// 		// primitivePartAndContent_AAZ_inp(quo, c1);
 // 		// mpz_divexact(c0, c0, c1);
 
-// 		gmp_fprintf(stderr, "c0: %Zd,       c1: %Zd\n", c0, c1);	
-// 		gmp_fprintf(stderr, "e: %d,       c0: %Zd\n", e, c0);	
+// 		gmp_fprintf(stderr, "c0: %Zd,       c1: %Zd\n", c0, c1);
+// 		gmp_fprintf(stderr, "e: %d,       c0: %Zd\n", e, c0);
 
 // 		s2 = multiplyPolynomials_AAZ(s1, quo, 1);
 // 		multiplyByInteger_AAZ_inp(s0, c0);
@@ -4730,7 +4730,7 @@ void primitivePartContent_AAZ_inp(AltArrZ_t* aa, mpz_t content) {
 // 		t2 = NULL;
 
 
-// 		primitivePartContent_AAZ_inp(r1, c0);
+// 		primitivePartAndContent_AAZ_inp(r1, c0);
 // 		// mpz_divexact(c0, c0, c1);
 // 		divideByIntegerExact_AAZ_inp(s1, c0);
 // 		divideByIntegerExact_AAZ_inp(t1, c0);
@@ -4888,7 +4888,7 @@ AltArrZ_t* univariateHeuristicGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b) {
 		if (divideTest_AAZ(a, gcd, NULL, 1) && divideTest_AAZ(b, gcd, NULL, 1)) {
 			break;
 		}
-		
+
 		freePolynomial_AAZ(gcd);
 		gcd = NULL;
 
@@ -4988,7 +4988,7 @@ AltArrZ_t* univariateHeuristicPrimitiveGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b) {
 		if (divideTest_AAZ(a, gcd, NULL, 1) && divideTest_AAZ(b, gcd, NULL, 1)) {
 			break;
 		}
-		
+
 		freePolynomial_AAZ(gcd);
 		gcd = NULL;
 
@@ -5021,11 +5021,11 @@ AltArrZ_t* univariateGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b) {
 	mpz_init(conta);
 	mpz_init(contb);
 	AltArrZ_t* primA = deepCopyPolynomial_AAZ(a);
-	primitivePartContent_AAZ_inp(primA, conta);
+	primitivePartAndContent_AAZ_inp(primA, conta);
 	AltArrZ_t* primB = deepCopyPolynomial_AAZ(b);
-	primitivePartContent_AAZ_inp(primB, contb);
+	primitivePartAndContent_AAZ_inp(primB, contb);
 	mpz_gcd(conta, conta, contb);
-	
+
 	AltArrZ_t* gAA = univariateHeuristicPrimitiveGCD_AAZ(primA, primB);
 	if (gAA == NULL) {
 		DUZP_t* aDUZP = convertFromAltArrZ_DUZP(primA);
@@ -5119,17 +5119,17 @@ AltArrZ_t* commonFactor_AAZ(const AltArrZ_t* a, AltArrZ_t** factored) {
 			for (int j = 0; j < a->nvar; ++j) {
 				if ((a->elems[i].degs & masks[j]) < (min & masks[j]) ) {
 					min = min & (~masks[j]); //zero out j;
-					min |= (a->elems[i].degs & masks[j]);					
+					min |= (a->elems[i].degs & masks[j]);
 				}
 			}
 			if (isZeroExponentVector(min)) {
 				break;
 			}
-		} 
-		ret->elems->degs = min; 
+		}
+		ret->elems->degs = min;
 	}
 	ret->size = 1;
-	
+
 	if (factored != NULL) {
 		AltArrZ_t* factRet = deepCopyPolynomial_AAZ(a);
 		if (! isZeroExponentVector(ret->elems->degs)) {
@@ -5185,8 +5185,8 @@ void univarEvaluate_AAZ(AltArrZ_t* aa, const mpz_t point, mpz_t res) {
 /****************
 * Normal Form (Multi-Divisor Division (MDD))
 *****************/
- 
-AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar) 
+
+AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar)
 {
 	if (s < 0){
 		return NULL;
@@ -5195,16 +5195,16 @@ AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar)
 	if (s == 0){
 		return deepCopyPolynomial_AAZ (f);
 	}
-	
-	if (s == 1){ 
+
+	if (s == 1){
 		if (G[0] != NULL && G[0]->size != 0){
 			AltArrZ_t* r1 = NULL;
-			AltArrZ_t* q1 = NULL; 
+			AltArrZ_t* q1 = NULL;
 			dividePolynomials_AAZ (f, *G, &q1, &r1, nvar);
 			freePolynomial_AAZ (q1);
 
 			return r1;
-		} 
+		}
 
 		return deepCopyPolynomial_AAZ (f);
 	}
@@ -5216,15 +5216,15 @@ AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar)
 	AltArrZ_t* lt = NULL;
 	AltArrZ_t* tmp_q;
 	AltArrZ_t* tmp_r;
-	
+
 	while (h != NULL && h->size != 0) {
 
-		i = 0; 
+		i = 0;
 		isDivided = 0;
-		
+
 		while (i < s && !isDivided)
 			{
-				if ( h->size != 0 && h!= NULL && 
+				if ( h->size != 0 && h!= NULL &&
 					G[i] != NULL && G[i]->size != 0 && monomialDivideTest (h->elems[0].degs, G[i]->elems[0].degs, nvar))  {
 					tmp_q = NULL;
 					tmp_r = NULL;
@@ -5233,7 +5233,7 @@ AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar)
 
 					if (!isOne_AAZ (tmp_q)) {
 						tmp_q = multiplyPolynomials_AAZ_inp (tmp_q, G[i], nvar);
-						h = subPolynomials_AAZ_inp (h, tmp_q, nvar);					
+						h = subPolynomials_AAZ_inp (h, tmp_q, nvar);
 						freePolynomial_AAZ (tmp_q);
 					} else {
 						freePolynomial_AAZ (tmp_q);
@@ -5243,14 +5243,14 @@ AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar)
 				} else
 					i = i + 1;
 			}
-		
+
 		if (!isDivided) {
 			if (h != NULL && h->size != 0){
 				lt = leadingTerm_AAZ (h, nvar);
 			} else {
 				lt = NULL;
 			}
-			
+
 			if (rem == NULL) {
 				rem = lt;
 			} else {
@@ -5261,16 +5261,16 @@ AltArrZ_t* onlyNormalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, int s, int nvar)
 			}
 			if (h != NULL && h->size != 0) {
 				/* h = subPolynomials_AA_inp (h, lt, nvar); */
-				subByLeadingTerm_AAZ (&h, nvar);				
+				subByLeadingTerm_AAZ (&h, nvar);
 			}
 		}
 	}
-	
+
 	return rem;
 }
 
 void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar)
-{	
+{
 	if (s < 0){
 		fprintf (stderr, "SMQP Error: the number of divisor set is out of range!");
 		return;
@@ -5280,8 +5280,8 @@ void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int
 		*r = deepCopyPolynomial_AAZ (f);
 		return;
 	}
-	
-	if (s == 1){  // simple multivariate polynomial division   
+
+	if (s == 1){  // simple multivariate polynomial division
 		if (G[0] != NULL && G[0]->size != 0){
 			dividePolynomials_AAZ (f, *G, Q, r, nvar);
 		} else {
@@ -5290,7 +5290,7 @@ void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int
 		}
 		return;
 	}
-	
+
 	int i; // i= 0 ... (s-1)
 	int isDivided;
 	AltArrZ_t* h = deepCopyPolynomial_AAZ (f);  // this algorithm runs until h != NULL
@@ -5298,29 +5298,29 @@ void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int
 	AltArrZ_t* lt = NULL;
 	AltArrZ_t* tmp_q;
 	AltArrZ_t* tmp_r;
-	
+
 	while (h != NULL && h->size != 0) {
-		i = 0; 
+		i = 0;
 		isDivided = 0;
-		
+
 		while (i < s && !isDivided)
 			{
 				if ( h!= NULL && h->size != 0 && G[i] != NULL && G[i]->size != 0  && monomialDivideTest (h->elems[0].degs, G[i]->elems[0].degs, nvar))  {
 					tmp_q = NULL;
 					tmp_r = NULL;
-					
+
 					divideByLeadingTerms_AAZ (h, G[i], &tmp_q, &tmp_r, nvar);
-					freePolynomial_AAZ (tmp_r);					
-					
+					freePolynomial_AAZ (tmp_r);
+
 					if (Q[i] != NULL) {
 						Q[i] = addPolynomials_AAZ_inp (Q[i], tmp_q, nvar);
 					} else {
 						Q[i] = deepCopyPolynomial_AAZ (tmp_q);
 					}
-					
+
 					if (!isOne_AAZ (tmp_q)) {
 						tmp_q = multiplyPolynomials_AAZ_inp (tmp_q, G[i], nvar);
-						h = subPolynomials_AAZ_inp (h, tmp_q, nvar);					
+						h = subPolynomials_AAZ_inp (h, tmp_q, nvar);
 						freePolynomial_AAZ (tmp_q);
 					} else {
 						freePolynomial_AAZ (tmp_q);
@@ -5340,7 +5340,7 @@ void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int
 			} else {
 				lt = NULL;
 			}
-			
+
 			if (rem == NULL) {
 				rem = lt;
 			} else {
@@ -5351,11 +5351,11 @@ void heapMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int
 			}
 			if (h != NULL && h->size != 0) {
 				/* h = subPolynomials_AAZ_inp (h, lt, nvar); */
-				subByLeadingTerm_AAZ (&h, nvar);				
-			}						
-		}					
+				subByLeadingTerm_AAZ (&h, nvar);
+			}
+		}
 	}
-	
+
 	*r = rem;
 	return;
 }
@@ -5383,7 +5383,7 @@ void recTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArr
 	    }
 	    return;
 	}
-	
+
 	int index;
 	int i;
 	int* orderList = recursiveLoop (s);
@@ -5393,7 +5393,7 @@ void recTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArr
 	AltArrZ_t* lt = NULL;
 	AltArrZ_t* tmp_q = NULL;
 	AltArrZ_t* tmp_r = NULL;
-	
+
 	while (h != NULL && h->size != 0){
 		for (i = 0; i < orderSize; i++) {
 			index = orderList[i];
@@ -5401,7 +5401,7 @@ void recTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArr
 				&& monomialDivideTest (h->elems[0].degs, G[index]->elems[0].degs, nvar)){
 			    tmp_q = NULL;
 			    tmp_r = NULL;
-			    
+
 			    dividePolynomials_AAZ (h, G[index], &tmp_q, &tmp_r, nvar);
 			    if (Q[index] != NULL) {
 					Q[index] = addPolynomials_AAZ_inp (Q[index], tmp_q, nvar);
@@ -5418,7 +5418,7 @@ void recTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArr
 		    lt = leadingTerm_AAZ (h, nvar);
 		else
 		    lt = NULL;
-		
+
 		if (rem == NULL)
 		    rem = lt;
 		else {
@@ -5431,15 +5431,15 @@ void recTriangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArr
 			subByLeadingTerm_AAZ (&h, nvar);
 		}
 	}
-	
+
 	*r = rem;
 	free(orderList);
 	return;
 }
 
-// Look at the recursiveTriangularSetMDD_AAZ in SMQP_Support_Recursive-AA.h 
+// Look at the recursiveTriangularSetMDD_AAZ in SMQP_Support_Recursive-AA.h
 void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar)
-{	
+{
 	if (s < 0){
 		fprintf (stderr, "SMQP Error: the number of divisor set is out of range!");
 		return;
@@ -5449,8 +5449,8 @@ void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t
 		*r = deepCopyPolynomial_AAZ (f);
 		return;
 	}
-	
-	if (s == 1){  // simple multivariate polynomial division   
+
+	if (s == 1){  // simple multivariate polynomial division
 		if (G[0] != NULL && G[0]->size != 0){
 			dividePolynomials_AAZ (f, *G, Q, r, nvar);
 		} else {
@@ -5459,7 +5459,7 @@ void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t
 		}
 		return;
 	}
-	
+
 	int i; // i= 0 ... (s-1)
 	int isDivided;
 	AltArrZ_t* h = deepCopyPolynomial_AAZ (f);
@@ -5467,12 +5467,12 @@ void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t
 	AltArrZ_t* lt = NULL;
 	AltArrZ_t* tmp_q;
 	AltArrZ_t* tmp_r;
-	
+
 	while (h != NULL && h->size != 0) {
 
-		i = 0; 
+		i = 0;
 		isDivided = 0;
-		
+
 		while (i < s && !isDivided)
 			{
 				if ( h->size != 0 && h!= NULL && G[i] != NULL && G[i]->size != 0  && monomialDivideTest (h->elems[0].degs, G[i]->elems[0].degs, nvar))  {
@@ -5480,16 +5480,16 @@ void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t
 					tmp_r = NULL;
 					divideByLeadingTerms_AAZ (h, G[i], &tmp_q, &tmp_r, nvar);
 					freePolynomial_AAZ (tmp_r);
-					
+
 					if (Q[i] != NULL) {
 						Q[i] = addPolynomials_AAZ_inp (Q[i], tmp_q, nvar);
 					} else {
 						Q[i] = deepCopyPolynomial_AAZ (tmp_q);
 					}
-					
+
 					if (!isOne_AAZ (tmp_q)) {
 						tmp_q = multiplyPolynomials_AAZ_inp (tmp_q, G[i], nvar);
-						h = subPolynomials_AAZ_inp (h, tmp_q, nvar);					
+						h = subPolynomials_AAZ_inp (h, tmp_q, nvar);
 						freePolynomial_AAZ (tmp_q);
 					} else {
 						freePolynomial_AAZ (tmp_q);
@@ -5499,14 +5499,14 @@ void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t
 				} else
 					i = i + 1;
 			}
-		
+
 		if (!isDivided) {
 			if (h->size != 0 && h != NULL){
 				lt = leadingTerm_AAZ (h, nvar);
 			} else {
 				lt = NULL;
 			}
-			
+
 			if (rem == NULL) {
 				rem = lt;
 			} else {
@@ -5516,11 +5516,11 @@ void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t
 				}
 			}
 			if (h->size != 0 && h!= NULL) {
-				subByLeadingTerm_AAZ (&h, nvar);				
+				subByLeadingTerm_AAZ (&h, nvar);
 			}
 		}
 	}
-	
+
 	*r = rem;
 	return;
 }
@@ -5528,14 +5528,14 @@ void triangularSetMDD_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t
 void normalForm_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar) {
 	heapMDD_AAZ (f, G, Q, r, s, nvar);
 }
- 
+
 void multiDivisorDivision_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t** Q, AltArrZ_t** r, int s, int nvar, int type)
 {
 	if (type == 0){
 		heapMDD_AAZ (f, G, Q, r, s, nvar);
 		return;
 	}
-	
+
 	triangularSetMDD_AAZ (f, G, Q, r, s, nvar);
 }
 
@@ -5565,7 +5565,7 @@ int multiDivisorDivisionVerification_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t
         nullity++;
         exit(1);
     }
-    
+
 
     AltArrZ_t* sum = NULL;
     for (int i = 0; i < nSet; ++i){
@@ -5583,7 +5583,7 @@ int multiDivisorDivisionVerification_AAZ (AltArrZ_t* f, AltArrZ_t** G, AltArrZ_t
 
     AltArrZ_t* hf = NULL;
     if (hPow != NULL && hPow->size != 0){
-         hf = multiplyPolynomials_AAZ (f, hPow, tnvar); 
+         hf = multiplyPolynomials_AAZ (f, hPow, tnvar);
     } else {
         hf = deepCopyPolynomial_AAZ (f);
     }

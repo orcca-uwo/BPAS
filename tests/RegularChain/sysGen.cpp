@@ -6,7 +6,10 @@
 #include <vector>
 #include "sysGen.hpp"
 #include "../MapleTestTool/MapleTestTool.hpp"
+
+#if defined(MAPLE_VALIDATE) && MAPLE_VALIDATE
 #include "../../include/MapleInterface/MapleInterfaceStream.hpp"
+#endif
 
 using namespace std;
 
@@ -14,7 +17,7 @@ using namespace std;
 
 
 void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vector<Symbol>& vars, string sysNumber, string sysName, bool showOutput, bool isLazard, bool medianTiming) {
-    
+
     // Output system name
     fstream fs;
     int nchars = 8;
@@ -24,7 +27,7 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
     else
     		name = sysName;
     RegularChain<RN,SMQP> rc;
-    		
+
     if (!medianTiming) {
 	    fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 	    fs << name << "\t";
@@ -35,7 +38,7 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 	    fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 	    fs << name << "\t";
 	    fs.close();
-	    
+
 		cerr << "calling " << sysNumber << " (" << sysName << "):" << endl;
 		#if REGULARCHAIN_DEBUG
 		if (showOutput) {
@@ -68,26 +71,26 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 		}
 	}
 	else {
-	
+
 		// Timing variables
 		long long unsigned int start(0);
 		float elapsed;
 		int nRuns(9);
 		std::vector<float> runTimes;
-		
+
 		fs.open("medianTiming.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 		fs << name << "\t";
 		// Redirect stdout
 		std::fstream f("/dev/null");
-		
+
 		std::cerr << "Testing " << name << std::endl;
 
 		//not thread-safe
 		streambuf *oldcout,*oldcerr;
 
 		if (!showOutput) {
-		   oldcout = cout.rdbuf(); // <-- save  
-		   oldcerr = cerr.rdbuf(); // <-- save  
+		   oldcout = cout.rdbuf(); // <-- save
+		   oldcerr = cerr.rdbuf(); // <-- save
 
 		   cout.rdbuf(f.rdbuf());
 		   cerr.rdbuf(f.rdbuf());
@@ -108,7 +111,7 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 			stopTimer(&start,&elapsed);
 			runTimes.push_back(elapsed);
 		}
-		
+
 		std::sort(runTimes.begin(),runTimes.end());
 		fs << runTimes[nRuns/2] << std::endl;
 		fs.close();
@@ -118,13 +121,13 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 			cerr.rdbuf (oldcerr);   // <-- restore
 		   f.close();
 		}
-	
+
 	}
 }
 
 
 void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vector<Symbol>& algvars, std::vector<Symbol>& transVars, string sysNumber, string sysName, bool showOutput, bool isLazard, bool medianTiming) {
-    
+
     // Output system name
     fstream fs;
     int nchars = 8;
@@ -134,7 +137,7 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
     else
     		name = sysName;
     RegularChain<RN,SMQP> rc(algvars, transVars);
-    		
+
     if (!medianTiming) {
 	    fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 	    fs << name << "\t";
@@ -145,7 +148,7 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 	    fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 	    fs << name << "\t";
 	    fs.close();
-	    
+
 		cerr << "calling " << sysNumber << " (" << sysName << "):" << endl;
 		#if REGULARCHAIN_DEBUG
 		if (showOutput) {
@@ -180,26 +183,26 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 		}
 	}
 	else {
-	
+
 		// Timing variables
 		long long unsigned int start(0);
 		float elapsed;
 		int nRuns(9);
 		std::vector<float> runTimes;
-		
+
 		fs.open("medianTiming.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 		fs << name << "\t";
 		// Redirect stdout
 		std::fstream f("/dev/null");
-		
+
 		std::cerr << "Testing " << name << std::endl;
 
 		//not thread-safe
 		streambuf *oldcout,*oldcerr;
 
 		if (!showOutput) {
-		   oldcout = cout.rdbuf(); // <-- save  
-		   oldcerr = cerr.rdbuf(); // <-- save  
+		   oldcout = cout.rdbuf(); // <-- save
+		   oldcerr = cerr.rdbuf(); // <-- save
 
 		   cout.rdbuf(f.rdbuf());
 		   cerr.rdbuf(f.rdbuf());
@@ -220,7 +223,7 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 			stopTimer(&start,&elapsed);
 			runTimes.push_back(elapsed);
 		}
-		
+
 		std::sort(runTimes.begin(),runTimes.end());
 		fs << runTimes[nRuns/2] << std::endl;
 		fs.close();
@@ -230,27 +233,27 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 			cerr.rdbuf (oldcerr);   // <-- restore
 		   f.close();
 		}
-	
+
 	}
 }
 //bool testSubsetAsConstructibleSetsPappus(vector<RegularChain<RN,SMQP>> lrc, bool showOutput, bool isLazard) {
-//    
+//
 //    stringstream ss;
 //    // Redirect stdout
 //    streambuf *oldcout,*oldcerr;
-//    
+//
 //    if (!showOutput) {
-//		oldcout = cout.rdbuf(); // <-- save  
-//		oldcerr = cerr.rdbuf(); // <-- save  
+//		oldcout = cout.rdbuf(); // <-- save
+//		oldcerr = cerr.rdbuf(); // <-- save
 //		cout.rdbuf (ss.rdbuf());
 //		cerr.rdbuf (ss.rdbuf());
 //    }
-//    
+//
 //	std::cerr << "BPAS result:" << std::endl;
 //    for (int i=0; i<lrc.size(); ++i) {
 //    	cerr << "lrc[" << i << "] = " << lrc[i] << endl;
 //    }
-//	
+//
 //    if (!showOutput) {
 //		cout.rdbuf (oldcout);   // <-- restore
 //		cerr.rdbuf (oldcerr);   // <-- restore
@@ -277,9 +280,9 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 //    std::strcpy (cstr, procStr.c_str());
 //    ALGEB testProc = EvalMapleStatement(kv, cstr);
 //    delete[] cstr;
-//    
+//
 //    ALGEB result = EvalMapleProc(kv, testProc, 1, res);
-//	
+//
 //	if (mapleTest->testEquality(result, "true"))
 //		return true;
 //	else
@@ -288,17 +291,17 @@ void testSys(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vect
 
 bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symbol> algvars, vector<Symbol> transVars, bool showOutput, bool isLazard) {
     vector<RegularChain<RN,SMQP>> results;
-    
+
     // Timing variables
     long long unsigned int start;
     float elapsed;
-    
+
     // Open timing file for output
     fstream fs,fs2,fs3;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs2.open("rc-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs3.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
-    
+
 
     // Redirect stdout
     std::fstream f("/dev/null");
@@ -306,10 +309,10 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     //not thread-safe
     // stringstream ss;
     streambuf *oldcout,*oldcerr;
-    
+
     if (!showOutput) {
-        oldcout = cout.rdbuf(); // <-- save  
-        oldcerr = cerr.rdbuf(); // <-- save  
+        oldcout = cout.rdbuf(); // <-- save
+        oldcerr = cerr.rdbuf(); // <-- save
 
         cout.rdbuf(f.rdbuf());
         cerr.rdbuf(f.rdbuf());
@@ -321,23 +324,23 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
         cerr << "F[" << i << "] = " << F[i] << endl;
     }
     #endif
-    
+
     startTimer(&start);
-    
+
 	results = rc.triangularize(F,isLazard,0);
-	
+
 	stopTimer(&start,&elapsed);
 	fs << elapsed << "\t";
 	fs2 << elapsed << "\t";
 	fs3 << elapsed << std::endl;
 	fs3.close();
-	
+
     if (!showOutput) {
 		cout.rdbuf (oldcout);   // <-- restore
 		cerr.rdbuf (oldcerr);   // <-- restore
         f.close();
 	}
-	
+
 	std::cerr << "BPAS result:" << std::endl;
 	std::cerr << "[";
 	for (int k=0; k<results.size(); ++k) {
@@ -370,7 +373,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     //Jan23/2020:
     MapleInterfaceStream& mis = MapleInterfaceStream::instance();
     return mis.TriangularizeValidation(isLazard, inputs);
-#else 
+#else
     return true;
 #endif
 // #if defined(WITH_MAPLE) && WITH_MAPLE
@@ -386,7 +389,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
-    
+
     char* cstr;
     std::string evalStr;
     evalStr = "kernelopts(numcpus=1);";
@@ -421,9 +424,9 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     std::strcpy (cstr, procStr.c_str());
     ALGEB testProc = EvalMapleStatement(kv, cstr);
     delete[] cstr;
-	
+
     ALGEB result = EvalMapleProc(kv, testProc, 3, algebList[0], algebList[1], algebList[2]);
-    
+
     stopTimer(&start,&elapsed);
     fs << elapsed << "\t";
     fs2 << elapsed << "\t";
@@ -438,7 +441,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 	algebList2.push_back(algebList[3]);
 	algebList2.push_back(result);
 	algebList2.push_back(algebList[2]);
-	
+
 	if (isLazard) {
 	    procStr = "EqualAsConstructibleSets := proc (dec1::list, dec2::list, Rlist::list) local n, lrc1, lrc2, lrs1, lrs2, cs1, cs2, R, i, rc; R := RegularChains:-PolynomialRing(Rlist); n := nops(dec1); lrc1 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec1)), RegularChains:-ChainTools:-Empty(R), R); lrc1 := [op(lrc1), rc] end do; n := nops(dec2); lrc2 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec2)), RegularChains:-ChainTools:-Empty(R), R); lrc2 := [op(lrc2), rc] end do; if evalb(nops(lrc1) = 1) and evalb(nops(lrc2) = 1) and RegularChains:-ChainTools:-IsEmptyChain(op(1, lrc1), R) and RegularChains:-ChainTools:-IsEmptyChain(op(1, lrc2), R) then return true end if; lrs1 := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrc1, [1], R); lrs2 := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrc2, [1], R); cs1 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs1, R); cs2 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs2, R); if RegularChains:-ConstructibleSetTools:-IsContained(cs1, cs2, R) and RegularChains:-ConstructibleSetTools:-IsContained(cs2, cs1, R) then return true else return false end if end proc:";
     }
@@ -452,29 +455,29 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 //        delete[] cstr;
 //        procStr = "KalkbrenerTest := proc(dec1::list,dec2::list,Rlist::list) local rc,lrc1,lrc2,lsi1,lsi2,li,h,R,item,J,J1,J2,i,j,n,m,pass::boolean; R := RegularChains:-PolynomialRing(Rlist); n := nops(dec1); lrc1 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec1)), RegularChains:-ChainTools:-Empty(R), R); lrc1 := [op(lrc1), rc]; end do; n := nops(dec2); lrc2 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec2)), RegularChains:-ChainTools:-Empty(R), R); lrc2 := [op(lrc2), rc] end do; n := nops(lrc1); lsi1 := []; for i to n do li := RegularChains:-Inequations(lrc1[i],R); h := 1; for item in li do h := h * item; end do; J := PolynomialIdeals:-PolynomialIdeal(RegularChains:-Equations(lrc1[i],R)); J := PolynomialIdeals:-Saturate(J,h); lsi1 := [op(lsi1), J]; end do; n := nops(lrc2); lsi2 := []; for i to n do li := RegularChains:-Inequations(lrc2[i],R); h := 1; for item in li do h := h * item; end do; J := PolynomialIdeals:-PolynomialIdeal(RegularChains:-Equations(lrc2[i],R)); J := PolynomialIdeals:-Saturate(J,h); lsi2 := [op(lsi2), J]; end do; n := nops(lsi1); m := nops(lsi2); for i to n do for j to m do if (lsi1[i] subset lsi2[j] and lsi2[j] subset lsi1[i]) then pass := 'true'; break; else pass := 'false'; end if; end do; if eval(pass) then next; else break; end if; end do; if not eval(pass) then end if; if eval(pass) then for i to n do for j to m do if (lsi1[i] subset lsi2[j] and lsi2[j] subset lsi1[i]) then pass := "true"; break; else pass := "false"; end if; end do; if eval(pass) then next; else break; end if; end do; if eval(pass) then return true; end if; end if; J1 := lsi1[1]; if n > 1 then for i from 2 to n do J1 := PolynomialIdeals:-Intersect(J1,lsi1[i]); end do; end if; J2 := lsi2[1]; if m > 1 then for i from 2 to m do J2 := PolynomialIdeals:-Intersect(J2,lsi2[i]); end do; end if; if J1 subset J2 and J2 subset J1 then return true; else return false; end if: end proc:";
     }
-    
+
     evalStr = "kernelopts(numcpus=24);";
     cstr = new char[evalStr.length()+1];
     std::strcpy (cstr, evalStr.c_str());
     EvalMapleStatement(kv, cstr);
     delete[] cstr;
-    
+
     cstr = new char[procStr.length()+1];
     std::strcpy (cstr, procStr.c_str());
     testProc = EvalMapleStatement(kv, cstr);
     delete[] cstr;
-    
+
     startTimer(&start);
-    
+
     result = EvalMapleProc(kv, testProc, 3, algebList2[0], algebList2[1], algebList2[2]);
-    
+
     stopTimer(&start,&elapsed);
     fs << elapsed << std::endl;
     fs2 << elapsed << std::endl;
-    
+
     fs.close();
     fs2.close();
-    
+
     if (mapleTest->testEquality(result, "true")) {
 //  if (true) {
         std::cerr << "BPAS result:" << std::endl;
@@ -492,7 +495,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
         std::cerr << mapleTest->algebToString(kv, result) << "\n\n";
         return false;
     }
-//#else 
+//#else
 //    fs << "0\t0" << std::endl;
 //    fs2 << "0\t0" << std::endl;
 //    fs.close();
@@ -507,17 +510,17 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 
 bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symbol> vars, bool showOutput, bool isLazard) {
     vector<RegularChain<RN,SMQP>> results;
-    
+
     // Timing variables
     long long unsigned int start;
     float elapsed;
-    
+
     // Open timing file for output
     fstream fs,fs2,fs3;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs2.open("rc-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs3.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
-    
+
 
     // Redirect stdout
     std::fstream f("/dev/null");
@@ -525,10 +528,10 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     //not thread-safe
     // stringstream ss;
     streambuf *oldcout,*oldcerr;
-    
+
     if (!showOutput) {
-        oldcout = cout.rdbuf(); // <-- save  
-        oldcerr = cerr.rdbuf(); // <-- save  
+        oldcout = cout.rdbuf(); // <-- save
+        oldcerr = cerr.rdbuf(); // <-- save
 
         cout.rdbuf(f.rdbuf());
         cerr.rdbuf(f.rdbuf());
@@ -540,23 +543,23 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
         cerr << "F[" << i << "] = " << F[i] << endl;
     }
     #endif
-    
+
     startTimer(&start);
-    
+
 	results = rc.triangularize(F,isLazard,0);
-	
+
 	stopTimer(&start,&elapsed);
 	fs << elapsed << "\t";
 	fs2 << elapsed << "\t";
 	fs3 << elapsed << std::endl;
 	fs3.close();
-	
+
     if (!showOutput) {
 		cout.rdbuf (oldcout);   // <-- restore
 		cerr.rdbuf (oldcerr);   // <-- restore
         f.close();
 	}
-	
+
 	std::cerr << "BPAS result:" << std::endl;
 	std::cerr << "[";
 	for (int k=0; k<results.size(); ++k) {
@@ -584,7 +587,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     //Jan23/2020:
     MapleInterfaceStream& mis = MapleInterfaceStream::instance();
     return mis.TriangularizeValidation(isLazard, inputs);
-#else 
+#else
     return true;
 #endif
 
@@ -601,7 +604,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
-    
+
     char* cstr;
     std::string evalStr;
     evalStr = "kernelopts(numcpus=1);";
@@ -636,9 +639,9 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     std::strcpy (cstr, procStr.c_str());
     ALGEB testProc = EvalMapleStatement(kv, cstr);
     delete[] cstr;
-	
+
     ALGEB result = EvalMapleProc(kv, testProc, 3, algebList[0], algebList[1], algebList[2]);
-    
+
     stopTimer(&start,&elapsed);
     fs << elapsed << "\t";
     fs2 << elapsed << "\t";
@@ -653,7 +656,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 	algebList2.push_back(algebList[3]);
 	algebList2.push_back(result);
 	algebList2.push_back(algebList[2]);
-	
+
 	if (isLazard) {
 	    procStr = "EqualAsConstructibleSets := proc (dec1::list, dec2::list, Rlist::list) local n, lrc1, lrc2, lrs1, lrs2, cs1, cs2, R, i, rc; R := RegularChains:-PolynomialRing(Rlist); n := nops(dec1); lrc1 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec1)), RegularChains:-ChainTools:-Empty(R), R); lrc1 := [op(lrc1), rc] end do; n := nops(dec2); lrc2 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec2)), RegularChains:-ChainTools:-Empty(R), R); lrc2 := [op(lrc2), rc] end do; if evalb(nops(lrc1) = 1) and evalb(nops(lrc2) = 1) and RegularChains:-ChainTools:-IsEmptyChain(op(1, lrc1), R) and RegularChains:-ChainTools:-IsEmptyChain(op(1, lrc2), R) then return true end if; lrs1 := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrc1, [1], R); lrs2 := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrc2, [1], R); cs1 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs1, R); cs2 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs2, R); if RegularChains:-ConstructibleSetTools:-IsContained(cs1, cs2, R) and RegularChains:-ConstructibleSetTools:-IsContained(cs2, cs1, R) then return true else return false end if end proc:";
     }
@@ -667,29 +670,29 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 //        delete[] cstr;
 //        procStr = "KalkbrenerTest := proc(dec1::list,dec2::list,Rlist::list) local rc,lrc1,lrc2,lsi1,lsi2,li,h,R,item,J,J1,J2,i,j,n,m,pass::boolean; R := RegularChains:-PolynomialRing(Rlist); n := nops(dec1); lrc1 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec1)), RegularChains:-ChainTools:-Empty(R), R); lrc1 := [op(lrc1), rc]; end do; n := nops(dec2); lrc2 := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(op(i, dec2)), RegularChains:-ChainTools:-Empty(R), R); lrc2 := [op(lrc2), rc] end do; n := nops(lrc1); lsi1 := []; for i to n do li := RegularChains:-Inequations(lrc1[i],R); h := 1; for item in li do h := h * item; end do; J := PolynomialIdeals:-PolynomialIdeal(RegularChains:-Equations(lrc1[i],R)); J := PolynomialIdeals:-Saturate(J,h); lsi1 := [op(lsi1), J]; end do; n := nops(lrc2); lsi2 := []; for i to n do li := RegularChains:-Inequations(lrc2[i],R); h := 1; for item in li do h := h * item; end do; J := PolynomialIdeals:-PolynomialIdeal(RegularChains:-Equations(lrc2[i],R)); J := PolynomialIdeals:-Saturate(J,h); lsi2 := [op(lsi2), J]; end do; n := nops(lsi1); m := nops(lsi2); for i to n do for j to m do if (lsi1[i] subset lsi2[j] and lsi2[j] subset lsi1[i]) then pass := 'true'; break; else pass := 'false'; end if; end do; if eval(pass) then next; else break; end if; end do; if not eval(pass) then end if; if eval(pass) then for i to n do for j to m do if (lsi1[i] subset lsi2[j] and lsi2[j] subset lsi1[i]) then pass := "true"; break; else pass := "false"; end if; end do; if eval(pass) then next; else break; end if; end do; if eval(pass) then return true; end if; end if; J1 := lsi1[1]; if n > 1 then for i from 2 to n do J1 := PolynomialIdeals:-Intersect(J1,lsi1[i]); end do; end if; J2 := lsi2[1]; if m > 1 then for i from 2 to m do J2 := PolynomialIdeals:-Intersect(J2,lsi2[i]); end do; end if; if J1 subset J2 and J2 subset J1 then return true; else return false; end if: end proc:";
     }
-    
+
     evalStr = "kernelopts(numcpus=24);";
     cstr = new char[evalStr.length()+1];
     std::strcpy (cstr, evalStr.c_str());
     EvalMapleStatement(kv, cstr);
     delete[] cstr;
-    
+
     cstr = new char[procStr.length()+1];
     std::strcpy (cstr, procStr.c_str());
     testProc = EvalMapleStatement(kv, cstr);
     delete[] cstr;
-    
+
     startTimer(&start);
-    
+
     result = EvalMapleProc(kv, testProc, 3, algebList2[0], algebList2[1], algebList2[2]);
-    
+
     stopTimer(&start,&elapsed);
     fs << elapsed << std::endl;
     fs2 << elapsed << std::endl;
-    
+
     fs.close();
     fs2.close();
-    
+
     if (mapleTest->testEquality(result, "true")) {
 //  if (true) {
         std::cerr << "BPAS result:" << std::endl;
@@ -707,7 +710,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
         std::cerr << mapleTest->algebToString(kv, result) << "\n\n";
         return false;
     }
-//#else 
+//#else
 //    fs << "0\t0" << std::endl;
 //    fs2 << "0\t0" << std::endl;
 //    fs.close();
@@ -737,7 +740,7 @@ void Sys126Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -749,9 +752,9 @@ void Sys126Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "126" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -780,7 +783,7 @@ void Sys130Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -792,9 +795,9 @@ void Sys130Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "130" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -829,7 +832,7 @@ void Sys132Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -841,9 +844,9 @@ void Sys132Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "132" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -873,7 +876,7 @@ void Sys1000Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -885,9 +888,9 @@ void Sys1000Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1000" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -916,7 +919,7 @@ void Sys1001Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -928,9 +931,9 @@ void Sys1001Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1001" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -959,7 +962,7 @@ void Sys1002Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -971,9 +974,9 @@ void Sys1002Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1002" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1002,7 +1005,7 @@ void Sys1003Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1014,9 +1017,9 @@ void Sys1003Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1003" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1045,7 +1048,7 @@ void Sys1004Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1057,9 +1060,9 @@ void Sys1004Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1004" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1088,7 +1091,7 @@ void Sys1005Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1100,9 +1103,9 @@ void Sys1005Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1005" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1131,7 +1134,7 @@ void Sys1006Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1143,9 +1146,9 @@ void Sys1006Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1006" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1174,7 +1177,7 @@ void Sys1007Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1186,9 +1189,9 @@ void Sys1007Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1007" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1219,7 +1222,7 @@ void Sys1008Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1231,9 +1234,9 @@ void Sys1008Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1008" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1262,7 +1265,7 @@ void Sys1009Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1274,9 +1277,9 @@ void Sys1009Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1009" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1305,7 +1308,7 @@ void Sys1010Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1317,9 +1320,9 @@ void Sys1010Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1010" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1348,7 +1351,7 @@ void Sys1011Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1360,9 +1363,9 @@ void Sys1011Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1011" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1391,7 +1394,7 @@ void Sys1012Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1403,9 +1406,9 @@ void Sys1012Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1012" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1434,7 +1437,7 @@ void Sys1013Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1446,9 +1449,9 @@ void Sys1013Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1013" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1477,7 +1480,7 @@ void Sys1014Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1489,9 +1492,9 @@ void Sys1014Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1014" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1520,7 +1523,7 @@ void Sys1015Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1532,9 +1535,9 @@ void Sys1015Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1015" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1563,7 +1566,7 @@ void Sys1016Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1575,9 +1578,9 @@ void Sys1016Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1016" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1618,7 +1621,7 @@ void Sys1221Test(bool showOutput, bool isLazard) {
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
 	std::cerr << "calling triangularize:" << std::endl;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1630,9 +1633,9 @@ void Sys1221Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1221" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1665,7 +1668,7 @@ void Sys1255Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1677,9 +1680,9 @@ void Sys1255Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1255" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1739,7 +1742,7 @@ void Sys1289Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1751,9 +1754,9 @@ void Sys1289Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1289" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1800,7 +1803,7 @@ void Sys1302Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1812,9 +1815,9 @@ void Sys1302Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1302" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1850,7 +1853,7 @@ void Sys1303Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1862,9 +1865,9 @@ void Sys1303Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1303" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1893,7 +1896,7 @@ void Sys1304Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1905,9 +1908,9 @@ void Sys1304Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1304" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1936,7 +1939,7 @@ void Sys1305Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1948,9 +1951,9 @@ void Sys1305Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1305" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -1982,7 +1985,7 @@ void Sys1364Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -1994,9 +1997,9 @@ void Sys1364Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1364" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -2031,7 +2034,7 @@ void Sys1366Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -2043,9 +2046,9 @@ void Sys1366Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1366" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -2074,7 +2077,7 @@ void Sys1373Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -2086,9 +2089,9 @@ void Sys1373Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1373" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -2117,7 +2120,7 @@ void Sys1397Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -2129,9 +2132,9 @@ void Sys1397Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "1397" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -2207,9 +2210,9 @@ void Sys2852Test(bool showOutput, bool isLazard) {
 	poly += c_4*c_1;
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
-	
+
 	RegularChain<RationalNumber,SMQP> rc(vars);
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -2221,9 +2224,9 @@ void Sys2852Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "2852" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -2257,7 +2260,7 @@ void Sys2985Test(bool showOutput, bool isLazard) {
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
 	RegularChain<RationalNumber,SMQP> rc;
-    
+
     // Output system name
     fstream fs;
     fs.open("timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
@@ -2269,9 +2272,9 @@ void Sys2985Test(bool showOutput, bool isLazard) {
     fs.open("copy-timing.txt",std::fstream::in | std::fstream::out | std::fstream::app);
     fs << "2985" << "\t";
     fs.close();
-    
+
 	bool pass = triangularizeValidate(polys,rc,vars,showOutput,isLazard);
-	
+
 	if (showOutput) {
 		std::cerr << "Input polynomials:" << std::endl;
 		for (size_t i = 0; i < polys.size(); ++i)
@@ -2323,7 +2326,7 @@ void getSampleSys2915(std::vector<SparseMultivariateRationalPolynomial>& polys, 
 	poly = (y)*(v)*(a);
 	poly.setRingVariables(vars);
 	polys.push_back(poly);
-}	
+}
 
 void getSampleSys2920(std::vector<SparseMultivariateRationalPolynomial>& polys, std::vector<Symbol>& vars) {
 	polys.clear();
@@ -3203,7 +3206,7 @@ void Sys2887Test(bool showOutput, bool isLazard) {
  		SMQP("3*z3*z4+3*y3*y4+3*x3*x4-1"),
  		SMQP("z3^2+y3^2+x3^2-1"),
  		SMQP("-3*c3*y2*x3+3*z2*z3+3*y2*y3+3*x3-1")};
-	std::vector<Symbol> vars = {Symbol("c1"), Symbol("c2"), Symbol("c3"), Symbol("z2"), Symbol("z3"), Symbol("z4"), 
+	std::vector<Symbol> vars = {Symbol("c1"), Symbol("c2"), Symbol("c3"), Symbol("z2"), Symbol("z3"), Symbol("z4"),
 		Symbol("z5"), Symbol("y2"), Symbol("y3"), Symbol("y4"), Symbol("y5"), Symbol("x3"), Symbol("x4")};
 	for (size_t i = 0; i < polys.size(); ++i)
 		polys[i].setRingVariables(vars);
@@ -3452,7 +3455,7 @@ void Sys3109Test(bool showOutput, bool isLazard) {
 // pnum := 7841; modpnp := 962592769;
 void Sys3114Test(bool showOutput, bool isLazard) {
 	std::vector<SparseMultivariateRationalPolynomial> polys = {
-		SMQP("2 - 7*x1 + x1^2*x2 - 1/2*(x3 - x1 )"), 
+		SMQP("2 - 7*x1 + x1^2*x2 - 1/2*(x3 - x1 )"),
 		SMQP("6*x1 - x1^2*x2 - 5*(x4 - x2 )"),
 		SMQP("2 - 7*x3 + x3^2*x4 - 1/2*(x1 - x3 )"),
 		SMQP("6*x3 - x3^2*x4 + 1 + 1/2*(x2 - x4 )")};
@@ -3703,7 +3706,7 @@ void Sys3135Test(bool showOutput, bool isLazard) {
 void Sys3136Test(bool showOutput, bool isLazard) {
 	std::vector<SparseMultivariateRationalPolynomial> polys = {
 		SMQP("x10^2+x10-x9"),
-		SMQP(" x9^2-x8+x9"), 
+		SMQP(" x9^2-x8+x9"),
 		SMQP("x8^2-x7+x8"),
 		SMQP("x7^2-x6+x7"),
 		SMQP("x6^2-x5+x6"),
@@ -3976,6 +3979,6 @@ void Sys2250Test(bool showOutput, bool isLazard) {
     std::vector<Symbol> vars = {Symbol("x_1"), Symbol("x_2"), Symbol("x_3"), Symbol("x_4"), Symbol("x_5")};
     for (size_t i = 0; i < polys.size(); ++i)
         polys[i].setRingVariables(vars);
-    testSys(polys,vars,"2250","2250",showOutput,isLazard);    
+    testSys(polys,vars,"2250","2250",showOutput,isLazard);
 }
 

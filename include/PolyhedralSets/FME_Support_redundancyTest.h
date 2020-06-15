@@ -13,15 +13,15 @@ void getCoeffMatrix(inequality_t * l , matrix_t * mat , int ineqNum);
 
 void getConstVector(inequality_t * l , matrix_t * vec , int ineqNum);
 
-void remVarMat(const matrix_t inputMat , const matrix_t inputVec , matrix_t * outMat , int varNum);
+void remVarMat(matrix_t inputMat , matrix_t inputVec , matrix_t * outMat , int varNum);
 
-void elimVarMat(const matrix_t inputMat , const matrix_t inputVec , matrix_t * outMat , int varNum);
+void elimVarMat(matrix_t inputMat , matrix_t inputVec , matrix_t * outMat , int varNum);
 
-void blocElimination(const matrix_t inputMat , matrix_t * extrMat , matrix_t * outMat);
+void blocElimination(matrix_t inputMat , matrix_t * extrMat , matrix_t * outMat);
 
 void initialTestCone(inequality_t * inputSys , int ineqNum , matrix_t * initTestCone);
 
-void testCone(const matrix_t * initialCone , int step , matrix_t * output);
+void testCone(matrix_t * initialCone , int step , matrix_t * output);
 
 int extremeRayTest(matrix_t * coeffMat , matrix_t * vec);
 

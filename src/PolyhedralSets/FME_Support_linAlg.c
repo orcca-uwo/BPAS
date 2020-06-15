@@ -44,7 +44,7 @@ void matrixToFlint( matrix_t source , fmpq_mat_t * dest)
 
 	for(int i = 0 ; i < rowNumber ; i++ )
 		for(int j = 0 ; j < colNumber ; j++)
-			fmpq_set_mpq(fmpq_mat_entry(dest, i, j), source.entries[num++]);
+			fmpq_set_mpq(fmpq_mat_entry(*dest, i, j), source.entries[num++]);
 }
 
 void flintToMatrix( fmpq_mat_t source , matrix_t * dest)

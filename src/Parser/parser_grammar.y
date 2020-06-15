@@ -37,7 +37,7 @@ int g_num_variables = 0;
 	AltArr_t *AltArr_t_type;
 };
 
-%token <string_type> RATNUM VAR NUM 
+%token <string_type> RATNUM VAR NUM
 %token MULTIPLY PLUS MINUS L_BRACE R_BRACE LS_BRACE RS_BRACE DIVIDE POWER COMMA UMINUS
 
 
@@ -59,7 +59,7 @@ int g_num_variables = 0;
 %%
 polynomial		: polynomial poly 								{
 																	altarr_data = $2;
-																	return PARSER_SUCCESS;								
+																	return PARSER_SUCCESS;
 																}
 				| polynomial other 								{}
                 |                                       		{}
@@ -67,7 +67,7 @@ polynomial		: polynomial poly 								{
 poly			:MINUS poly %prec UMINUS						{
 																	if(is_new_var){
 																		expandNumVars_AA($2, g_num_variables);
-																	}	
+																	}
 																	negatePolynomial_AA($2);
 																	mergeSortPolynomial_AA($2);
 																	$$ = $2;
@@ -171,7 +171,7 @@ poly			:MINUS poly %prec UMINUS						{
 																	freePolynomial_AA($2);
 																}
 				|term											{
-																	AltArr_t *temp_aa = makePolynomial_AA(DEFAULT_AA_SIZE, g_num_variables);	
+																	AltArr_t *temp_aa = makePolynomial_AA(DEFAULT_AA_SIZE, g_num_variables);
 																	add_unpacked_term_to_smqp_aa(temp_aa, $1->exp, $1->coef, g_num_variables);
 																	$$ = temp_aa;
 																	#ifdef PARSER_DEBUG
@@ -220,7 +220,7 @@ term			: coef											{
 																	free($1->var);
 																	free($1);
 																}
-				;				
+				;
 powerVariable	: variable										{
 																	// is_new_var = 0; // bug on x^2-y*x oct 1, 2018 bug fix
 																	if(!is_all_var_defined && !check_if_it_exists(g_variables, $1, g_num_variables)){
@@ -286,12 +286,13 @@ coef			: NUM											{
 																	#ifdef PARSER_DEBUG
 																		printf_blue("coef: RATNUM ");
 																		printf(" %s\n", $1);
-																	#endif	
+																	#endif
 																	free($1);
 																}
 				;
-other 			: variable 										{ 
+other 			: variable 										{
 																	g_variables = push_back_dynamic(g_variables, &g_num_variables, $1);
+																	free($1);
 																}
 				|  LS_BRACE other 								{}
 				|  other  RS_BRACE								{ is_all_var_defined = 1;}

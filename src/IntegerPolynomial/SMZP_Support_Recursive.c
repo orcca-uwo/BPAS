@@ -27,7 +27,7 @@ void printAAZ (AltArrZ_t* aa) {
 
 AltArrZ_t* buildRandomAltArrZPoly_MvarSparse(int univarSparsity, int nvar, int nterms, unsigned long int coefBound, degree_t sparsity, int includeNeg, time_t seed) {
 	AltArrZ_t* ret = buildRandomSeededPoly_AAZ_unpk(nvar, nterms, coefBound, sparsity, includeNeg, seed);
-	
+
 	degree_t* degs = (degree_t*) ret->elems->degs;
 
 	degree_t pDeg = degs[0];
@@ -58,12 +58,12 @@ AltArrZ_t* buildRandomAltArrZPoly_MvarSparse(int univarSparsity, int nvar, int n
 	return ret;
 }
 
-/** 
- * Build a random recursive polynomial. 
- * Nterms is the number of terms wrt the main variable. 
+/**
+ * Build a random recursive polynomial.
+ * Nterms is the number of terms wrt the main variable.
  * coefNTerms is the number of terms in the coefficients (when viewed recursively, and nvar > 1);
  * coefBound is the absolute upper limit on the rational numbers in the polynomial.
- * sparsity is the difference between degrees (wrt to main variable) of successive terms - 1. Therefore 2 is dense. 
+ * sparsity is the difference between degrees (wrt to main variable) of successive terms - 1. Therefore 2 is dense.
  * sparsity is also passed when constructing coefficient polynomials.
  */
 RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned long int coefBound, degree_t sparsity, int includeNeg) {
@@ -71,7 +71,7 @@ RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned
 	static gmp_randstate_t R_STATE;
 
 	if (!initRand) {
-		time_t seed = time(NULL); 
+		time_t seed = time(NULL);
 		// fprintf(stderr, "rec seed: %lu\n", seed);
 		srand(seed);
 
@@ -99,7 +99,7 @@ RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned
 
 			mpz_urandomb(mpzNum, R_STATE, coefBound);
 			mpz_urandomb(mpzDen, R_STATE, coefBound);
-		
+
 			while(mpz_sgn(mpzNum) == 0) {
 				mpz_urandomb(mpzNum, R_STATE, coefBound);
 			}
@@ -117,7 +117,7 @@ RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned
 
 			mvarDeg = (nterms - 1 - i) * (sparsity - 1);
 			coefNode->degs += (mvarDeg << mvarDegOffset);
-			
+
 			if (head == NULL) {
 				head = coefNode;
 			}
@@ -163,7 +163,7 @@ RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned
 		AltArrZ_t* aa = deepCopyPolynomial_AAZFromNode(head, nvar);
 		freePolynomial(head);
 		return convertToRecursiveArrayZ(aa);
-	}	
+	}
 }
 
 RecArrZ_t* convertToRecursiveArrayZ(AltArrZ_t* aa) {
@@ -182,7 +182,7 @@ RecArrZ_t* convertToRecursiveArrayZ(AltArrZ_t* aa) {
 	degree_t mvarDeg = GET_NTH_EXP(elems[0].degs, mvarMask, mvarDegOffset);
 	RecArrZ_t* poly = (RecArrZ_t*) malloc(sizeof(RecArrZ_t));
 	poly->alloc = mvarDeg;
-	RecArrElemZ_t* recElems = (RecArrElemZ_t*) malloc(sizeof(RecArrElemZ_t)*(mvarDeg+1)); 
+	RecArrElemZ_t* recElems = (RecArrElemZ_t*) malloc(sizeof(RecArrElemZ_t)*(mvarDeg+1));
 	poly->elems = recElems;
 
 	int curIdx = 0, lastSize = 0;
@@ -304,7 +304,7 @@ RecArrZ_t* deepCopyRecArrayZPolynomial(RecArrZ_t* poly, int nvar) {
 	return retPoly;
 }
 
-RecArrZ_t* convertToRecursiveArrayZAtIdx (AltArrZ_t* aa, int idx) 
+RecArrZ_t* convertToRecursiveArrayZAtIdx (AltArrZ_t* aa, int idx)
 {
   if (aa == NULL){
       return NULL;
@@ -334,7 +334,7 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
 {
   if (recPoly == NULL){
       return NULL;
-  } 
+  }
   if (idx < 0 || idx >= nvar){
       fprintf (stderr, "SMZP Error: idx is out of range!\n");
       exit (1);
@@ -354,7 +354,7 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
 
   reorderVars_AAZ (cPoly, varMap, nvar);
   return cPoly;
-} 
+}
 
 
 /***********
@@ -371,7 +371,7 @@ AltArrZ_t* recProdHeapGetNextCoef_AAZ(RecProdHeap_AA* h, const RecArrElemZ_t* __
 
 	RecProdHeapChain_AA* insertChain = NULL;
 	RecProdHeapChain_AA* maxElem, * nextMaxElem;
-	
+
 	AltArrZ_t aCoef, bCoef;
 	aCoef.nvar = nvar;
 	bCoef.nvar = nvar;
@@ -428,12 +428,12 @@ AltArrZ_t* recProdHeapGetNextCoef_AAZ(RecProdHeap_AA* h, const RecArrElemZ_t* __
 /**
  * Multiply a recursively-viewed polynomial by a "coefficient" polynomial, in place.
  * That is, the coefficient supplied is a polynomial whose variables do not include
- * the mvar of the supplied RecNode_t a. 
+ * the mvar of the supplied RecNode_t a.
  *
  * For optimization purposes, it may be that there is a slot in the coefficient poly's
- * exponent vector for the mvar of a, but it should all be 0. 
+ * exponent vector for the mvar of a, but it should all be 0.
  *
- * Returns a pointer to the new head of a after multiplication. 
+ * Returns a pointer to the new head of a after multiplication.
  */
 
 void recArrayMultiplyByCoefZ_inp(RecArrElemZ_t* aElems, int aSize, AltArrZ_t* coef, int nvar, int* aUnpacked) {
@@ -467,7 +467,7 @@ void pesudoDivideOneTerm_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a
 	}
 
 	if (b->elems->exp > c->elems->exp) {
-		RecArrZ_t* recR = deepCopyRecArrayZPolynomial(c, nvar); 
+		RecArrZ_t* recR = deepCopyRecArrayZPolynomial(c, nvar);
 		*res_r = convertFromRecursiveArrayZ(recR, nvar);
 		*res_a = NULL;
 		if (e != NULL) {
@@ -513,7 +513,7 @@ void pesudoDivideOneTerm_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a
 	AltArrZ_t* multerm = deepCopyPolynomial_AAZ(&kCoef);
 	AltArrZ_t* hI = deepCopyPolynomial_AAZ(&h);
 
-	//do first division manually 
+	//do first division manually
 	//update degs in-place by degree of the mainvar, eps.
 	memcpy(a->elems + ai, multerm->elems, sizeof(AAZElem_t)*multerm->size);
 	degree_t* aDegs;
@@ -561,8 +561,8 @@ void pesudoDivideOneTerm_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a
 // 			// } else {
 // 			// }
 // #else
-// 				a = multiplyPolynomials_AAZ_inp(a, &h, nvar);	
-	
+// 				a = multiplyPolynomials_AAZ_inp(a, &h, nvar);
+
 // 				//update h counter
 // 				//this is only done when we actually add a new element to the quotient.
 // 				++i;
@@ -633,17 +633,17 @@ void pesudoDivideOneTerm_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a
 				//update degs in-place by degree of the mainvar, eps.
 				for (int idx = rj; idx < rj + multerm->size; ++idx) {
 					r->elems[idx].degs += ((degrees_t)eps << mvarOffset);
-				}				
+				}
 			}
 
 			rj += multerm->size;
 			r->size = rj;
 
-		}		
+		}
 		free(multerm->elems);
 		free(multerm);
 	}
-	
+
 
 	if (ai > 0) {
 		a->size = ai;
@@ -676,7 +676,7 @@ void pesudoDivideOneTerm_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a
 // #if PDIVIDE_DIVISBLE_CHECK
 		//r needs one additional one since a and h have one extra from beginning of loop
 		if (rj > 0) {
-			r = multiplyPolynomials_AAZ_inp(r, &h, nvar);	
+			r = multiplyPolynomials_AAZ_inp(r, &h, nvar);
 		}
 // #endif
 	}
@@ -710,7 +710,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 	}
 
 	if (b->elems->exp > c->elems->exp) {
-		RecArrZ_t* recR = deepCopyRecArrayZPolynomial(c, nvar); 
+		RecArrZ_t* recR = deepCopyRecArrayZPolynomial(c, nvar);
 		*res_r = convertFromRecursiveArrayZ(recR, nvar);
 		*res_a = NULL;
 		if (e != NULL) {
@@ -724,7 +724,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 			(*hPow)->size = 1;
 		}
 		return;
-	}	
+	}
 
 	if (b->size == 1) {
 		pesudoDivideOneTerm_RecArrayZ(c, b, res_a, res_r, e, hPow, nvar, lazy);
@@ -745,7 +745,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 
 	AAZElem_t* r = (AAZElem_t*) malloc(sizeof(AAZElem_t)*maxRSize);
 	degree_t* rDegs = (degree_t*) malloc(sizeof(degree_t)*maxRSize*nvar);
-	RecArrElemZ_t* aElems = (RecArrElemZ_t*) malloc(sizeof(RecArrElemZ_t)*maxASize); 
+	RecArrElemZ_t* aElems = (RecArrElemZ_t*) malloc(sizeof(RecArrElemZ_t)*maxASize);
 	RecArrElemZ_t* __restrict__ curA = aElems;
 
 	//manually do first div as we know it comes from first term of c;
@@ -764,7 +764,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 	kCoef.unpacked = c->unpacked;
 
 	AltArrZ_t* multerm = deepCopyPolynomial_AAZ(&kCoef);
-	
+
 	curA->coef = multerm->elems;
 	curA->coefSize = multerm->size;
 	curA->exp = eps;
@@ -794,21 +794,21 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 
 		if (delta > kDeg) {
 			eps = delta;
-			multerm = recProdHeapGetNextCoef_AAZ(prodHeap, aElems, b->elems, aUnpacked, b->unpacked);			
+			multerm = recProdHeapGetNextCoef_AAZ(prodHeap, aElems, b->elems, aUnpacked, b->unpacked);
 			if (multerm == NULL || multerm->size == 0) {
 				freePolynomial_AAZ(multerm);
 				//the elements in the product with degree delta
 				// ended up canceling out coefs
 
 				delta = recProdHeapPeek_AA(prodHeap);
-				continue; 
+				continue;
 			}
 			negatePolynomial_AAZ(multerm);
 		} else if (delta < kDeg) {
 			eps = kDeg;
 			kCoef.alloc = kCoef.size = k->coefSize;
 			kCoef.elems = k->coef;
-		
+
 			//then ctilde is from dividend
 			multerm = multiplyPolynomials_AAZ(&kCoef, hI, nvar);
 			++k;
@@ -816,24 +816,24 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 		} else {
 			eps = delta;
 			//combine both
-			multerm2 = recProdHeapGetNextCoef_AAZ(prodHeap, aElems, b->elems, aUnpacked, b->unpacked);			
+			multerm2 = recProdHeapGetNextCoef_AAZ(prodHeap, aElems, b->elems, aUnpacked, b->unpacked);
 			if (multerm2 == NULL || multerm2->size == 0) {
 				freePolynomial_AAZ(multerm2);
 
 				delta = recProdHeapPeek_AA(prodHeap);
 				continue;
-			}			
+			}
 			kCoef.alloc = kCoef.size = k->coefSize;
 			kCoef.elems = k->coef;
 
 			multerm = multiplyPolynomials_AAZ(&kCoef, hI, nvar);
 			multerm = subPolynomials_AAZ_inp(multerm, multerm2, nvar);
 			freePolynomial_AAZ(multerm2);
-			
+
 			++k;
 
 			kDeg = (k == lenK) ? -1 : k->exp;
-			
+
 			if (multerm == NULL || multerm->size == 0) {
 				//if sub resulted in a zero then we we must get a new multerm
 				freePolynomial_AAZ(multerm);
@@ -861,9 +861,9 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 
 				// IF the above rec node mult was not done in place, then
 				// we would need to do the below. Since we delay the actual
-				// calculation of the coef product from heap elements until just 
+				// calculation of the coef product from heap elements until just
 				// before extraction.
-				// recProdHeapUpdateQuoByH(prodHeap, h);			
+				// recProdHeapUpdateQuoByH(prodHeap, h);
 #if PDIVIDE_DIVISBLE_CHECK
 			}
 #endif
@@ -886,7 +886,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 			recProdHeapInsert_AA(prodHeap, recProdHeapMakeChain_AA(ai, 1, NULL), curA->exp + b2Elem->exp);
 			++ai;
 			++curA;
-			
+
 		} else {
 			//accumulate remainder.
 			if (rj + multerm->size > maxRSize) {
@@ -904,7 +904,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 			memcpy(r + rj, multerm->elems, sizeof(AAZElem_t)*multerm->size);
 			unpackExponentVectors_AAZ_inp(multerm);
 			memcpy(rDegs + rj*nvar, (degree_t*) multerm->elems->degs, sizeof(degree_t)*multerm->size*nvar);
-			
+
 			//update degs in-place by degree of the mainvar, eps.
 			for (int idx = rj; idx < rj + multerm->size; ++idx) {
 				r[idx].degs = (degrees_t) (rDegs + idx*nvar);
@@ -938,7 +938,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 		//first loop over each recursive element
 		for (int idx = 0; idx < ai; ++idx) {
 			memcpy(aBlock+aSize, aElems[idx].coef, sizeof(AAZElem_t)*(aElems[idx].coefSize));
-		
+
 			//loop over each element of coefficient and in-place update degs by mainvar exp.
 			for (int idx2 = 0; idx2 < aElems[idx].coefSize; ++idx2) {
 				aBlock[aSize + idx2].degs += ((degrees_t) aElems[idx].exp << mvarOffset);
@@ -997,7 +997,7 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 		ra->unpacked = 1;
 		tryPackExponentVectors_AAZ_inp(ra);
 	}
-	
+
 	if (!lazy) {
 		int d = c->elems->exp - b->elems->exp + 1 - i;
 		i += d;
@@ -1020,14 +1020,14 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 	if (hPow != NULL) {
 		*hPow = hI;
 	}
-} 
+}
 
 
 //////////////////////////////////
 // Multi-divisor Pseudo-division
 //////////////////////////////////
 
-void pesudoDivideAtIdx_AAZ (int idx, AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int* e, AltArrZ_t** hPow, int nvar, int lazy) 
+void pesudoDivideAtIdx_AAZ (int idx, AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int* e, AltArrZ_t** hPow, int nvar, int lazy)
 {
     if (idx >= nvar || idx < 0){
     	printAAZ (c);
@@ -1071,17 +1071,17 @@ void pesudoDivideAtIdx_AAZ (int idx, AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res
     }
 }
 
-void naiveMultiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t** quoSet, AltArrZ_t** rem, AltArrZ_t** hPow, int nvar, int lazy, int nSet) 
+void naiveMultiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t** quoSet, AltArrZ_t** rem, AltArrZ_t** hPow, int nvar, int lazy, int nSet)
 {
     if (nSet  < 0 || nvar < nSet){
 		fprintf(stderr, "SMQP Error: nSet(=%d) is out of range!\n", nSet);
 		exit(EXIT_FAILURE);
     }
-    
+
     mpz_t one;
     mpz_init (one);
     mpz_set_si (one, 1l);
-	
+
     if (nSet == 0){
 		*rem = deepCopyPolynomial_AAZ (c);
 		if (*hPow != NULL){
@@ -1091,7 +1091,7 @@ void naiveMultiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t**
 		quoSet[0] = NULL;
 		return;
     }
-	
+
     int e;
     int mvar;
     AltArrZ_t* h;
@@ -1099,24 +1099,24 @@ void naiveMultiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t**
     AltArrZ_t* tmpR;
     AltArrZ_t* r = deepCopyPolynomial_AAZ (c);
     AltArrZ_t* totalH = NULL;
-	
+
     /* for (int i = 0; i < nSet; ++i)	 */
     for (int i = nSet-1; i >= 0; --i) {
 	    mvar = leadingVariable_AAZ (B[i]);
-	    if ((mvar > -1) && (r != NULL && r->size != 0)) {    
+	    if ((mvar > -1) && (r != NULL && r->size != 0)) {
 		    e = 1;
 		    h = NULL;
 		    tmpQ = NULL;
 		    tmpR = NULL;
-		    
+
 		    pesudoDivideAtIdx_AAZ (mvar, r, B[i], &tmpQ, &tmpR, &e, &h, nvar, lazy);
-		    		    
+
 		    if (tmpR != NULL && tmpR->size != 0) {
 				r = tmpR; // update dividend
 			} else {
 				r = NULL;
 			}
-		    
+
 		    if (totalH == NULL || totalH->size == 0) {
 				totalH = deepCopyPolynomial_AAZ (h);
 		    } else if (h != NULL && h->size != 0){
@@ -1130,7 +1130,7 @@ void naiveMultiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t**
 					}
 				}
 		    }
-		    
+
 		    if (tmpQ != NULL && tmpQ->size != 0){
 		        if (quoSet[i] == NULL || quoSet[i]->size == 0){
 		            quoSet[i] = tmpQ;
@@ -1139,20 +1139,20 @@ void naiveMultiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t**
 					freePolynomial_AAZ (tmpQ);
 		        }
 		    }
-			
+
 		    freePolynomial_AAZ (h);
-		}	
+		}
 	}
-    
+
     if (totalH == NULL || totalH->size == 0) {
 		totalH = makeConstPolynomial_AAZ (1, nvar, one);
     }
 
 	mpz_clear (one);
-	
+
     *hPow = totalH;
     *rem = r;
-    
+
     return;
 }
 
@@ -1164,7 +1164,7 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 	}
 
 	AltArrZ_t** Q; // *quoSet = Q
-	
+
     if (c == NULL || c->size == 0) {
 		mpz_t one1;
 		mpz_init (one1);
@@ -1175,28 +1175,28 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 
 		if (nSet > 0) {
 			Q = (AltArrZ_t**) calloc (nSet, sizeof (AltArrZ_t*));
-			 
+
 			for (int i = 0; i < nSet; ++i){
 			    Q[i] = NULL;
 			}
 			*quoSet = Q;
-			
+
 		} else {
 			*quoSet = NULL;
 		}
-		
+
         return;
     }
-	
+
     if (nSet == 0) {
     	mpz_t one2;
 		mpz_init (one2);
 		mpz_set_si (one2, 1l);
-		
+
 		*rem = deepCopyPolynomial_AAZ (c);
 		*hPow = makeConstPolynomial_AAZ (1, nvar, one2);
 		*quoSet = NULL;
-		
+
 		return;
     }
 
@@ -1216,12 +1216,12 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 
     AltArrZ_t* tmpQ = NULL;
     AltArrZ_t* tmpR = NULL;
-    AltArrZ_t* h = NULL;   
+    AltArrZ_t* h = NULL;
 
 	mpz_t one;
 	mpz_init (one); // was tmpCoef
 	mpz_set_si (one, 1l);
-	
+
     int e = 1;
   	int mvar;
   	int signMvar; //?
@@ -1229,20 +1229,20 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 
     if (nSet == 1) {
         mvar = leadingVariable_AAZ (B[0]);
-		
+
 		if (mvar == -2) {
 			*rem = deepCopyPolynomial_AAZ (c);
             quoSet[0] = NULL;
             *hPow = makeConstPolynomial_AAZ (1, nvar, one);
             return;
 		}
- 		
+
 		if (mvar > -1){
 			pesudoDivideAtIdx_AAZ (mvar, c, B[0], &tmpQ, &tmpR, &e, &h, nvar, lazy);
 		} else{
 			pesudoDivideAtIdx_AAZ (0, c, B[0], &tmpQ, &tmpR, &e, &h, nvar, lazy);
 		}
-        
+
         *rem = tmpR;
 
 		Q = (AltArrZ_t**) calloc (nSet, sizeof (AltArrZ_t*));
@@ -1254,7 +1254,7 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
     }
 
 	Q = (AltArrZ_t**) calloc (nSet, sizeof (AltArrZ_t*));
-	
+
 	/////////////// PART 1 ////////////////
 	signMvar = leadingVariable_AAZ (B[nSet-1]);
 	mvar = (signMvar < 0) ? 0 : signMvar;
@@ -1267,12 +1267,12 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 		fprintf (stderr, "SMQP Error: In normalizedTriangularSetPseudoDivide_AA, input polynomial is not zero but it is considered as a zero polynomial in mainCoefficientListAtIdx_AA![Part 1]\n");
 		exit (EXIT_FAILURE);
 	}
-	
+
     AltArrZ_t** Q1[sz_cl1];
 
 	AltArrZ_t** R1 = (AltArrZ_t**) calloc (sz_cl1, sizeof (AltArrZ_t*));
 	AltArrZ_t** HPow1 = (AltArrZ_t**) calloc (sz_cl1, sizeof (AltArrZ_t*));
-	
+
 	for (int i = 0; i < sz_cl1; i++) {
 	    normalizedTriangularSetPseudoDivide_AAZ (CoefList1[i], B,
 										   &Q1[i], &R1[i], &HPow1[i], nvar, lazy, nSet-1);
@@ -1286,7 +1286,7 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 	free (CoefList1);
 
 	AltArrZ_t* H1 = NULL;
-	
+
 	for (int i = 0; i < sz_cl1; i++){
 		if (HPow1[i] != NULL && HPow1[i]->size != 0){ // TODO
 			if (H1 == NULL || H1->size == 0){
@@ -1302,31 +1302,31 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 	AltArrZ_t* frac_q1;
 
 	for (int i = 0; i < sz_cl1; ++i){
-		
+
 		if (H1 == NULL || H1->size == 0){
 			fprintf (stderr, "SMQP Error: In normalizedTriangularSetPseudoDivide_AAZ, H1 couldn't be zero!\n");
 			exit (EXIT_FAILURE);
 		}
-		
+
 		dividePolynomials_AAZ (H1, HPow1[i], &frac_q1, &frac_r1, nvar);
 
 		if (frac_r1 != NULL || frac_r1->size != 0) {
 			freePolynomial_AAZ (frac_r1);
 		}
-		
+
 		if (frac_q1 == NULL || frac_q1->size == 0){
 			fprintf (stderr, "SMQP Error: In normalizedTriangularSetPseudoDivide_AAZ, frac_q1 couldn't be zero!\n");
 			exit (EXIT_FAILURE);
 		}
 
 		if (R1[i] != NULL && R1[i]->size != 0) {
-			
-			multiplyPolynomialAtIdxByXn_AAZ_inp (R1[i], mvar, i, nvar);		
+
+			multiplyPolynomialAtIdxByXn_AAZ_inp (R1[i], mvar, i, nvar);
 			R1[i] = multiplyPolynomials_AAZ_inp (R1[i], frac_q1, nvar);
 			newR1 = addPolynomials_AAZ_inp (newR1, R1[i], nvar);
 
 		}
-		
+
 		for (int j = 0; j < nSet-1; j++) {
 			multiplyPolynomialAtIdxByXn_AAZ_inp (Q1[i][j], mvar, i, nvar);
 			Q1[i][j] = multiplyPolynomials_AAZ_inp (Q1[i][j], frac_q1, nvar);
@@ -1336,7 +1336,7 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 				Q[j] = addPolynomials_AAZ_inp (Q[j], Q1[i][j], nvar);
 			}
 		}
-		
+
 		freePolynomial_AAZ (frac_q1); frac_q1 = NULL;
 	}
 
@@ -1359,14 +1359,14 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 	// free (Q1);
 
 	/////////////// PART 2 ////////////////
-	
+
 	if (newR1 == NULL || newR1->size == 0) {
 		Q[nSet-1] = NULL;
-		
+
 		*quoSet = Q;
 		*rem = NULL;
 		*hPow = H1;
-		
+
 		return;
 	}
 
@@ -1377,7 +1377,7 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 				partialDegree_AAZ (B[i], mainVariable_AAZ (B[i]))) {
 				AltArrZ_t* r_star = NULL;
 				AltArrZ_t* q_star = NULL;
-				
+
 				dividePolynomials_AAZ (newR1, B[i], &q_star, &r_star, nvar);
 
 				if (q_star != NULL) {
@@ -1390,26 +1390,26 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 				}
 				if (newR1 == NULL || newR1->size == 0) {
 					Q[nSet-1] = NULL;
-					
+
 					*quoSet = Q;
 					*rem = NULL;
 					*hPow = H1;
-					
+
 					return;
 				}
 			}
 		}
 	}
-	
+
 	AltArrZ_t* q_tilde = NULL;
 	AltArrZ_t* r_tilde = NULL;
 	AltArrZ_t* h_tilde = NULL;
 	int       e_tilde = 0;
 
 	pesudoDivideAtIdx_AAZ (mvar, newR1, B[nSet-1], &q_tilde, &r_tilde, &e_tilde, &h_tilde, nvar, lazy);
-	
+
 	freePolynomial_AAZ (newR1);
-	
+
 	if (h_tilde == NULL || h_tilde->size == 0) {
 		fprintf (stderr, "SMQP Error: In normalizedTriangularSetPseudoDivide_AAZ, h_tilde couldn't be zero!\n");
 		exit (EXIT_FAILURE);
@@ -1426,13 +1426,13 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 	Q[nSet-1] = q_tilde;
 
 	if (!isOne_AAZ (h_tilde)) {
-		H1 = multiplyPolynomials_AAZ_inp (H1, h_tilde, nvar); 
+		H1 = multiplyPolynomials_AAZ_inp (H1, h_tilde, nvar);
 	}
-	
+
 	freePolynomial_AAZ (h_tilde);
-	
+
 	/////////////// PART 3 ////////////////
-	
+
 	if (r_tilde == NULL || r_tilde->size == 0) {
 		*quoSet = Q;
 		*rem = NULL;
@@ -1440,7 +1440,7 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 
 		return;
 	}
-	
+
 	AltArrZ_t** CoefList2;
 	int sz_cl2 = 0; // deg(r_tilde, mvar)+1
 	mainCoefficientListAtIdx_AAZ (r_tilde, mvar, &CoefList2, &sz_cl2);
@@ -1449,12 +1449,12 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 		fprintf (stderr, "SMQP Error: In normalizedTriangularSetPseudoDivide_AAZ, input polynomial is not zero but it is considered as a zero polynomial in mainCoefficientListAtIdx_AAZ [Part 3]!\n");
 		exit (EXIT_FAILURE);
 	}
-	
+
     AltArrZ_t** Q2[sz_cl2];
-	
+
 	AltArrZ_t** R2 = (AltArrZ_t**) calloc (sz_cl2, sizeof (AltArrZ_t*));
 	AltArrZ_t** HPow2 = (AltArrZ_t**) calloc (sz_cl2, sizeof (AltArrZ_t*));
-	
+
 	for (int i = 0; i < sz_cl2; i++) {
 	    normalizedTriangularSetPseudoDivide_AAZ (CoefList2[i], B,
 										   &Q2[i], &R2[i], &HPow2[i], nvar, lazy, nSet-1);
@@ -1466,9 +1466,9 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 		}
 	}
 	free (CoefList2);
-	
+
 	AltArrZ_t* H2 = NULL;
-	
+
 	for (int i = 0; i < sz_cl2; i++){
 		if (HPow2[i] != NULL && HPow2[i]->size != 0){ // TODO
 			if (H2 == NULL || H2->size == 0){
@@ -1484,49 +1484,49 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 		for (int j = 0; j < nSet; j++) {
 			if (Q[j] != NULL && Q[j]->size != 0) {
 				Q[j] = multiplyPolynomials_AAZ_inp (Q[j], H2, nvar);
-			}	
+			}
 		}
 	}
-	
+
 	AltArrZ_t* newR2 = NULL;
 	AltArrZ_t* frac_r2;
 	AltArrZ_t* frac_q2;
 
 	for (int i = 0; i < sz_cl2; ++i){
-		
+
 		if (H2 == NULL || H2->size == 0){
 			fprintf (stderr, "SMQP Error: In normalizedTriangularSetPseudoDivide_AA, H2 couldn't be zero!\n");
 			exit (EXIT_FAILURE);
 		}
-		
+
 		dividePolynomials_AAZ (H2, HPow2[i], &frac_q2, &frac_r2, nvar);
 
 		if (frac_r2 != NULL && frac_r2->size != 0) {
 			freePolynomial_AAZ (frac_r2);
 		}
-		
+
 		if (frac_q2 == NULL || frac_q2->size == 0){
 			fprintf (stderr, "SMQP Error: In normalizedTriangularSetPseudoDivide_AA, frac_q2 couldn't be zero!\n");
 			exit (EXIT_FAILURE);
 		}
 
 		if (R2[i] != NULL && R2[i]->size != 0) {
-			
-			multiplyPolynomialAtIdxByXn_AAZ_inp (R2[i], mvar, i, nvar);		
+
+			multiplyPolynomialAtIdxByXn_AAZ_inp (R2[i], mvar, i, nvar);
 			R2[i] = multiplyPolynomials_AAZ_inp (R2[i], frac_q2, nvar);
 			newR2 = addPolynomials_AAZ_inp (newR2, R2[i], nvar);
 
 		}
-		
+
 		for (int j = 0; j < nSet-1; j++) {
 			multiplyPolynomialAtIdxByXn_AAZ_inp (Q2[i][j], mvar, i, nvar);
 			Q2[i][j] = multiplyPolynomials_AAZ_inp (Q2[i][j], frac_q2, nvar);
 			Q[j] = addPolynomials_AAZ_inp (Q[j], Q2[i][j], nvar);
 		}
-		
+
 		freePolynomial_AAZ (frac_q2); frac_q2 = NULL;
 	}
-	
+
 	for (int i = 0; i < sz_cl2; ++i){
 		if (R2[i] != NULL || R2[i]->size != 0) {
 			freePolynomial_AAZ (R2[i]);
@@ -1544,7 +1544,7 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 	free (R2);
 	// free (HPow2);
 	// free (Q2);
-	
+
 	*quoSet = Q;
 	*rem = newR2;
 	*hPow = multiplyPolynomials_AAZ_inp (H1, H2, nvar);
@@ -1553,20 +1553,20 @@ void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltAr
 }
 
 
-// TODO: 
+// TODO:
 void multiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t** quoSet, AltArrZ_t** rem, AltArrZ_t** hPow, int nvar, int lazy, int nSet)
 {
 	if (nSet  < 0 || nvar < nSet){
 		fprintf(stderr, "SMQP Error: nSet(=%d) is out of range!\n", nSet);
 		exit(EXIT_FAILURE);
     }
-    
-	
+
+
     if (nSet == 0){
 		mpz_t one;
 		mpz_init (one);
 		mpz_set_si (one, 1l);
-		
+
 		*rem = deepCopyPolynomial_AAZ (c);
 		if (*hPow != NULL){
 			freePolynomial_AAZ (*hPow);
@@ -1588,7 +1588,7 @@ void multiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t** quoS
 		for (int i = 0; i < nSet; i++) {
 			quoSet[i] = Q[i];
 		}
-		
+
 		return;
 	}
 
@@ -1603,28 +1603,28 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 	}
 
 	AltArrZ_t** Q; // *quoSet = Q
-	
+
     if (c == NULL || c->size == 0) {
 		*rem = NULL;
 		if (nSet > 0) {
 			Q = (AltArrZ_t**) calloc (nSet, sizeof (AltArrZ_t*));
-			 
+
 			for (int i = 0; i < nSet; ++i){
 			    Q[i] = NULL;
 			}
 			*quoSet = Q;
-			
+
 		} else {
 			*quoSet = NULL;
 		}
-		
+
         return;
     }
-	
-    if (nSet == 0) {		
+
+    if (nSet == 0) {
 		*rem = deepCopyPolynomial_AAZ (c);
 		*quoSet = NULL;
-		
+
 		return;
     }
 
@@ -1648,27 +1648,27 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 	/* mpz_t one; */
 	/* mpz_init (one); // was tmpCoef */
 	/* mpq_set_si (one); */
-	
+
   	int mvar;
   	int signMvar;
 
     if (nSet == 1) {
         mvar = leadingVariable_AAZ (B[0]);
-		
+
 		if (mvar == -2) {
 			*rem = deepCopyPolynomial_AAZ (c);
             quoSet[0] = NULL;
             return;
 		}
- 		
+
 		dividePolynomials_AAZ (c, B[0], &tmpQ, &tmpR, nvar);
-        
+
         *rem = tmpR;
 
 		Q = (AltArrZ_t**) calloc (nSet, sizeof (AltArrZ_t*));
 		Q[0] = tmpQ;
 		*quoSet = Q;
-		
+
         return;
     }
 
@@ -1681,7 +1681,7 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 	/* 	*quoSet = Q; */
 	/* 	return; */
 	/* } */
-	
+
 	if (nSet < 4 || AA_SIZE (c) < 5) {
 		normalForm_AAZ (c, B, Q, rem, nSet, nvar);
 		*quoSet = Q;
@@ -1700,11 +1700,11 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 		fprintf (stderr, "SMQP Error: In recursiveTriangularSetMDD_AA, input polynomial is not zero but it is considered as a zero polynomial in mainCoefficientListAtIdx_AA![Part 1]\n");
 		exit (EXIT_FAILURE);
 	}
-	
+
     AltArrZ_t** Q1[sz_cl1];
-	
+
 	AltArrZ_t** R1 = (AltArrZ_t**) calloc (sz_cl1, sizeof (AltArrZ_t*));
-	
+
 	for (int i = 0; i < sz_cl1; i++) {
 		recursiveTriangularSetMDD_AAZ (CoefList1[i], B, &Q1[i], &R1[i], nvar, nSet-1);
 	}
@@ -1715,15 +1715,15 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 		}
 	}
 	free (CoefList1);
-	
+
 	AltArrZ_t* newR1 = NULL;
 
-	for (int i = 0; i < sz_cl1; ++i){		
+	for (int i = 0; i < sz_cl1; ++i){
 		if (R1[i] != NULL && R1[i]->size != 0) {
-			multiplyPolynomialAtIdxByXn_AAZ_inp (R1[i], mvar, i, nvar);		
-			newR1 = addPolynomials_AAZ_inp (newR1, R1[i], nvar);	
+			multiplyPolynomialAtIdxByXn_AAZ_inp (R1[i], mvar, i, nvar);
+			newR1 = addPolynomials_AAZ_inp (newR1, R1[i], nvar);
 		}
-		
+
 		for (int j = 0; j < nSet-1; j++) {
 			multiplyPolynomialAtIdxByXn_AAZ_inp (Q1[i][j], mvar, i, nvar);
 			if (i == 0) {
@@ -1744,21 +1744,21 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 			}
 		}
 	}
-	
+
 	free (R1);
 	// free (Q1);
 
 	/////////////// PART 2 ////////////////
-	
+
 	if (newR1 == NULL || newR1->size == 0) {
 		Q[nSet-1] = NULL;
-		
+
 		*quoSet = Q;
 		*rem = NULL;
-		
+
 		return;
 	}
-	
+
 	AltArrZ_t* q_tilde = NULL;
 	AltArrZ_t* r_tilde = NULL;
 
@@ -1768,19 +1768,19 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 	} else {
 		q_tilde = NULL;
 		r_tilde = newR1;
-	}	
-	
+	}
+
 	Q[nSet-1] = q_tilde;
-		
+
 	/////////////// PART 3 ////////////////
-	
+
 	if (r_tilde == NULL || r_tilde->size == 0) {
 		*quoSet = Q;
 		*rem = NULL;
-		
+
 		return;
 	}
-	
+
 	AltArrZ_t** CoefList2;
 	int sz_cl2 = 0; // deg(r_tilde, mvar)+1
 	mainCoefficientListAtIdx_AAZ (r_tilde, mvar, &CoefList2, &sz_cl2);
@@ -1789,38 +1789,38 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 		fprintf (stderr, "SMQP Error: In recursiveTriangularSetMDD_AA, input polynomial is not zero but it is considered as a zero polynomial in mainCoefficientListAtIdx_AAZ [Part 3]!\n");
 		exit (EXIT_FAILURE);
 	}
-	
+
     AltArrZ_t** Q2[sz_cl2];
 
 	AltArrZ_t** R2 = (AltArrZ_t**) calloc (sz_cl2, sizeof (AltArrZ_t*));
-	
+
 	for (int i = 0; i < sz_cl2; i++) {
 		recursiveTriangularSetMDD_AAZ (CoefList2[i], B, &Q2[i], &R2[i], nvar, nSet-1);
 	}
-	
+
 	for (int i = 0; i < sz_cl2; i++) {
 		if (CoefList2[i] != NULL && CoefList2[i]->size != 0) {
 			freePolynomial_AAZ (CoefList2[i]);
 		}
 	}
 	free (CoefList2);
-		
+
 	AltArrZ_t* newR2 = NULL;
 
 	for (int i = 0; i < sz_cl2; ++i){
-		
+
 		if (R2[i] != NULL && R2[i]->size != 0) {
-			
-			multiplyPolynomialAtIdxByXn_AAZ_inp (R2[i], mvar, i, nvar);		
+
+			multiplyPolynomialAtIdxByXn_AAZ_inp (R2[i], mvar, i, nvar);
 			newR2 = addPolynomials_AAZ_inp (newR2, R2[i], nvar);
 		}
-		
+
 		for (int j = 0; j < nSet-1; j++) {
 			multiplyPolynomialAtIdxByXn_AAZ_inp (Q2[i][j], mvar, i, nvar);
 			Q[j] = addPolynomials_AAZ_inp (Q[j], Q2[i][j], nvar);
 		}
 	}
-	
+
 	for (int i = 0; i < sz_cl2; ++i){
 		if (R2[i] != NULL || R2[i]->size != 0) {
 			freePolynomial_AAZ (R2[i]);
@@ -1851,7 +1851,7 @@ AltArrZ_t* LazardOptZ (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
     if (Sd == NULL || Sd->size == 0){
 		fprintf (stderr, "SMZP Error: In LazardOptZ, Sd is NULL!\n");
 		exit (1);
-    }    
+    }
     if (Sdm == NULL || Sdm->size == 0){
 		return NULL;
     }
@@ -1864,9 +1864,9 @@ AltArrZ_t* LazardOptZ (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
     if (n < 1){
 		return deepCopyPolynomial_AAZ (Sdm);
     }
-    
+
     AltArrZ_t* x = mainLeadingCoefficient_AAZ(Sdm);
-    AltArrZ_t* y = s;    
+    AltArrZ_t* y = s;
     AltArrZ_t* c = deepCopyPolynomial_AAZ (x);
     register degree_t a = 1 << Log2_AAZ (n);
     n = n - a;
@@ -1887,7 +1887,7 @@ AltArrZ_t* LazardOptZ (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
 				// tmp = multiplyPolynomials_AAZ_inp (c, x, nvar);
 				multiplyPolynomialsPreAlloc_AAZ (c, x, &tmp);
 				exactDividePolynomials_AAZ (tmp, y, &tmpz, nvar);
-			} 
+			}
 			// else {
 			// 	tmp = NULL;
 			// }
@@ -1904,20 +1904,20 @@ AltArrZ_t* LazardOptZ (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
     Se = multiplyPolynomials_AAZ_inp (Se, c, nvar);
     freePolynomial_AAZ (c);
     exactDividePolynomials_AAZ (Se, y, &tmpz, nvar);
-    freePolynomial_AAZ (Se);  
-	freePolynomial_AAZ (x); // added 30Jan2020  
+    freePolynomial_AAZ (Se);
+	freePolynomial_AAZ (x); // added 30Jan2020
     return tmpz;
 }
 
 AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd)
 {
     int nvar = A->nvar;
-    
+
     if (nvar != Sdm->nvar || nvar != Se->nvar || nvar != sd->nvar){
 	fprintf(stderr, "SMZP ERROR: In DucosOpt, inputs' nvars are different!\n");
 	exit(1);
     }
-    
+
     degree_t d = mainLeadingDegree_AAZ(A);//(A->elems[0].degs & mvarMask) >> mvarDegOffset;
     degree_t e = mainLeadingDegree_AAZ(Sdm);//(Sdm->elems[0].degs & mvarMask) >> mvarDegOffset;
     AltArrZ_t* cdm = mainLeadingCoefficient_AAZ (Sdm);
@@ -1945,10 +1945,10 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
     if (d == e){
 	// non-defective cases:
 	// Streamlined resultant computation for regular case
-	AltArrZ_t* dc = mainLeadingCoefficient_AAZ (A); 
+	AltArrZ_t* dc = mainLeadingCoefficient_AAZ (A);
 	AltArrZ_t* rTemp = NULL;
 	AltArrZ_t* supTemp = NULL;
-	
+
 	// compute first of two main terms
 	AltArrZ_t* res = deepCopyPolynomial_AAZ (A); // res = a
 	res = multiplyPolynomials_AAZ_inp (res, se, nvar); // res *= ec
@@ -1958,7 +1958,7 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
 	    res = subPolynomials_AAZ_inp (res, supTemp, nvar); // res -= supTemp
 	}
 	dividePolynomials_AAZ (res, dc, &tmp, &tmpR, nvar); // res /= dc
-	freePolynomial_AAZ (tmpR); 
+	freePolynomial_AAZ (tmpR);
 	res = multiplyPolynomials_AAZ (tmp, se, nvar); // res *= ec
 	freePolynomial_AAZ (tmp);
 
@@ -1966,7 +1966,7 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
 	rTemp = mainCoefficientAtIdx_AAZ (Se, e-1); // rTemp = se.coef(e-1)
 	freePolynomial_AAZ (supTemp); // supTemp.zero()
 	supTemp = rTemp; // supTemp.setCoef(0, rTemp)
-	rTemp = deepCopyPolynomial_AAZ (se); 
+	rTemp = deepCopyPolynomial_AAZ (se);
 	negatePolynomial_AAZ (rTemp); // rTemp = -ec
 	rTemp = mainLShiftPolynomial_AAZ_inp (rTemp, 1);
 
@@ -1976,30 +1976,30 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
 	freePolynomial_AAZ (supTemp);
 	// divide out dc to obtain resultant
 	dividePolynomials_AAZ (res, dc, &tmp, &tmpR, nvar); // res /= dc
-	freePolynomial_AAZ (tmpR); 
-	return tmp; // return res 
-	
+	freePolynomial_AAZ (tmpR);
+	return tmp; // return res
+
     }
     // defective cases:
-    // H = 
+    // H =
     AltArrZ_t* H[d];
     for (int j = 0; j <= e; ++j){
     	H[j] = deepCopyPolynomial_AAZ (se);
     	H[j] = mainLShiftPolynomial_AAZ_inp(H[j], j);
     }
-    
+
     H[e] = subPolynomials_AAZ_inp (H[e], Se, nvar);
-    
+
     AltArrZ_t* PIe = NULL;
     for (int j = e+1; j < d; ++j){
-	//XH_{j-1} = 
-	H[j] = deepCopyPolynomial_AAZ (H[j-1]);	    
-	
+	//XH_{j-1} =
+	H[j] = deepCopyPolynomial_AAZ (H[j-1]);
+
 	mainLShiftPolynomial_AAZ_inp(H[j], 1);
-	
+
 	//syzygy:
 	PIe = mainCoefficientAtIdx_AAZ (H[j], e);
-	
+
 	if (PIe != NULL && PIe->size != 0){
 	    tmp = multiplyPolynomials_AAZ_inp (PIe, Sdm, nvar);
 	    tmpz = NULL;
@@ -2011,16 +2011,16 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
 	    freePolynomial_AAZ (tmpz);
 	}
     }
-    
+
     // D =
     AltArrZ_t* PIj = NULL;
-    AltArrZ_t* D = NULL;	
+    AltArrZ_t* D = NULL;
     for (int j = 0; j < d; ++j){
 	PIj = mainCoefficientAtIdx_AAZ (A, j);
 	if (PIj != NULL && PIj->size != 0 &&
 	    H[j] != NULL && H[j]->size != 0){
 	    PIj = multiplyPolynomials_AAZ_inp (PIj, H[j], nvar);
-	    
+
 	    if (D == NULL || D->size == 0){
 		D = deepCopyPolynomial_AAZ (PIj);
 	    } else {
@@ -2029,7 +2029,7 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
 	    freePolynomial_AAZ (PIj);
 	}
     }
-    
+
     tmpz = NULL;
     tmpR = NULL;
     AltArrZ_t* lcA = mainLeadingCoefficient_AAZ (A);
@@ -2040,18 +2040,18 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
 	D = tmpz;
     }
     freePolynomial_AAZ (lcA);
-    
-    // res = 
+
+    // res =
     AltArrZ_t* res = NULL;
     AltArrZ_t* lPoly = deepCopyPolynomial_AAZ (H[d-1]);
     lPoly = mainLShiftPolynomial_AAZ_inp(lPoly, 1);
-    
+
     AltArrZ_t* rPoly = mainCoefficientAtIdx_AAZ (lPoly, e);
     if (D != NULL && D->size != 0){
 	lPoly = addPolynomials_AAZ_inp (lPoly, D, nvar);
     }
     lPoly = multiplyPolynomials_AAZ_inp (lPoly, cdm, nvar);
-    
+
     if (rPoly != NULL && rPoly->size != 0){
 	rPoly = multiplyPolynomials_AAZ_inp (rPoly, Sdm, nvar);
 	res = subPolynomials_AAZ (lPoly, rPoly, nvar);
@@ -2060,7 +2060,7 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
     } else {
 	res = lPoly;
     }
-    
+
     tmpR = NULL;
     tmpz = NULL;
     if (sd != NULL && sd->size != 0){
@@ -2069,15 +2069,15 @@ AltArrZ_t* DucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* sd
 	tmpz = res;
     }
     freePolynomial_AAZ (tmpR);
-    
+
     if ((d-e+1)%2 != 0 && tmpz != NULL && tmpz->size != 0){
 	negatePolynomial_AAZ (tmpz);
     }
 
     freePolynomial_AAZ (cdm);
     freePolynomial_AAZ (se);
-    
-    return tmpz;    
+
+    return tmpz;
 }
 
 AltArrZ_t* mainTailPolynomial_AAZ (AltArrZ_t* a, AltArrZ_t** lc) {
@@ -2092,7 +2092,7 @@ AltArrZ_t* mainTailPolynomial_AAZ (AltArrZ_t* a, AltArrZ_t** lc) {
 
 	AltArrZ_t* lc_a = mainLeadingCoefficient_AAZ (a);
 	AltArrZ_t* lcXd = mainLShiftPolynomial_AAZ (lc_a, d);
-	AltArrZ_t* tail = subPolynomials_AAZ (a, lcXd, a->nvar);  
+	AltArrZ_t* tail = subPolynomials_AAZ (a, lcXd, a->nvar);
 	if (!isZero_AAZ (lcXd)) freePolynomial_AAZ (lcXd);
 
 	if (lc == NULL) {
@@ -2118,7 +2118,7 @@ AltArrZ_t* CFDucosOptZ_new (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ
 		fprintf (stderr, "SMZP ERROR: In CFDucosOptZ, inputs' nvars are different!\n");
 		exit (1);
     }
-    
+
 	degree_t d = mainLeadingDegree_AAZ(A);
     degree_t e = mainLeadingDegree_AAZ(Sdm);
     if (d == 0){
@@ -2134,7 +2134,7 @@ timer_id id;
 timer_time t;
 double sum = 0;
 id = start_timer ();
-#endif 
+#endif
 	AltArrZ_t *cdm=NULL, *lc_p=NULL, *se=NULL;
 	AltArrZ_t* p = mainTailPolynomial_AAZ (A, &lc_p);
 	AltArrZ_t* q = mainTailPolynomial_AAZ (Sdm, &cdm);
@@ -2173,9 +2173,9 @@ fprintf (stderr, "In CFDucosOpt_new, setup : %lf\n", sum);
 #ifndef SUBRES_TIME_DEBUG
 sum = 0;
 id = start_timer ();
-#endif 
+#endif
 	RecArrZ_t* rP = NULL;
-	AltArrZ_t tmpCoefA; 
+	AltArrZ_t tmpCoefA;
 	int activeExp[d+1];
 	memset (activeExp, -1, (d+1)*sizeof(int));
 	if (!isZero_AAZ (p)) {
@@ -2186,7 +2186,7 @@ id = start_timer ();
 			// fprintf (stderr, "activeExp[%d] = %d;\n", rP->elems[i].exp, i);
 		}
 		tmpCoefA.nvar = nvar;
-		tmpCoefA.unpacked = p->unpacked; 
+		tmpCoefA.unpacked = p->unpacked;
 	}
 #ifndef SUBRES_TIME_DEBUG
 t = elapsed_time (&id);
@@ -2212,19 +2212,19 @@ fprintf (stderr, "In CFDucosOpt_new, conversion : %lf\n", sum);
 	// fprintf (stderr, "\n");
 sum = 0;
 id = start_timer ();
-#endif 
+#endif
 	for (int i = e+1; i < d; i++) {
 		if (!isZero_AAZ (h) && mainLeadingDegree_AAZ (h) == e-1) {
 			// h = x * tail(h) - exQuo (h_lc*q, cdm);
-			t1 = mainTailPolynomial_AAZ (h, &t2); 
+			t1 = mainTailPolynomial_AAZ (h, &t2);
 			freePolynomial_AAZ (h);
 			h = mainLShiftPolynomial_AAZ (t1, 1); // x*tail(h)
 			if (!isZero_AAZ (q) && !isZero_AAZ (t2))
-				multiplyPolynomialsPreAlloc_AAZ (t2, q, &t1); // t1 is lc((h))*q 
+				multiplyPolynomialsPreAlloc_AAZ (t2, q, &t1); // t1 is lc((h))*q
 			else {t1 = NULL;}
-			quo = NULL; 
+			quo = NULL;
 			exactDividePolynomials_AAZ (t1, cdm, &quo, nvar);
-			if (t2 != NULL && t2->size != 0) {freePolynomial_AAZ (t2);} 
+			if (t2 != NULL && t2->size != 0) {freePolynomial_AAZ (t2);}
 			else {t2 = NULL;}
 			if (t1 != NULL && t2->size != 0) {freePolynomial_AAZ (t1);}
 			else {t1 = NULL;}
@@ -2265,7 +2265,7 @@ fprintf (stderr, "In CFDucosOpt_new, loop(e+1,..,d) : %lf\n", sum);
 #ifndef SUBRES_TIME_DEBUG
 sum = 0;
 id = start_timer ();
-#endif 
+#endif
 	// new_p = \sum_{i=0}^{e-1} p_iX^i
 	AltArrZ_t* new_p = NULL;
 	if (!isZero_AAZ (p)) {
@@ -2306,21 +2306,25 @@ id = start_timer ();
 		// a = cdm*(x*tail(h)+a) - lc(h)*q
 		lPoly = mainTailPolynomial_AAZ (h, &rPoly);
 		lPoly = mainLShiftPolynomial_AAZ_inp (lPoly, 1);
-		
+
 		lPoly = addPolynomials_AAZ_inp (lPoly, a, nvar);
 		t2 = multiplyPolynomials_AAZ (lPoly, cdm, nvar);
+		if (isZero_AAZ(lPoly)) {
+			freePolynomial_AAZ (lPoly);
+			lPoly = makeConstIntPolynomial_AAZ (1, nvar, 1l);
+		}
 		multiplyPolynomialsPreAlloc_AAZ (rPoly, q, &lPoly);
 		t2 = subPolynomials_AAZ_inp (t2, lPoly, nvar);
 		freePolynomial_AAZ (lPoly);
 		freePolynomial_AAZ (rPoly);
 		lPoly = t2; t2 = NULL;
-		
+
 		// a = cdm(x*tail(h)) + cdm*a - lc(h)*q // Doesn't help!
 		// lPoly = mainTailPolynomial_AAZ (h, &rPoly);
 		// lPoly = mainLShiftPolynomial_AAZ_inp (lPoly, 1);
 		// lPoly = multiplyPolynomials_AAZ_inp (lPoly, cdm, nvar); // cdm(x*tail(h))
 		// a = multiplyPolynomials_AAZ_inp (a, cdm, nvar); // cdm*a
-		// a = addPolynomials_AAZ_inp (a, lPoly, nvar); 
+		// a = addPolynomials_AAZ_inp (a, lPoly, nvar);
 		// multiplyPolynomialsPreAlloc_AAZ (rPoly, q, &lPoly);
 		// a = subPolynomials_AAZ_inp (a, lPoly, nvar);
 		// freePolynomial_AAZ (lPoly);
@@ -2365,7 +2369,7 @@ AltArrZ_t* CFDucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* 
     if (nvar != Sdm->nvar || nvar != Se->nvar || nvar != sd->nvar){
 		fprintf (stderr, "SMZP ERROR: In CFDucosOptZ, inputs' nvars are different!\n");
 		exit (1);
-    }    
+    }
     register degree_t d = mainLeadingDegree_AAZ(A);// (A->elems[0].degs & mvarMask) >> mvarDegOffset;
     register degree_t e = mainLeadingDegree_AAZ(Sdm);//(Sdm->elems[0].degs & mvarMask) >> mvarDegOffset;
     if (d == 0){
@@ -2390,7 +2394,7 @@ AltArrZ_t* CFDucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* 
 		exit (1);
     }
 
-	if (0) { // not-efficient :) 
+	if (0) { // not-efficient :)
 		// prem (A, -Sdm) / (sd^(d-e)*lc(A))
 		tmp = deepCopyPolynomial_AAZ (Sdm);
 		negatePolynomial_AAZ (tmp); // -B
@@ -2407,21 +2411,21 @@ AltArrZ_t* CFDucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* 
 		freePolynomial_AAZ (tmp);
 		freePolynomial_AAZ (tmpR);
 		freePolynomial_AAZ (res);
-		
+
 		freePolynomial_AAZ (cdm);
 		freePolynomial_AAZ (se);
 		return tmpz;
-	}	
+	}
 
     if (d == e){
 	// for non-defective cases:
-	fprintf (stderr, "SMZP Warning: In CFDucosOptZ, d == e.\n"); 
+	fprintf (stderr, "SMZP Warning: In CFDucosOptZ, d == e.\n");
 
 	/* // Streamlined resultant computation for regular case */
 	/* AltArrZ_t* dc = mainLeadingCoefficient_AAZ (A); */
 	/* AltArrZ_t* rTemp = NULL; */
 	/* AltArrZ_t* supTemp = NULL; */
-	
+
 	/* // compute first of two main terms */
 	/* AltArrZ_t* res = deepCopyPolynomial_AAZ (A); // res = a */
 	/* res = multiplyPolynomials_AAZ_inp (res, se, nvar); // res *= ec */
@@ -2453,27 +2457,27 @@ AltArrZ_t* CFDucosOptZ (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ_t* 
 	/* exactDividePolynomials_AAZ (res, dc, &tmp, nvar); // res /= dc */
 	/* return tmp; // return res */
     }
-    
-    // H[e] = 
+
+    // H[e] =
     H = mainLShiftPolynomial_AAZ (se, e);
     H = subPolynomials_AAZ_inp (H, Se, nvar);
 	AltArrZ_t* tmpProduct = makePolynomial_AAZ (1, nvar);
 
-    // D2 = 
-    PIe = mainCoefficientAtIdx_AAZ (A, e);    
+    // D2 =
+    PIe = mainCoefficientAtIdx_AAZ (A, e);
     if (PIe != NULL && H != NULL && PIe->size != 0 && H->size != 0){
 		// D2 = multiplyPolynomials_AAZ (H, PIe, nvar);
 		// freePolynomial_AAZ (PIe);
 		D2 = multiplyPolynomials_AAZ_inp (PIe, H, nvar);
 		PIe = NULL;
-    } 
+    }
 
 #ifndef SUBRES_TIME_DEBUG
 	timer_id id;
 	timer_time t;
   	double sum = 0;
 	id = start_timer ();
-#endif 
+#endif
     for (int j = e+1; j < d; ++j){
 		//  H = XH - pi_e (XH)*C
 		H = mainLShiftPolynomial_AAZ_inp (H, 1); // H = XH
@@ -2501,7 +2505,7 @@ t = elapsed_time (&id);
 sum += (t.tv_sec + ((double)t.tv_usec / CLOCKS_PER_SEC));
 fprintf (stderr, "In CFDucosOpt, loop(e+1,..,d) : %lf\n", sum);
 #endif
-    
+
 
     // D =
 	AltArrZ_t** cList = NULL;
@@ -2512,7 +2516,7 @@ fprintf (stderr, "In CFDucosOpt, loop(e+1,..,d) : %lf\n", sum);
 #ifndef SUBRES_TIME_DEBUG
 	sum = 0;
 	id = start_timer ();
-#endif 
+#endif
 	for (int j = 0; j < e; ++j){
 		if (j >= len) {
 			PIj = NULL;
@@ -2541,12 +2545,12 @@ fprintf (stderr, "In CFDucosOpt, loop(e+1,..,d) : %lf\n", sum);
 #ifndef SUBRES_TIME_DEBUG
 	sum = 0;
 	id = start_timer ();
-#endif 
+#endif
     if (D2 != NULL && D2->size != 0){
 		D = addPolynomials_AAZ_inp (D, D2, nvar);
 		freePolynomial_AAZ (D2);
-    }    
-    
+    }
+
     tmpz = NULL;
     tmpR = NULL;
     PIe = mainLeadingCoefficient_AAZ (A);
@@ -2566,7 +2570,7 @@ fprintf (stderr, "In CFDucosOpt, making D : %lf\n", sum);
 #ifndef SUBRES_TIME_DEBUG
 	sum = 0;
 	id = start_timer ();
-#endif 
+#endif
     AltArrZ_t* lPoly = mainLShiftPolynomial_AAZ (H, 1);
     AltArrZ_t* rPoly = mainCoefficientAtIdx_AAZ (lPoly, e);
     if (D != NULL && D->size != 0){
@@ -2575,7 +2579,7 @@ fprintf (stderr, "In CFDucosOpt, making D : %lf\n", sum);
     if (cdm != NULL){
 		lPoly = multiplyPolynomials_AAZ_inp (lPoly, cdm, nvar);
     }
-	
+
     if (rPoly != NULL && rPoly->size != 0){
 		rPoly = multiplyPolynomials_AAZ_inp (rPoly, Sdm, nvar);
 		res = subPolynomials_AAZ_inp (lPoly, rPoly, nvar);
@@ -2584,7 +2588,7 @@ fprintf (stderr, "In CFDucosOpt, making D : %lf\n", sum);
     } else {
 		res = lPoly;
     }
-	
+
     tmpR = NULL;
     tmpz = NULL;
     if (sd != NULL && sd->size != 0){
@@ -2594,7 +2598,7 @@ fprintf (stderr, "In CFDucosOpt, making D : %lf\n", sum);
     } else {
 		tmpz = res;
     }
-	
+
 	// new implementation:
 	// AltArrZ_t *lPoly, *rPoly;
 	// if (mainLeadingDegree_AAZ (H) == e-1) {
@@ -2611,7 +2615,7 @@ fprintf (stderr, "In CFDucosOpt, making D : %lf\n", sum);
 	// 	lPoly = addPolynomials_AAZ_inp (lPoly, D, nvar);
 	// 	lPoly = multiplyPolynomials_AAZ_inp (lPoly, cdm, nvar);
 	// }
-    
+
 	// tmpz = NULL;
     // if (sd != NULL && sd->size != 0){
 	// 	exactDividePolynomials_AAZ (lPoly, sd, &tmpz, nvar);
@@ -2636,7 +2640,7 @@ fprintf (stderr, "In CFDucosOpt, last-part : %lf\n", sum);
     freePolynomial_AAZ (cdm);
     freePolynomial_AAZ (se);
 
-    return tmpz;    
+    return tmpz;
 
 }
 
@@ -2650,7 +2654,7 @@ fprintf (stderr, "In CFDucosOpt, last-part : %lf\n", sum);
 
 void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, int* len, int type)
 {
-	int isFF = 1; // TODO: 
+	int isFF = 1; // TODO:
     if (P == NULL || P->size == 0){
 		AltArrsZ_t* SS0 = (AltArrsZ_t*) malloc (sizeof(AltArrsZ_t));
 		SS0->poly = NULL;
@@ -2683,7 +2687,7 @@ void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, i
 	// fprintf (stderr, "\n[nvar= %d] Q := ", Q->nvar);
 	// printPoly_AAZ (stderr, Q, sym, Q->nvar);
 	// fprintf (stderr, "\n");
-// #endif 
+// #endif
 
     // adding corner cases to supprt algebraic extension
     if (degP == 0 && degQ == 0) {
@@ -2722,7 +2726,7 @@ void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, i
 
 		if (P->nvar == 1 && (mpz_cmp_si (inf_norm_P, DUZP_INFNORM_SUBRES_THRESHOLD) > 0 || mpz_cmp_si (inf_norm_Q, DUZP_INFNORM_SUBRES_THRESHOLD) > 0)) {
 			isFF1_val = 1;
-		} 
+		}
 		// if (P->nvar == 2 && (mpz_cmp_si (inf_norm_P, DBZP_INFNORM_SUBRES_THRESHOLD) > 0 || mpz_cmp_si (inf_norm_Q, DBZP_INFNORM_SUBRES_THRESHOLD) > 0)) {
 		// 	isFF2_val = 1;
 		// }
@@ -2735,7 +2739,7 @@ void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, i
     AltArrZ_t *tmpz=NULL, *tmpH=NULL, *tmpB=NULL;
     AltArrZ_t *s=NULL, *p=NULL, *q=NULL;
     AltArrZ_t *A=NULL, *B=NULL, *C=NULL;
-	AltArrsZ_t *newPoly=NULL, *SS=NULL, *tail=NULL; 
+	AltArrsZ_t *newPoly=NULL, *SS=NULL, *tail=NULL;
 	AltArrZ_t *tailm=NULL;
     degree_t delta = 0;
     int size = 0;
@@ -2743,13 +2747,13 @@ void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, i
 	p = P;	q = Q;
     } else {
 	p = Q; q = P;
-    }     
+    }
     degP = mainLeadingDegree_AAZ(p);
     degQ = mainLeadingDegree_AAZ(q);
 
 	if (p->nvar == 1 && isFF && (MIN (mainLeadingDegree_AAZ (P), mainLeadingDegree_AAZ (Q)) > DUZP_MINDEG_SUBRES_THRESHOLD || isFF1_val)) {
 #ifdef PRINT_WHICH_SUBRES
-		fprintf (stderr, "DUZP: modularSubresultantChain is called!\n");	
+		fprintf (stderr, "DUZP: modularSubresultantChain is called!\n");
 #endif
 		DUZP_t* uP = convertFromAltArrZ_DUZP (P);
 		DUZP_t* uQ = convertFromAltArrZ_DUZP (Q);
@@ -2769,8 +2773,8 @@ void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, i
 		// 	printPoly_DUZP (usubres[i], sym);
 		// } // TEST
 #endif
-		freePolynomial_DUZP (uP); // TODO: core dumped! 
-		freePolynomial_DUZP (uQ); // TODO: core dumped! 
+		freePolynomial_DUZP (uP); // TODO: core dumped!
+		freePolynomial_DUZP (uQ); // TODO: core dumped!
 		mpz_clear (uBound);
 		if (chain_size) {
 			newPoly = (AltArrsZ_t*) malloc (sizeof (AltArrsZ_t));
@@ -2800,27 +2804,40 @@ void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, i
     		*SC = SS;
 			return;
 		}
-	}	
+	}
 	// int isBiCalled = 0;
-	// AltArrsZ_t* SC2 = NULL;
-	// int len2 = 0;
+	// const char* sym[10] = {"x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10"}; // TEST
+	AltArrsZ_t* SC2 = NULL;
+	int len2 = 0;
 	if (nvar == 2) {
+		degree_t pdeg_p =  partialDegree_AAZ (p, 1);
+		degree_t pdeg_q =  partialDegree_AAZ (q, 1);	
 		// && isFF && (MIN (mainLeadingDegree_AAZ (P), mainLeadingDegree_AAZ (Q)) > DBZP_MINDEGY_SUBRES_THRESHOLD || isFF2_val)
-		if (MIN(degP, degQ) >= 1 && degP != degQ && 
-			partialDegree_AAZ (p, 1) >= partialDegree_AAZ (q, 1)) { // TODO:
 #ifdef PRINT_WHICH_SUBRES
 		fprintf (stderr, "DBZP: bi-modularSubresultantChain is called!\n");
 #endif
-			biModularSubresultantChainZ (p, q, SC, len);
+		if (degP > degQ &&
+			MIN(degP, degQ) > 10) { 
+		// fprintf (stderr, "[nvar = %d] P := ", p->nvar);
+		// printPoly_AAZ (stderr, p, sym, p->nvar);
+		// fprintf (stderr, "\n[nvar= %d] q := ", q->nvar);
+		// printPoly_AAZ (stderr, q, sym, q->nvar);
+		// fprintf (stderr, "\n");
+		// fprintf (stderr, "\n");
+		// fprintf (stderr, "\n");
+		if (pdeg_p > pdeg_q && MIN(pdeg_p, pdeg_q) > 8) { // TODO: It's a rough threshold!
+			// fprintf (stderr, "DBZP: bi-modularSubresultantChain is called!\n");
+			biModularSubresultantChainZ (p, q, &SC2, &len2);
 			// isBiCalled =1;
-			// *SC = SC2;
-			// *len = len2;
+			*SC = SC2;
+			*len = len2;
 			return;
 		}
+		}
 	}
-	
+
 #ifdef PRINT_WHICH_SUBRES
-		fprintf (stderr, "SMZP: DucosSubresultantChain is called!\n");	
+		fprintf (stderr, "SMZP: DucosSubresultantChain is called!\n");
 #endif
 	s = mainLeadingCoefficient_AAZ (q);
     s = exponentiatePoly_AAZ (s, degP - degQ, nvar);
@@ -2834,7 +2851,7 @@ void DucosSubresultantChainZ_rev (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, i
 	// printPoly_AAZ_unpk (stderr, p, sym, s->nvar);
 	// fprintf (stderr, "\nq := ");
 	// printPoly_AAZ_unpk (stderr, q, sym, negQ->nvar);
-	
+
 #ifndef SUBRES_TIME_DEBUG
 timer_id id;
 timer_time t;
@@ -2850,13 +2867,13 @@ fprintf (stderr, "In DucosSubres, pDiv : %lf\n", sum);
     freePolynomial_AAZ (tmpz);
     freePolynomial_AAZ (tmpH);
     freePolynomial_AAZ (negQ);
-	
+
     newPoly = (AltArrsZ_t*) malloc (sizeof(AltArrsZ_t));
     newPoly->poly = deepCopyPolynomial_AAZ (p);
     newPoly->next = NULL;
     SS = newPoly;
     tail = newPoly;
-    size++;    
+    size++;
     newPoly = (AltArrsZ_t*) malloc (sizeof(AltArrsZ_t));
     if (B == NULL || B->size == 0){
 	newPoly->poly = A;
@@ -2867,7 +2884,7 @@ fprintf (stderr, "In DucosSubres, pDiv : %lf\n", sum);
     tail->next = newPoly;
     tail = newPoly;
     size++;
-    
+
     degree_t d=0, e=0;
     while (1){
     	if (B == NULL || B->size == 0){ break; }
@@ -2886,8 +2903,8 @@ fprintf (stderr, "In DucosSubres, pDiv : %lf\n", sum);
 #ifndef SUBRES_TIME_DEBUG
 sum = 0;
 id = start_timer ();
-#endif 
-			C = LazardOptZ (tailm, tail->poly, s); // TODO: add s to the inputs 
+#endif
+			C = LazardOptZ (tailm, tail->poly, s); // TODO: add s to the inputs
 #ifndef SUBRES_TIME_DEBUG
 t = elapsed_time (&id);
 sum = (t.tv_sec + ((double)t.tv_usec / CLOCKS_PER_SEC));
@@ -2925,7 +2942,7 @@ fprintf (stderr, "In DucosSubres, CFDucosOpt : %lf\n", sum);
 		B = tmpB;
 		A = C; // deepCopyPolynomial_AAZ (C);
 		freePolynomial_AAZ (s);
-		s = mainLeadingCoefficient_AAZ (A);	
+		s = mainLeadingCoefficient_AAZ (A);
 		isFlag = 0;
 		C = NULL; // freePolynomial_AAZ (C);
 	}
@@ -2943,13 +2960,15 @@ fprintf (stderr, "In DucosSubres, CFDucosOpt : %lf\n", sum);
     *SC = SS;
 
 	///////////////////// TEST BIVAIRATE CASE //////////////
+
 	// if (isBiCalled) {
 	// 	AltArrsZ_t* SC_cur = SS;
 	// 	AltArrsZ_t* SC2_cur = SC2;
-
+	// 	int len_isn_equal = 0;
 	// 	if (size != len2) {
 	// 		fprintf (stderr, "[SMZP] length of subresultant chain in Ducos and Bivariate are not the same\n");
 	// 		fprintf (stderr, "Ducos Length := %d   , Modular Length := %d\n", size, len2);
+	// 		len_isn_equal = 1;
 	// 	}
 	//  	int idx_idx = 0;
 	// 	while (SC_cur != NULL && SC2_cur != NULL && idx_idx < size)  {
@@ -2961,9 +2980,18 @@ fprintf (stderr, "In DucosSubres, CFDucosOpt : %lf\n", sum);
 	// 		if (SC2_cur->poly != NULL)
 	// 			printPoly_AAZ (stderr, SC2_cur->poly, sym, SC2_cur->poly->nvar);
 	// 		fprintf (stderr, "\n");
+
+	// 		if (!isExactlyEqual_AAZ (SC_cur->poly, SC2_cur->poly)) {
+	// 			fprintf (stderr, "[SMZP]subresultant chain in Ducos and Bivariate are not the same\n");
+	// 			exit(1);
+	// 		}
+
 	// 		idx_idx++;
 	// 		SC_cur = SC_cur->next;
 	// 		SC2_cur = SC2_cur->next;
+	// 	}
+	// 	if (len_isn_equal) {
+	// 		exit(1);
 	// 	}
 	// }
     return;
@@ -2997,7 +3025,7 @@ void DucosSubresultantChainZ (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, int* 
 
 void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_t** SC_idx, AltArrZ_t** SC_idx1)
 {
-	int isFF = 1; // TODO: 
+	int isFF = 1; // TODO:
 	if (idx < 0) {
 		*SC_idx = NULL;
 		*SC_idx1 = NULL;
@@ -3015,7 +3043,7 @@ void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_
 
 		if (mpz_cmp_si (inf_norm_P, DUZP_INFNORM_SUBRES_THRESHOLD) > 0 || mpz_cmp_si (inf_norm_Q, DUZP_INFNORM_SUBRES_THRESHOLD) > 0) {
 			isFF1_val = 1;
-		} 
+		}
 		if (mpz_cmp_si (inf_norm_P, DBZP_INFNORM_SUBRES_THRESHOLD) > 0 || mpz_cmp_si (inf_norm_Q, DBZP_INFNORM_SUBRES_THRESHOLD) > 0) {
 			isFF2_val = 1;
 		}
@@ -3023,7 +3051,7 @@ void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_
 	}
 	if (P->nvar == 1 && (MIN (mainLeadingDegree_AAZ (P), mainLeadingDegree_AAZ (Q)) > DUZP_MINDEG_SUBRES_THRESHOLD || isFF1_val) && isFF) {
 #ifdef PRINT_WHICH_SUBRES
-		fprintf (stderr, "DUZP: modularSubresultantChainAtIdx is called!\n");	
+		fprintf (stderr, "DUZP: modularSubresultantChainAtIdx is called!\n");
 #endif
 		DUZP_t* uP = convertFromAltArrZ_DUZP (P);
 		DUZP_t* uQ = convertFromAltArrZ_DUZP (Q);
@@ -3035,7 +3063,7 @@ void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_
 		// fprintf (stderr, "uP := ");
 		// printPoly_DUZP (uP, sym);
 		// fprintf (stderr, "uQ := ");
-		// printPoly_DUZP (uQ, sym);	
+		// printPoly_DUZP (uQ, sym);
 		// for (int i = 0; i < chain_size; i++) { // TEST
 		// 	printPoly_DUZP (usubres[i], sym);
 		// }
@@ -3050,7 +3078,7 @@ void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_
 			// fprintf (stderr, "SC_idx1 := ");
 			// printPoly_DUZP (usubres[1], sym);
 			// fprintf (stderr, "SC_idx := ");
-			// printPoly_DUZP (usubres[0], sym);	
+			// printPoly_DUZP (usubres[0], sym);
 		} else if (chain_size==1) {
 			if (usubres[0]->lt == idx) {
 				*SC_idx = convertToAltArrZ_DUZP (usubres[0]);
@@ -3075,21 +3103,21 @@ void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_
 		return;
 	} else if (P->nvar == 2 && (MIN (mainLeadingDegree_AAZ (P), mainLeadingDegree_AAZ (Q)) > DUZP_MINDEG_SUBRES_THRESHOLD || isFF2_val) && isFF) {
 		// #ifdef PRINT_WHICH_SUBRES
-		// fprintf (stderr, "DBZP: modularSubresultantChain is called!\n");	
+		// fprintf (stderr, "DBZP: modularSubresultantChain is called!\n");
 		// #endif
-		// TODO: implement hgcd-based bi-subresultant chain????? 
+		// TODO: implement hgcd-based bi-subresultant chain?????
 		// Now, bivariate case is handled by DucosSubresultantChainZ_rev
 	}
 
 	// char* ch[10] = {"x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10"}; // TEST */
-	//  fprintf (stderr, "P := "); 
-	//  printPoly_AAZ_unpk(stderr, P, ch, P->nvar); 
-	//  fprintf (stderr, "\n"); 
-	//  fprintf (stderr, "Q := "); 
-	//  printPoly_AAZ_unpk(stderr, Q, ch, Q->nvar); 
-	//  fprintf (stderr, "\n"); 
+	//  fprintf (stderr, "P := ");
+	//  printPoly_AAZ_unpk(stderr, P, ch, P->nvar);
+	//  fprintf (stderr, "\n");
+	//  fprintf (stderr, "Q := ");
+	//  printPoly_AAZ_unpk(stderr, Q, ch, Q->nvar);
+	//  fprintf (stderr, "\n");
 #ifdef PRINT_WHICH_SUBRES
-	fprintf (stderr, "SMZP: DucosSubresultantChainAtIdx is called!\n");	
+	fprintf (stderr, "SMZP: DucosSubresultantChainAtIdx is called!\n");
 #endif
 	AltArrsZ_t* SS;
 	int size = 0;
@@ -3115,7 +3143,7 @@ void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_
 					*SC_idx = deepCopyPolynomial_AAZ (cur->poly);
 				}
 			} else {
-				*SC_idx = NULL; 
+				*SC_idx = NULL;
 			}
 			*SC_idx1 = deepCopyPolynomial_AAZ (curP->poly);
 		} else {
@@ -3131,16 +3159,16 @@ void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_
 
 
 // for the genrative case it always gives you the upper polynoomials in the chain.
-void DucosSubresultantChainAtIdxZ_withPrincipleCoefs (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_t** SC_idx, AltArrZ_t** SC_idx1, AltArrsZ_t** principle_coefs, int* pcSize) 
+void DucosSubresultantChainAtIdxZ_withPrincipleCoefs (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_t** SC_idx, AltArrZ_t** SC_idx1, AltArrsZ_t** principle_coefs, int* pcSize)
 {
-	int isFF = 1; // TODO: 
+	int isFF = 1; // TODO:
 	if (idx < 0) {
 		*SC_idx = NULL;
 		*SC_idx1 = NULL;
 		return;
-	} 
+	}
 
-	// TODO: handle univariate case with hgcd-based modular subresultant chain...  
+	// TODO: handle univariate case with hgcd-based modular subresultant chain...
 
 	AltArrsZ_t* SS;
 	int size = 0;
@@ -3176,7 +3204,7 @@ void DucosSubresultantChainAtIdxZ_withPrincipleCoefs (AltArrZ_t* P, AltArrZ_t* Q
 						tail->next = node;
 						tail = node;
 					}
-					pcIdx++;					
+					pcIdx++;
 				}
 			}
 			node = (AltArrsZ_t*) malloc (sizeof(AltArrsZ_t));
@@ -3207,7 +3235,7 @@ void DucosSubresultantChainAtIdxZ_withPrincipleCoefs (AltArrZ_t* P, AltArrZ_t* Q
 					*SC_idx = deepCopyPolynomial_AAZ (cur->poly);
 				}
 			} else {
-				*SC_idx = NULL; 
+				*SC_idx = NULL;
 			}
 			*SC_idx1 = deepCopyPolynomial_AAZ (curP->poly);
 		} else {
@@ -3235,7 +3263,7 @@ void DucosSubresultantChainAtIdxZ_withPrincipleCoefs (AltArrZ_t* P, AltArrZ_t* Q
 		*SC_idx1 = NULL;
 	}
 
-	
+
 
 }
 
@@ -3254,7 +3282,7 @@ AltArrZ_t* DucosResultantZ (AltArrZ_t* P, AltArrZ_t* Q)
     if (P->nvar == 1 && Q->nvar == 1) {
         DUZP_t* uP = convertFromAltArrZ_DUZP (P);
         DUZP_t* uQ = convertFromAltArrZ_DUZP (Q);
-        mpz_t uBound; 
+        mpz_t uBound;
         mpz_init_set_si(uBound, -1);
         DUZP_t* ures = modularResultant_DUZP (uP, uQ, uBound, 0, 1); // using hgcd && heuristic
         freePolynomial_DUZP (uP);
@@ -3288,18 +3316,18 @@ AltArrZ_t* DucosGCDZ (AltArrZ_t* P, AltArrZ_t* Q)
     }
 
     int nvar = P->nvar;
-    
+
     mpz_t one;
     mpz_init(one);
     mpz_set_si (one, 1l);
-    
+
     degree_t degP = mainLeadingDegree_AAZ(P);//(P->elems[0].degs & mvarMask) >> mvarDegOffset;
     degree_t degQ = mainLeadingDegree_AAZ(Q);//(Q->elems[0].degs & mvarMask) >> mvarDegOffset;
-    
+
     if (degP == 0 || degQ == 0){
     	return makeConstPolynomial_AAZ (1, nvar, one);
     }
-    
+
     AltArrZ_t* res;
     AltArrsZ_t* SC;
     int size = 0;
@@ -3310,7 +3338,7 @@ AltArrZ_t* DucosGCDZ (AltArrZ_t* P, AltArrZ_t* Q)
     	freeAltArrsZ (SC);
 		return makeConstPolynomial_AAZ (1, nvar, one);
     }
-    
+
     degree_t nd;
     degree_t nnd;
     if (size > 2){
@@ -3355,38 +3383,38 @@ AltArrZ_t* lastNonZeroChain_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
     }
 
     int nvar = P->nvar;
-    
+
     mpz_t one;
     mpz_init(one);
     mpz_set_si (one, 1l);
-    
+
     degree_t degP = mainLeadingDegree_AAZ(P);// (P->elems[0].degs & mvarMask) >> mvarDegOffset;
     degree_t degQ = mainLeadingDegree_AAZ(Q);//(Q->elems[0].degs & mvarMask) >> mvarDegOffset;
 
     if (nvar == 1){
 		return univariateGCD_AAZ (P, Q);
     }
-    
+
     if (degP == 0 || degQ == 0){
     	return makeConstPolynomial_AAZ (1, nvar, one);
     }
 
-    
+
     AltArrsZ_t* SC;
     int size = 0, idx = 0;
 
-     // fprintf (stderr, "\n\n In lastNonZeroSub, P = "); 
-     // printAAZ (P); 
-     // fprintf (stderr, "\n In lastNonZeroSub, Q = "); 
-     // printAAZ (Q); 
-     // fprintf (stderr, "\n computing DucosSubresultantChainZ... \n"); 
+     // fprintf (stderr, "\n\n In lastNonZeroSub, P = ");
+     // printAAZ (P);
+     // fprintf (stderr, "\n In lastNonZeroSub, Q = ");
+     // printAAZ (Q);
+     // fprintf (stderr, "\n computing DucosSubresultantChainZ... \n");
 
 
-    
+
     DucosSubresultantChainZ (P, Q, &SC, &size);
-    
+
     AltArrsZ_t* cur = SC;
-    
+
     while (idx < size) {
 
 	if (cur->poly != NULL && cur->poly->size != 0){
@@ -3399,13 +3427,13 @@ AltArrZ_t* lastNonZeroChain_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
 
     AltArrZ_t* res = deepCopyPolynomial_AAZ (cur->poly);
     freeAltArrsZ (SC);
-    
+
     return res;
 }
 
 
 ///////////////////////////////
-// Extended Subresultant Chain 
+// Extended Subresultant Chain
 ///////////////////////////////
 
 AltArrZ_t* semiLazardOpt_AAZ  (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
@@ -3414,11 +3442,11 @@ AltArrZ_t* semiLazardOpt_AAZ  (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
 		fprintf (stderr, "SMZP Error: In Semi-LazardOpt , Sd is NULL!\n");
 		exit (EXIT_FAILURE);
     }
-    
+
     if (Sdm == NULL || Sdm->size == 0){
 		return NULL;
     }
-    
+
     if (Sd->nvar != Sdm->nvar){
 	fprintf (stderr, "SMZP Error: In Semi-LazardOpt , Sd->nvar(=%d) != Sdm->nvar(=%d).\n",
 		 Sd->nvar, Sdm->nvar);
@@ -3426,7 +3454,7 @@ AltArrZ_t* semiLazardOpt_AAZ  (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
     }
 
     register int nvar = Sd->nvar;
-    
+
     degree_t n = mainLeadingDegree_AAZ(Sd) - mainLeadingDegree_AAZ(Sdm) - 1;
 
     if (n < 1){
@@ -3435,10 +3463,10 @@ AltArrZ_t* semiLazardOpt_AAZ  (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
     	mpz_set_si (one, 1l);
 		return  makeConstPolynomial_AAZ (1, Sdm->nvar, one); // deepCopyPolynomial_AAZ  (Sdm);
     }
-    
+
     AltArrZ_t* x = mainLeadingCoefficient_AAZ (Sdm);
-    AltArrZ_t* y = s;     
-    
+    AltArrZ_t* y = s;
+
     if (x == NULL || x->size == 0){
 		fprintf (stderr, "SMZP Error: In Semi-LazardOpt, x is NULL!");
 		exit (EXIT_FAILURE);
@@ -3447,23 +3475,23 @@ AltArrZ_t* semiLazardOpt_AAZ  (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
 		fprintf (stderr, "SMZP Error: In Semi-LazardOpt, y is NULL!");
 		exit (EXIT_FAILURE);
     }
-    
+
     AltArrZ_t* c = deepCopyPolynomial_AAZ (x);
     register degree_t a = 1 << Log2_AAZ (n);
     n = n - a;
-    
+
     AltArrZ_t* tmpz;
     AltArrZ_t* tmp;
     /* int orign = n; */
-    
+
     while (a > 1) {
 		tmpz = NULL;
-		tmp = multiplyPolynomials_AAZ_inp (c, c, nvar);	
+		tmp = multiplyPolynomials_AAZ_inp (c, c, nvar);
 		exactDividePolynomials_AAZ (tmp, y, &tmpz, nvar);
 		freePolynomial_AAZ (tmp);
-		c = tmpz;    
+		c = tmpz;
 		a = a >> 1;
-	
+
 		if (n >= a) {
 		    tmpz = NULL;
 		    if (c != NULL && c->size != 0) {
@@ -3481,16 +3509,16 @@ AltArrZ_t* semiLazardOpt_AAZ  (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s)
     /* if (!orign){ */
     /* 	return Se; */
     /* } */
-    
+
     AltArrZ_t* sse = NULL; // semi-Se
-	exactDividePolynomials_AAZ (c, y, &sse, nvar);   
+	exactDividePolynomials_AAZ (c, y, &sse, nvar);
     freePolynomial_AAZ (c);
     freePolynomial_AAZ (x);
 
     return sse;
 }
 
-AltArrZ_t* exLazardOpt_AAZ (AltArrZ_t* Sd, exgcdsZ_t* VSdm, AltArrZ_t* s, AltArrZ_t** hc, AltArrZ_t** qc) 
+AltArrZ_t* exLazardOpt_AAZ (AltArrZ_t* Sd, exgcdsZ_t* VSdm, AltArrZ_t* s, AltArrZ_t** hc, AltArrZ_t** qc)
 {
 
 	AltArrZ_t* sse = semiLazardOpt_AAZ (Sd, VSdm->r, s); // semi-Se
@@ -3503,7 +3531,7 @@ AltArrZ_t* exLazardOpt_AAZ (AltArrZ_t* Sd, exgcdsZ_t* VSdm, AltArrZ_t* s, AltArr
 
 	if (isOne_AAZ (sse)) {
 		freePolynomial_AAZ (sse);
-		
+
 		*hc = deepCopyPolynomial_AAZ (VSdm->a);
 		*qc = deepCopyPolynomial_AAZ (VSdm->b);
 		return deepCopyPolynomial_AAZ (VSdm->r);
@@ -3522,15 +3550,15 @@ AltArrZ_t* exLazardOpt_AAZ (AltArrZ_t* Sd, exgcdsZ_t* VSdm, AltArrZ_t* s, AltArr
 AltArrZ_t* exDucosOpt_AAZ (exgcdsZ_t* VSd, exgcdsZ_t* VSdm, AltArrZ_t* Se, AltArrZ_t* sd, AltArrZ_t** hb, AltArrZ_t** qb)
 {
     int nvar = VSd->r->nvar;
-    
+
     if (nvar != VSdm->r->nvar || nvar != Se->nvar || nvar != sd->nvar){
 		fprintf (stderr, "SMZP ERROR: In Extended DucosOpt , inputs' nvars are different!\n");
 		exit (EXIT_FAILURE);
     }
-    
+
     degree_t d = mainLeadingDegree_AAZ(VSd->r);
     degree_t e = mainLeadingDegree_AAZ(VSdm->r);
-    
+
     if (d == 0){
 		fprintf (stderr, "SMZP Error: In Extended DucosOpt , d == 0.\n");
 		exit (EXIT_FAILURE);
@@ -3588,15 +3616,15 @@ AltArrZ_t* exDucosOpt_AAZ (exgcdsZ_t* VSd, exgcdsZ_t* VSdm, AltArrZ_t* Se, AltAr
 			freePolynomial_AAZ (tmp); tmp = NULL;
 		}
 		freePolynomial_AAZ (r);
-	}  
+	}
 
 	AltArrZ_t* hhb;
 	AltArrZ_t* qqb;
 
-	AltArrZ_t* tmp1 = NULL; 
+	AltArrZ_t* tmp1 = NULL;
 	AltArrZ_t* tmp2 = NULL;
 
-	
+
 	// hb:
 	if (VSd->a != NULL) {
 		tmp = multiplyPolynomials_AAZ (csdm, VSd->a, nvar);
@@ -3647,13 +3675,13 @@ AltArrZ_t* exDucosOpt_AAZ (exgcdsZ_t* VSd, exgcdsZ_t* VSdm, AltArrZ_t* Se, AltAr
 
 	if (q != NULL)
 		freePolynomial_AAZ (q);
-	
+
 	freePolynomial_AAZ (csdm);
 	freePolynomial_AAZ (ssd);
 
 	if ((d-e)%2) {
 		*hb = hhb;
-		*qb = qqb; 
+		*qb = qqb;
 		return Sem;
 	}
 
@@ -3695,9 +3723,9 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
 		*len = 0;
 		return;
     }
-    
+
     if (Q == NULL || Q->size == 0){
-	    mpz_t pone; 
+	    mpz_t pone;
 	    mpz_init (pone);
 	    mpz_set_si (pone, 1l);
 
@@ -3716,19 +3744,19 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
 		exit (EXIT_FAILURE);
 	}
 
-  
+
     degree_t degP = mainLeadingDegree_AAZ(P);
     degree_t degQ = mainLeadingDegree_AAZ(Q);
-    
-  
+
+
     if (degP == 0 || degQ == 0){
         fprintf (stderr, "SMZP: error, Input polynomials to exteneded Subresultant Chain must have positive degree.\n");
 		exit (EXIT_FAILURE);
     }
-  
+
     int lazy = 0; // lazy option in pseudoDivide algorithm
     register int nvar = P->nvar;
-    
+
     int tmpE = 0;
     AltArrZ_t* tmpQ = NULL;
     AltArrZ_t* tmpH = NULL;
@@ -3745,35 +3773,35 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
     exgcdsZ_t* tailm = NULL;
     degree_t delta = 0;
     int size = 0;
-  
+
     if (degP >= degQ){
 		p = P;
 		q = Q;
     } else {
 		p = Q;
 		q = P;
-	    
+
 	    degP = mainLeadingDegree_AAZ(p);
     	degQ = mainLeadingDegree_AAZ(q);
     }
-    
+
     s = mainLeadingCoefficient_AAZ (q);
     s = exponentiatePoly_AAZ (s, degP - degQ, nvar);
     A = deepCopyPolynomial_AAZ (q);
-   
+
 
     // fprintf(stderr, "degP: %d, degQ: %d\n", degP, degQ); // TEST
-   
+
 
     // B =
     AltArrZ_t* negQ = deepCopyPolynomial_AAZ (q);
     negatePolynomial_AAZ (negQ);
-    
+
     pesudoDivideAtIdx_AAZ (0, p, negQ, &tmpQ, &B, &tmpE, &tmpH, nvar, lazy);
     freePolynomial_AAZ (negQ);
     // freePolynomial_AAZ (tmpQ);
     // freePolynomial_AAZ (tmpH);
-    
+
     mpz_t one;
     mpz_init (one);
     mpz_set_si (one, 1l);
@@ -3787,11 +3815,11 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
     SS = newPoly;
     tail = newPoly;
     size++;
-    
+
     newPoly = (exgcdsZ_t*) malloc (sizeof(exgcdsZ_t));
     if (B == NULL || B->size == 0){
 		newPoly->r = A;
-		
+
     } else{
 		newPoly->r = deepCopyPolynomial_AAZ (A);
     }
@@ -3799,13 +3827,13 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
 	newPoly->b = makeConstPolynomial_AAZ (1, A->nvar, one);
     newPoly->next = NULL;
 
-	exgcdsZ_t* VA = newPoly;    
+	exgcdsZ_t* VA = newPoly;
     exgcdsZ_t* VB = NULL;
 
     tail->next = newPoly;
     tail = newPoly;
     size++;
-    
+
     register degree_t d = 0;
     register degree_t e = 0;
 
@@ -3837,9 +3865,9 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
 		if (delta > 1){
 			tmpH = NULL;
 			tmpQ = NULL;
-		
-			C = exLazardOpt_AAZ (tailm->r, tail, s, &tmpH, &tmpQ); 
-			newPoly = (exgcdsZ_t*) malloc (sizeof(exgcdsZ_t)); 
+
+			C = exLazardOpt_AAZ (tailm->r, tail, s, &tmpH, &tmpQ);
+			newPoly = (exgcdsZ_t*) malloc (sizeof(exgcdsZ_t));
 			newPoly->r = deepCopyPolynomial_AAZ (C);
 			newPoly->a = tmpH;
 			newPoly->b = tmpQ;
@@ -3857,7 +3885,7 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
 		if (e == 0){ // B.degree() == 0
 			break;
 		}
-		
+
 		tmpH = NULL;
 		tmpQ = NULL;
 
@@ -3867,24 +3895,24 @@ void exDucosSubresultantChain_rev_AAZ (AltArrZ_t* P, AltArrZ_t* Q, exgcdsZ_t** S
 		freePolynomial_AAZ (A);
 		B = tmpB;
 		A = C; // deepCopyPolynomial_AAZ (C); // TODO: update DucosSubresultant_rev ALgorithm, too. (*)
-		
+
 		VA = newPoly;
-		
+
 		freePolynomial_AAZ (s);
-		s = mainLeadingCoefficient_AAZ (A);	
-		
+		s = mainLeadingCoefficient_AAZ (A);
+
 		// freePolynomial_AAZ (C);
 	}
 
 
     // if subresultant is 0, add it to SS:
-    if (tail->r != NULL && tail->r->size != 0 && mainLeadingDegree_AAZ(tail->r) > 0) {	
+    if (tail->r != NULL && tail->r->size != 0 && mainLeadingDegree_AAZ(tail->r) > 0) {
 		newPoly = (exgcdsZ_t*) malloc (sizeof (exgcdsZ_t));
 		newPoly->r = NULL;
 		newPoly->a = NULL;
 		newPoly->b = NULL;
 		newPoly->next = NULL;
-		
+
 		tail->next = newPoly;
 		tail = newPoly;
 		size++;
@@ -3926,14 +3954,14 @@ AltArrZ_t* exDucosResultant_AAZ (AltArrZ_t* P, AltArrZ_t* Q, AltArrZ_t** a, AltA
     exgcdsZ_t* SC;
     int size = 0;
     exDucosSubresultantChain_AAZ (P, Q, &SC, &size);
-    
+
     if (size){
     	*a = deepCopyPolynomial_AAZ (SC->a);
     	*b = deepCopyPolynomial_AAZ (SC->b);
     	AltArrZ_t* r = deepCopyPolynomial_AAZ (SC->r);
-    	
+
     	freeExgcds_AAZ (SC);
-		
+
 		return r;
     }
 
@@ -3974,33 +4002,33 @@ AltArrZ_t* normalizePolynomial_AAZ (AltArrZ_t* P, AltArrZ_t** T, AltArrZ_t** A, 
 			isRes = i;
 			break;
 		}
-	} 
-	
+	}
+
 	if (isRes==-1) {
 		degree_t d = mainDegree_AAZ (P);
 		AltArrZ_t* h = mainLeadingCoefficient_AAZ (P);
-		AltArrZ_t* hv = deepCopyPolynomial_AAZ (h); 
+		AltArrZ_t* hv = deepCopyPolynomial_AAZ (h);
 		multiplyPolynomialAtIdxByXn_AAZ_inp (h, v, d, nvar); // h = h*v^d
-		AltArrZ_t* t = subPolynomials_AAZ (P, hv, nvar); // t = P - h*v^mdeg 
-		
+		AltArrZ_t* t = subPolynomials_AAZ (P, hv, nvar); // t = P - h*v^mdeg
+
 		AltArrZ_t* q = NULL;
 		AltArrZ_t* r = normalizePolynomial_AAZ (h, T, &q, s, nvar);
 
 		*A = q;
-		
+
 		if (r == NULL || r->size == 0) {
 			r = NULL;
 		} else {
-			multiplyPolynomialAtIdxByXn_AAZ_inp (r, v, d, nvar); // r = r*v^d 
+			multiplyPolynomialAtIdxByXn_AAZ_inp (r, v, d, nvar); // r = r*v^d
 		}
 
-		if (t == NULL || q == NULL || 
+		if (t == NULL || q == NULL ||
 			t->size == 0 || q->size == 0) {
 			return r;
 		}
 
 		q = multiplyPolynomials_AAZ_inp (q, t, nvar);
-		AltArrZ_t* nf_r = onlyNormalForm_AAZ (q, T, s, nvar); 
+		AltArrZ_t* nf_r = onlyNormalForm_AAZ (q, T, s, nvar);
 
 		r = addPolynomials_AAZ_inp (r, nf_r, nvar);
 
@@ -4033,16 +4061,16 @@ AltArrZ_t* normalizePolynomial_AAZ (AltArrZ_t* P, AltArrZ_t** T, AltArrZ_t** A, 
 ////////
 AltArrZ_t* integralGCD_AAZ_polyOut (AltArrZ_t* P, AltArrZ_t* Q)
 {
-    
+
     if (P->size != 1 || Q->size != 1){
 	fprintf (stderr, "SMZP Error, In integralGCD_AAZ the input polynomials must have single term." );
 	exit(1);
     }
-    
+
     mpz_t gcd_z;
     mpz_init (gcd_z);
     mpz_gcd (gcd_z, P->elems[0].coef, Q->elems[0].coef);
-    
+
     return makeConstPolynomial_AAZ (1, P->nvar, gcd_z);
 }
 
@@ -4051,7 +4079,7 @@ AltArrZ_t* gcd_AAZ_Z (AltArrZ_t* P, mpz_t c)
     if (P == NULL) {
 	return NULL;
     }
-    
+
     mpz_t ret;
     mpz_init (ret);
 
@@ -4061,11 +4089,11 @@ AltArrZ_t* gcd_AAZ_Z (AltArrZ_t* P, mpz_t c)
     }
 
     integralContent_AAZ (P, ret);
-    
+
     mpz_t gcd_z;
     mpz_init (gcd_z);
     mpz_gcd (gcd_z, ret, c);
-    
+
     mpz_clear (ret);
     return makeConstPolynomial_AAZ (1, P->nvar, gcd_z);
 }
@@ -4104,7 +4132,7 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
     	for (int i = 0; i < P->nvar; ++i) {
     		c_names[i] = (char*) malloc(sizeof(char)*16);
     		sprintf(c_names[i], "x_%d", i);
-    	} 
+    	}
 
 		char* pBuff, *qBuff;
 		size_t size;
@@ -4130,7 +4158,7 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
     	for (int i = 0; i < P->nvar; ++i) {
     		free(c_names[i]);
     	}
-	
+
     	return gz;
     }
 #elif defined(WITH_BLAD) && WITH_BLAD
@@ -4139,7 +4167,7 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
     	for (int i = 0; i < P->nvar; ++i) {
     		c_names[i] = (char*) malloc(sizeof(char)*16);
     		sprintf(c_names[i], "x_%d", i);
-    	} 
+    	}
     	AltArrZ_t* gz = NULL;
     	gcdBLAD_AAZ(P, Q, (const char**) c_names, &gz);
     	for (int i = 0; i < P->nvar; ++i) {
@@ -4155,10 +4183,10 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
     if (mvarP > mvarQ){
 	return gcd_AAZ (P, mainContent_AAZ (Q));
     }
-    
+
     // if univariate?(p1) and univariate?(p2) then //TODO:
     // convert p1 and p2 to SUZP and call the SUZP gcd
-    
+
     AltArrZ_t* contP = NULL;//(AltArrZ_t*) malloc (sizeof (AltArrZ_t));
     AltArrZ_t* contQ = NULL;//(AltArrZ_t*) malloc (sizeof (AltArrZ_t));
     AltArrZ_t* cont = NULL;
@@ -4171,30 +4199,30 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
 	exit(1);
     }
 
-    AltArrZ_t* ppP = mainPrimitiveFactorization_AAZ (P, &contP); 
-    
-    AltArrZ_t* ppQ = mainPrimitiveFactorization_AAZ (Q, &contQ); 
-	
+    AltArrZ_t* ppP = mainPrimitiveFactorization_AAZ (P, &contP);
+
+    AltArrZ_t* ppQ = mainPrimitiveFactorization_AAZ (Q, &contQ);
+
     cont = gcd_AAZ (contP, contQ);
 
 	if (mvarP > 0) {
 		int varmap[nvar];
 	    int j = 0;
-		
+
 		for (int i = 0; i < mvarP; i++) {
 			varmap[i] = -1;
 		}
-		
+
 		for (int i = mvarP; i < nvar; i++) {
 			varmap[i] = j;
 			j++;
 		}
-		
+
 		shrinkAndReorderVars_AAZ (ppP, varmap, nvar);
 		shrinkAndReorderVars_AAZ (ppQ, varmap, nvar);
 		isShrinked = 1;
 	}
-	
+
     /* for (int i = 0; i < mvarP; ++i){ */
 	/* shrinkNumVarsAtIdx_AAZ (ppP, 0); */
 	/* shrinkNumVarsAtIdx_AAZ (ppQ, 0); */
@@ -4208,9 +4236,9 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
 	/* fprintf (stderr, "[SMZP-Ali-GCD] ppQ := "); */
 	/* printPoly_AAZ_unpk(stderr, ppQ, ch, ppP->nvar); */
 	/* fprintf (stderr, "\n"); */
-	
+
     AltArrZ_t* lnzch = lastNonZeroChain_AAZ (ppP, ppQ);
-    
+
     if (isShrinked && lnzch != NULL && lnzch->size != 0){
 	expandNumVarsLeft_AAZ (lnzch, nvar);
     }
@@ -4231,7 +4259,7 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q)
     freePolynomial_AAZ (ppP);
     freePolynomial_AAZ (ppQ);
     freePolynomial_AAZ (cont);
-    
+
     return gcd;
 }
 
@@ -4248,15 +4276,15 @@ AltArrZ_t* mainPrimitiveFactorization_AAZ (AltArrZ_t* P, AltArrZ_t** cont)
 	if (mvarP == -1){
 	    /* if (*cont == NULL || (*cont)->size == 0){ */
 	    mpz_t zz;
-	    mpz_init (zz);	    
+	    mpz_init (zz);
 	    mpz_set(zz, P->elems[0].coef);
 	    *cont =  makeConstPolynomial_AAZ (1, P->nvar, zz);
 	    /* } */
 	}
-	
+
 	return makeConstPolynomial_AAZ (1, P->nvar, one);
     }
-    
+
     if (mvarP > 0){
 	sP = deepCopyPolynomial_AAZ (P);
 	/* for (int i = 0; i < mvarP; ++i){ */
@@ -4266,34 +4294,34 @@ AltArrZ_t* mainPrimitiveFactorization_AAZ (AltArrZ_t* P, AltArrZ_t** cont)
 
 	int varmap[P->nvar];
 	int j = 0;
-		
+
 	for (int i = 0; i < mvarP; i++) {
 		varmap[i] = -1;
 	}
-	
+
 	for (int i = mvarP; i < P->nvar; i++) {
 		varmap[i] = j;
 		j++;
 	}
-		
+
 	shrinkAndReorderVars_AAZ (sP, varmap, P->nvar);
 	isShrinked = 1;
-	
+
     } else {
 		sP = deepCopyPolynomial_AAZ (P);
     }
 
     AltArrZ_t* tmp = NULL;
-    AltArrZ_t* tmpi = NULL; 
+    AltArrZ_t* tmpi = NULL;
     RecArrZ_t* recP = convertToRecursiveArrayZ (sP);
     RecArrElemZ_t* elems = recP->elems;
     int rSize = recP->size;
-    
+
     int isOne = 0, idx = 1;
     AltArrZ_t* coefGCD = deepCopyPolynomial_AAZ (convertFromAAZElemToAAZ
 						 (elems[0].coef,  elems[0].coefSize,
 						  sP->nvar, recP->unpacked));
-    
+
     while (idx < rSize){
 		if (coefGCD != NULL && coefGCD->size == 1 &&
 		    leadingVariable_AAZ (coefGCD) == -1 &&
@@ -4301,7 +4329,7 @@ AltArrZ_t* mainPrimitiveFactorization_AAZ (AltArrZ_t* P, AltArrZ_t** cont)
 		    isOne = 1;
 		    break;
 		}
-		
+
 		tmpi = deepCopyPolynomial_AAZ (convertFromAAZElemToAAZ (elems[idx].coef,
 									elems[idx].coefSize,
 									sP->nvar, recP->unpacked));
@@ -4312,7 +4340,7 @@ AltArrZ_t* mainPrimitiveFactorization_AAZ (AltArrZ_t* P, AltArrZ_t** cont)
 		coefGCD = tmp;
 		++idx;
     }
-    
+
 	if (isShrinked && coefGCD != NULL && coefGCD->size != 0){
 	    expandNumVarsLeft_AAZ (coefGCD, P->nvar);
 	}
@@ -4323,14 +4351,14 @@ AltArrZ_t* mainPrimitiveFactorization_AAZ (AltArrZ_t* P, AltArrZ_t** cont)
 	    exit(1);
 	}
     mpz_clear (one);
-    
+
     if (!isOne){
 	AltArrZ_t* tmpR = NULL;
 	AltArrZ_t* tmpQ = NULL;
-		
+
 	dividePolynomials_AAZ (P, coefGCD, &tmpQ, &tmpR, P->nvar);
 	freePolynomial_AAZ (tmpR);
-		
+
 	return tmpQ;
     }
 
@@ -4346,29 +4374,29 @@ AltArrZ_t* mainPrimitivePart_AAZ (AltArrZ_t* P, int mvar)
     mpz_t one;
     mpz_init (one);
     mpz_set_si (one, 1l);
-    
+
     if (mvarP < 0){
 	return makeConstPolynomial_AAZ (1, P->nvar, one);
     }
-    
+
     if (mvarP > 0){
 		sP = deepCopyPolynomial_AAZ (P);
 		/* for (int i = 0; i < mvarP; ++i){ */
 		/*     shrinkNumVarsAtIdx_AAZ (sP, 0); */
 		/* } */
-		
+
 		int varmap[P->nvar];
 		int j = 0;
-	
+
 		for (int i = 0; i < mvarP; i++) {
 			varmap[i] = -1;
 		}
-		
+
 		for (int i = mvarP; i < P->nvar; i++) {
 			varmap[i] = j;
 			j++;
 		}
-		
+
 		shrinkAndReorderVars_AAZ (sP, varmap, P->nvar);
 		isShrinked = 1;
     } else {
@@ -4376,16 +4404,16 @@ AltArrZ_t* mainPrimitivePart_AAZ (AltArrZ_t* P, int mvar)
     }
 
     AltArrZ_t* tmp = NULL;
-    AltArrZ_t* tmpi = NULL; 
+    AltArrZ_t* tmpi = NULL;
     RecArrZ_t* recP = convertToRecursiveArrayZ (sP);
     RecArrElemZ_t* elems = recP->elems;
     int rSize = recP->size;
-    
+
     int isOne = 0, idx = 1;
     AltArrZ_t* coefGCD = deepCopyPolynomial_AAZ (convertFromAAZElemToAAZ
 						 (elems[0].coef,  elems[0].coefSize,
 						  sP->nvar, recP->unpacked));
-    
+
     while (idx < rSize){
 	if (coefGCD != NULL && coefGCD->size == 1 &&
 	    leadingVariable_AAZ (coefGCD) == -1 &&
@@ -4393,7 +4421,7 @@ AltArrZ_t* mainPrimitivePart_AAZ (AltArrZ_t* P, int mvar)
 	    isOne = 1;
 	    break;
 	}
-	
+
 	tmpi = deepCopyPolynomial_AAZ (convertFromAAZElemToAAZ (elems[idx].coef,
 								elems[idx].coefSize,
 								sP->nvar, recP->unpacked));
@@ -4403,27 +4431,27 @@ AltArrZ_t* mainPrimitivePart_AAZ (AltArrZ_t* P, int mvar)
 	coefGCD = tmp;
 	++idx;
     }
-    
+
     if (isShrinked && coefGCD != NULL && coefGCD->size != 0){
 	expandNumVarsLeft_AAZ (coefGCD, P->nvar);
     }
     mpz_clear (one);
-    
+
     if (!isOne){
 	AltArrZ_t* tmpR = NULL;
 	AltArrZ_t* tmpQ = NULL;
 
 	dividePolynomials_AAZ (P, coefGCD, &tmpQ, &tmpR, P->nvar);
 	freePolynomial_AAZ (tmpR);
-	
+
 	return tmpQ;
     }
-    
+
     return deepCopyPolynomial_AAZ (P);
 }
 
 AltArrZ_t* mainContent_AAZ (AltArrZ_t* P)
-{    	
+{
 
     int mvarP = leadingVariable_AAZ (P);
     AltArrZ_t* sP;
@@ -4431,32 +4459,32 @@ AltArrZ_t* mainContent_AAZ (AltArrZ_t* P)
     mpz_t one;
     mpz_init (one);
     mpz_set_si (one, 1l);
-    
+
     if (mvarP == -2){
 	return makeConstPolynomial_AAZ (1, P->nvar, one);
     }
     if (mvarP == -1){
 	return deepCopyPolynomial_AAZ (P);
     }
-        
+
     if (mvarP > 0){
 		sP = deepCopyPolynomial_AAZ (P);
 		/* for (int i = 0; i < mvarP; ++i){ */
 		/*     shrinkNumVarsAtIdx_AAZ (sP, 0); */
 		/* } */
-		
+
 		int varmap[P->nvar];
 		int j = 0;
-	
+
 		for (int i = 0; i < mvarP; i++) {
 			varmap[i] = -1;
 		}
-		
+
 		for (int i = mvarP; i < P->nvar; i++) {
 			varmap[i] = j;
 			j++;
 		}
-		
+
 		shrinkAndReorderVars_AAZ (sP, varmap, P->nvar);
 		isShrinked = 1;
     } else {
@@ -4464,34 +4492,34 @@ AltArrZ_t* mainContent_AAZ (AltArrZ_t* P)
     }
 
     AltArrZ_t* tmp = NULL;
-    AltArrZ_t* tmpi = NULL; 
+    AltArrZ_t* tmpi = NULL;
     RecArrZ_t* recP = convertToRecursiveArrayZ (sP);
     RecArrElemZ_t* elems = recP->elems;
     int rSize = recP->size;
-        
+
     int idx = 1;
     AltArrZ_t* coefGCD = deepCopyPolynomial_AAZ (convertFromAAZElemToAAZ
 						 (elems[0].coef,  elems[0].coefSize,
 						  sP->nvar, recP->unpacked));
-    
+
     while (idx < rSize){
 	if (coefGCD != NULL && coefGCD->size == 1 &&
 	    leadingVariable_AAZ (coefGCD) == -1 &&
 	    !mpz_cmp(coefGCD->elems->coef, one)){
 	    break;
 	}
-	
+
 	tmpi = deepCopyPolynomial_AAZ (convertFromAAZElemToAAZ (elems[idx].coef,
 								elems[idx].coefSize,
 								sP->nvar, recP->unpacked));
-	
+
 	tmp = gcd_AAZ (coefGCD, tmpi);
 	freePolynomial_AAZ (coefGCD);
 	freePolynomial_AAZ (tmpi);
 	coefGCD = tmp;
 	++idx;
     }
-    
+
     if (isShrinked && coefGCD != NULL && coefGCD->size != 0){
 	expandNumVarsLeft_AAZ (coefGCD, P->nvar);
     }
@@ -4500,12 +4528,12 @@ AltArrZ_t* mainContent_AAZ (AltArrZ_t* P)
     }
 
     return makeConstPolynomial_AAZ (1, P->nvar, one);
-}         
+}
 
 
 
 /******************
- * Square Free 
+ * Square Free
  *****************/
 
 /**
@@ -4513,7 +4541,7 @@ AltArrZ_t* mainContent_AAZ (AltArrZ_t* P)
  */
 AltArrZ_t* squareFreePart_AAZ (AltArrZ_t* aa, int nvar)
 {
-	
+
 	/* char* ch[10] = {"x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10"}; // TEST */
 
 	/* fprintf (stderr, "[SMZP-Ali-SFP] aa := "); */
@@ -4527,36 +4555,36 @@ AltArrZ_t* squareFreePart_AAZ (AltArrZ_t* aa, int nvar)
     if (aa == NULL || aa->size == 0) {
 		return NULL;
     }
-	
+
     mpz_t one;
     mpz_init(one);
     mpz_set_si(one, 1l);
-	
+
     AltArrZ_t* fact = makeConstPolynomial_AAZ(1, nvar, one);
 	if (nvar == 0) {
 		return fact;
 	}
-	
+
 	int lvar = leadingVariable_AAZ (aa);
 	if (lvar < 0) {
 		return fact;
 	}
-	
+
 	AltArrZ_t* primpart = deepCopyPolynomial_AAZ (aa);
     AltArrZ_t* cont = NULL;
     AltArrZ_t* diff = NULL;
     AltArrZ_t* g = NULL;
     AltArrZ_t* next = NULL;
     AltArrZ_t* swappp = NULL;
-	
-	
+
+
 	int varmap[nvar];
 	int nnvar = nvar;
 	int isShrinked = 0;
 	int j = 0;
 
 	if (lvar > 0) {
-		
+
 		for (int i = 0; i < lvar; i++) {
 			varmap[i] = -1;
 		}
@@ -4565,18 +4593,18 @@ AltArrZ_t* squareFreePart_AAZ (AltArrZ_t* aa, int nvar)
 			varmap[i] = j;
 			j++;
 		}
-		
+
 		shrinkAndReorderVars_AAZ (primpart, varmap, nvar);
 		nnvar = nvar-lvar;
 
 		for (int i = 0; i < nnvar; i++) {
 			varmap[i] = i;
 		}
-		
+
 		isShrinked = 1;
-		
+
 	} else {
-		
+
 		for (int i = 0; i < nvar; ++i) {
 			varmap[i] = i;
 		}
@@ -4585,104 +4613,104 @@ AltArrZ_t* squareFreePart_AAZ (AltArrZ_t* aa, int nvar)
 	/* for (int i = 0; i < nnvar; i++) { */
 	/* 	fprintf (stderr, "varmap[%d] = %d\n", i, varmap[i]); */
 	/* } */
-	
+
 	/* fprintf (stderr, "nnvar = %d\n", nnvar); */
 	/* fprintf (stderr, "mdeg(primpart) = %d\n", mainDegree_AAZ(primpart)); */
 
 	/* fprintf (stderr, "[SMZP-Ali] primpart after shrink := "); */
 	/* printPoly_AAZ_unpk(stderr, primpart, ch, nnvar); */
 	/* fprintf (stderr, "\n"); */
-	
+
     for (int i = 0; i < nnvar; ++i) {
 		varmap[0] = i;
 		varmap[i] = 0;
 		reorderVars_AAZ (primpart, varmap, nnvar); // reorder primpart w.r.t. i-th variable
-		
+
 		// primpart should have non-zero mvar:
 		if (leadingVariable_AAZ(primpart)) {
 			continue;
 		}
-		
+
 		// swappp is prim. part of poly w.r.t. i-th variable
 		// cont is next primpart
 		swappp = mainPrimitiveFactorization_AAZ (primpart, &cont);
-		
-		freePolynomial_AAZ (primpart);
-		
-		// diff = d(primpart)/d(x_i) 
-		diff = derivative_AAZ (swappp, 0, 1); 
 
-		
+		freePolynomial_AAZ (primpart);
+
+		// diff = d(primpart)/d(x_i)
+		diff = derivative_AAZ (swappp, 0, 1);
+
+
 		/* fprintf (stderr, "[SMZP-Ali] swappp := "); */
 		/* printPoly_AAZ_unpk(stderr, swappp, ch, nnvar); */
 		/* fprintf (stderr, "\n"); */
-		
-		
+
+
 		/* fprintf (stderr, "[SMZP-Ali] diff := "); */
 		/* printPoly_AAZ_unpk(stderr, diff, ch, nnvar); */
 		/* fprintf (stderr, "\n"); */
-		
-		// g = gcd(swappp, D(swappp)) 
+
+		// g = gcd(swappp, D(swappp))
 		g = gcd_AAZ (swappp, diff);
-		
+
 		/* fprintf (stderr, "[SMZP-Ali] gcd := "); */
 		/* printPoly_AAZ_unpk(stderr, g, ch, nnvar); */
 		/* fprintf (stderr, "\n"); */
-		
-		
+
+
 		freePolynomial_AAZ (diff);
 
-		// next = swappp / g 
+		// next = swappp / g
 		exactDividePolynomials_AAZ (swappp, g, &next, nnvar);
-		
+
 		freePolynomial_AAZ (g);
 		freePolynomial_AAZ (swappp);
-		
+
 		varmap[0] = i;
 		varmap[i] = 0;
 		reorderVars_AAZ (next, varmap, nnvar);
-		
+
 		if (next != NULL && next->size) {
 			if (mpz_sgn(next->elems->coef) < 0) {
 				negatePolynomial_AAZ (next);
 			}
-			
+
 			fact = multiplyPolynomials_AAZ_inp (fact, next, nnvar); // update fact
 			freePolynomial_AAZ (next);
 		}
-		
+
 		if (leadingVariable_AAZ(cont) < 0) {
 			break;
 		} else {
 			primpart = cont;
 		}
     }
-	
+
 	if (isShrinked) {
 		expandNumVarsLeft_AAZ (fact,nvar);
 	}
-	
+
     return fact;
 }
 
 
 
-/** 
+/**
  * Compute the square free factorization of aa.
  * The factorization is returned in two parts, u is the content of aa
  * and facts is a list of the factors such that facts[i] is a primitive square free factor
  * of aa with exponent exps[i].
- * If facts_p points to NULL then an array of factors is allocated, otherwise, it 
+ * If facts_p points to NULL then an array of factors is allocated, otherwise, it
  * is assumed to be a pre-allocated array with size *nfacts; the same is true for exps_p.
  *
  * @note the exponents returned may not be unique since partial and trivial factorizations are
  *       performed here as well.
  *
  * @param aa the polynomial to factorization
- * @param[out] u the "content" of aa 
- * @param[out] facts_p a pointer in which the array of factors is returned. 
+ * @param[out] u the "content" of aa
+ * @param[out] facts_p a pointer in which the array of factors is returned.
  * @param[out] exps_p a pointer in which the array of exponents is returned.
- * @param[in,out] nfacts a pointer in which the number of factors/exponents is returned, 
+ * @param[in,out] nfacts a pointer in which the number of factors/exponents is returned,
  *                on entry if *facts_p or *exps_p is not NULL, *nfacts is the size of the pre-allocated array.
  *
  */
@@ -4717,7 +4745,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 	int factorAlloc = facts == NULL ? 10 : *nfacts;
 	if (facts == NULL) {
 		facts = (AltArrZ_t**) malloc(sizeof(AltArrZ_t*)*factorAlloc);
-	} else { 
+	} else {
 		facts = (AltArrZ_t**) realloc(facts, sizeof(AltArrZ_t*)*factorAlloc);
 	}
 
@@ -4751,7 +4779,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 				facts = (AltArrZ_t**) realloc(facts, sizeof(AltArrZ_t*)*factorAlloc);
 				exps = (degree_t*) realloc(exps, sizeof(degree_t)*factorAlloc);
 			}
-			primitivePartContent_AAZ_inp(primPart, tmpCont);
+			primitivePartAndContent_AAZ_inp(primPart, tmpCont);
 			mpz_mul(u, u, tmpCont);
 			if(!isConstant_AAZ(primPart)) {
 				facts[factorIdx] = primPart;
@@ -4765,7 +4793,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 			primitivePart_AAZ_inp(g);
 			freePolynomial_AAZ(dx);
 
-			AltArrZ_t* next = NULL; 
+			AltArrZ_t* next = NULL;
 			exactDividePolynomials_AAZ (primPart, g, &next, primPart->nvar);
 			// if (next != NULL && mpz_sgn(next->elems->coef) < 0) {
 			// 	negatePolynomial_AAZ(next);
@@ -4776,7 +4804,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 			// 	AltArrZ_t* comFact = commonFactor_AAZ(next, &remFact);
 			// 	if (!isConstant_AAZ(comFact)) {
 			// 		freePolynomial_AAZ(next);
-			// 		next = remFact;	
+			// 		next = remFact;
 
 			// 		degree_t comDegs[nvar];
 			// 		partialDegreesTerm_AAZ(comFact, 0, comDegs);
@@ -4784,7 +4812,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 			// 			if (comDegs[j] != 0) {
 			// 				AltArrZ_t* temp = makeConstIntPolynomial_AAZ(1, nvar, 1l);
 			// 				setExponentTerm_AAZ_inp(temp, 0, 1, j);
-							
+
 			// 				if (factorIdx >= factorAlloc) {
 			// 					factorAlloc <<= 1;
 			// 					facts = (AltArrZ_t**) realloc(facts, sizeof(AltArrZ_t*)*factorAlloc);
@@ -4798,7 +4826,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 			// 		}
 			// 	}
 			// 	freePolynomial_AAZ(comFact);
-			// } 
+			// }
 
 			k = 1;
 			while (partialDegreeTerm_AAZ(g, 0, mvar) > 0) {
@@ -4814,7 +4842,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 					facts[factorIdx] = NULL;
 					exactDividePolynomials_AAZ(next, y, facts+factorIdx, nvar);
 
-					primitivePartContent_AAZ_inp(facts[factorIdx], tmpCont);
+					primitivePartAndContent_AAZ_inp(facts[factorIdx], tmpCont);
 					mpz_mul(u, u, tmpCont);
 
 					if (isConstant_AAZ(facts[factorIdx])) {
@@ -4827,7 +4855,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 				}
 				freePolynomial_AAZ(next);
 				next = NULL;
-				exactDividePolynomials_AAZ(g, y, &next, nvar);	
+				exactDividePolynomials_AAZ(g, y, &next, nvar);
 				freePolynomial_AAZ(g);
 				g = next;
 				next = y;
@@ -4847,7 +4875,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 					exps = (degree_t*) realloc(exps, sizeof(degree_t)*factorAlloc);
 				}
 
-				primitivePartContent_AAZ_inp(next, tmpCont);
+				primitivePartAndContent_AAZ_inp(next, tmpCont);
 				mpz_mul(u, u, tmpCont);
 				facts[factorIdx] = next;
 				exps[factorIdx] = k;
@@ -4856,7 +4884,7 @@ void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t
 
 			freePolynomial_AAZ(g);
 			freePolynomial_AAZ(primPart);
-		}//if not constant 
+		}//if not constant
 
 		primPart = content;
 		content = NULL;
@@ -4887,27 +4915,27 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 		fprintf (stderr, "DBZP Error, In modularBiSubresultantChain_DBZP, a->nvar, b->nvar must be 2.\n");
 		exit (1);
 	}
-	if (isZero_AAZ (a) || isZero_AAZ (b)) {
-		DucosSubresultantChainZ_rev (a, b, Subres, chain_size, 1);
-		return;
-	} 
+	// if (isZero_AAZ (a) || isZero_AAZ (b)) {
+	// 	DucosSubresultantChainZ_rev (a, b, Subres, chain_size, 1);
+	// 	return;
+	// }
 	mpz_t *aZ, *bZ;
 	polysize_t a_degs[2], b_degs[2];
 	aZ = convertFromAltArrZ_DBZP (a, a_degs);
 	bZ = convertFromAltArrZ_DBZP (b, b_degs);
 	polysize_t min_Xdeg = MIN (a_degs[1], b_degs[1]);
-	if (min_Xdeg < 1 || a_degs[1] <= b_degs[1]) { // TODO:
-		for (int i=0; i<(a_degs[0]+1)*(a_degs[1]+1); i++)
-			mpz_clear (aZ[i]);
-		for (int i=0; i<(b_degs[0]+1)*(b_degs[1]+1); i++)
-			mpz_clear (bZ[i]);
-		DucosSubresultantChainZ_rev (a, b, Subres, chain_size, 1);
-		return;
-	} 
+	// if (min_Xdeg < 1 || a_degs[1] <= b_degs[1]) { // TODO:
+	// 	for (int i=0; i<(a_degs[0]+1)*(a_degs[1]+1); i++)
+	// 		mpz_clear (aZ[i]);
+	// 	for (int i=0; i<(b_degs[0]+1)*(b_degs[1]+1); i++)
+	// 		mpz_clear (bZ[i]);
+	// 	DucosSubresultantChainZ_rev (a, b, Subres, chain_size, 1);
+	// 	return;
+	// }
 	// fprintf (stderr, "deg(aZ) = [y=%ld, x=%ld]\n", a_degs[0], a_degs[1]);
 	// fprintf (stderr, "deg(bZ) = [y=%ld, x=%ld]\n", b_degs[0], b_degs[1]);
 	biSubresZ_t* subres_work = NULL;
-	biSubresZ_t* subres_work_prev = NULL; 
+	biSubresZ_t* subres_work_prev = NULL;
 	mpz_t m; // product of primes
 	mpz_init_set_ui (m, 1l);
 	mpz_t halfm, newm;
@@ -4921,29 +4949,31 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 	AltArrZ_t* tmp;
 	elem_t *modA, *modB;
 	mpz_t tc;
-	biSubresPr_t* modSubres = NULL;	
+	biSubresPr_t* modSubres = NULL;
 	unsigned long coef_out = 0;
 
 	int fibs[] = {1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584}; // using Fib for determinisitic=0
-	int fibIdx=0, nFibs=17;	
+	int fibIdx=0, nFibs=17;
 	int isNULL = 0;
-	int isDone = 0;	
+	int isDone = 0;
 	// fprintf (stderr, "start testing primes...\n"); //TEST
 	for (; primeIdx < n_prime64_ptr; ++primeIdx) {
 		*Pptr = prime64_ptr[primeIdx];
-		if (mpz_divisible_ui_p (a->elems->coef, (unsigned long) Pptr->prime) || 
+		if (mpz_divisible_ui_p (a->elems->coef, (unsigned long) Pptr->prime) ||
 			mpz_divisible_ui_p (b->elems->coef, (unsigned long) Pptr->prime) ) {
 				// bad prime
 				// fprintf (stderr, "bad prime: %lld\n", (&prime64_ptr[primeIdx])->prime);
 				continue;
 		}
 		// if good prime:
-		// convert modular images  
+		// convert modular images
 		mpz_init (tc);
 		// Convert a to Z_p[0]
 		polysize_t a_tdeg = (a_degs[0]+1)*(a_degs[1]+1);
 		modA = (elem_t*) malloc (a_tdeg*sizeof(elem_t));
 		for (polysize_t i = 0; i < a_tdeg; i++) {
+			
+			
 			mpz_mod_ui (tc, aZ[i], (unsigned long) Pptr->prime);
 			modA[i] = smallprimefield_convert_in (mpz_get_si (tc), Pptr);
 		}
@@ -4951,6 +4981,8 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 		polysize_t b_tdeg = (b_degs[0]+1)*(b_degs[1]+1);
 		modB = (elem_t*) malloc (b_tdeg*sizeof(elem_t));
 		for (polysize_t i = 0; i < b_tdeg; i++) {
+
+
 			mpz_mod_ui (tc, bZ[i], (unsigned long) Pptr->prime);
 			modB[i] = smallprimefield_convert_in (mpz_get_si (tc), Pptr);
 		}
@@ -4970,6 +5002,8 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 		if (subres_work == NULL) {
 			subres_work = makeBiSubresultant_DBZP (modSubres->n);
 			for (polysize_t j = 0; j < modSubres->n; j++) {
+				// subres_work->deg[j][0] = modSubres->deg[j][0];
+				// subres_work->deg[j][1] = modSubres->deg[j][1];
 				subres_work->deg[j][0] = modSubres->deg[j][0];
 				subres_work->deg[j][1] = modSubres->deg[j][1];
 				subres_work->size[j]   = modSubres->size[j];
@@ -5019,17 +5053,18 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 			for (polysize_t i = 0; i < lt; ++i) {
 				coef_out = (unsigned long) smallprimefield_convert_out (modSubres->coefs[k][i], Pptr);
 				// optimized-CRT (Garner's algorithm)
+
 				mpz_sub_ui (subres_work->coefs[k][i], subres_work->coefs[k][i], coef_out);
 				mpz_mul (subres_work->coefs[k][i], subres_work->coefs[k][i], s);
 				mpz_mul (subres_work->coefs[k][i], subres_work->coefs[k][i], mpz_pr);
 				mpz_add_ui (subres_work->coefs[k][i], subres_work->coefs[k][i], coef_out);
-				mpz_mod (subres_work->coefs[k][i], subres_work->coefs[k][i], newm);			
+				mpz_mod (subres_work->coefs[k][i], subres_work->coefs[k][i], newm);
 				if (mpz_cmp (subres_work->coefs[k][i], halfm) > 0) {
 					mpz_sub(subres_work->coefs[k][i], subres_work->coefs[k][i], newm);
 				}
 			}
 		}
-		
+
 		if (modSubres != NULL) {
 			freeBiSubresultantInForm_spX (modSubres);
 		}
@@ -5044,7 +5079,7 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 		}
 		if (isDone) {
 			AltArrsZ_t *node, *head=NULL, *tail=NULL;
-			int sz = 1;	
+			int sz = 1;
 			if (!subres_work->coefs[0] || !subres_work->size[0]) {
 				tmp = NULL;
 			} else {
@@ -5055,7 +5090,7 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 			node->next = NULL;
 			head = node;
 			tail = node;
-			for (polysize_t i = 1; i < subres_work->n; i++) {				
+			for (polysize_t i = 1; i < subres_work->n; i++) {
 				if (!subres_work->size[i]) {
 					continue;
 				}
@@ -5087,8 +5122,8 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 			freeBiSubresultant_DBZP (subres_work);
 			freeBiSubresultant_DBZP (subres_work_prev);
 			mpz_clears (m, halfm, newm, g, s, t, mpz_pr, NULL);
-			
-			// reverse the order s.t. tail->head: 
+
+			// reverse the order s.t. tail->head:
 			if (sz<2) {
 				*Subres = head;
 			} else {
@@ -5106,7 +5141,6 @@ void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subre
 		}
 		mpz_set (m, newm);
 	}
-
 	mpz_clears (m, halfm, newm, g, s, t, mpz_pr, NULL);
 	freeBiSubresultant_DBZP (subres_work);
 	freeBiSubresultant_DBZP (subres_work_prev);

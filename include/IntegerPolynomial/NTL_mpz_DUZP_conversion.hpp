@@ -5,7 +5,7 @@
 #include "NTL/ZZ.h"
 #include "NTL/ZZX.h"
 #include <gmp.h>
-#include "../../../Main.new/include/IntegerPolynomial/DUZP_Support.h"
+#include "../IntegerPolynomial/DUZP_Support.h"
 
 /*
  * Set an NTL integer (ZZ) using an mpz_class of GMP

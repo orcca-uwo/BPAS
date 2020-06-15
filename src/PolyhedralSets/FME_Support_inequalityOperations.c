@@ -6,7 +6,7 @@
 #include "PolyhedralSets/FME_Support_inequalityOperations.h"
 
 
-int ineqSgn(const inequality_t a, int varIndex)
+int ineqSgn(inequality_t a, int varIndex)
 {
 	if (mpz_sgn(a.coeff[varIndex]) > 0)
 		return (1);
@@ -51,7 +51,7 @@ void combineTwoIneq(inequality_t ineq1, inequality_t ineq2,
 	free(result12);
 }
 
-void findFMEMultiplier(const inequality_t ineq1, const inequality_t ineq2,
+void findFMEMultiplier(inequality_t ineq1, inequality_t ineq2,
 		int varIndex , mpz_t result1 , mpz_t result2)
 {
 	mpz_t temp1,temp2;
@@ -67,7 +67,7 @@ void findFMEMultiplier(const inequality_t ineq1, const inequality_t ineq2,
 	mpz_clear(temp2);
 }
 
-void findCommenMult(const mpz_t in1, const mpz_t in2 , mpz_t mult1 , mpz_t mult2)
+void findCommenMult(mpz_t in1, mpz_t in2 , mpz_t mult1 , mpz_t mult2)
 {
 	mpz_t lcm;
 	mpz_init(lcm);
@@ -80,7 +80,7 @@ void findCommenMult(const mpz_t in1, const mpz_t in2 , mpz_t mult1 , mpz_t mult2
 	mpz_clear(lcm);
 }
 
-void multScalarToIneq(inequality_t * a, const mpz_t mult, inequality_t * result)
+void multScalarToIneq(inequality_t * a, mpz_t mult, inequality_t * result)
 {
 	for (int i = 0; i < a->dimension; i++)
 		mpz_mul(result->coeff[i], a->coeff[i], mult);
@@ -88,7 +88,7 @@ void multScalarToIneq(inequality_t * a, const mpz_t mult, inequality_t * result)
 }
 
 
-void addTwoIneq(const inequality_t ineq1, const inequality_t ineq2,
+void addTwoIneq(inequality_t ineq1, inequality_t ineq2,
 		inequality_t * result)
 {
 	mpz_t tmp;

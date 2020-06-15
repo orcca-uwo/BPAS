@@ -20,7 +20,7 @@ void allocNode(int varNum, inequalityNode_t * new)
 	new->next = NULL;
 }
 
-void copyNode(const inequalityNode_t source, inequalityNode_t * destination)
+void copyNode(inequalityNode_t source, inequalityNode_t * destination)
 {
 	destination->fill = source.fill;
 	destination->next = source.next;
@@ -42,7 +42,7 @@ void allocList(int varNum, unrolledLl_t * new)
 }
 
 void specificAdd(unrolledLl_t * l, inequalityNode_t ** current, int * index,
-		const inequality_t * newIneq)
+		inequality_t * newIneq)
 {
 	if ((*index) < UNROLLED_LL_SIZE)
 	{
