@@ -2818,18 +2818,22 @@ std::vector<RegularChain<Field,RecursivePoly>> RegularChain<Field,RecursivePoly>
 		#else
 			RegularChain<Field,RecursivePoly>::removeRedundantChains(results,results2);
 
+			#if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
 			for (auto r : results) {
 				std::cerr << "Final Dimension: " << r.dimension() << std::endl;
 			}
+			#endif
 
 			return results2;
 //			return RegularChain<Field,RecursivePoly>::removeRedundantChains(results);
 		#endif
 	}
 	else {
+		#if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
 		for (auto r : results) {
 			std::cerr << "Final Dimension: " << r.dimension() << std::endl;
 		}
+		#endif
 		return results;
 	}
 }
@@ -2929,9 +2933,11 @@ void triangularizeTask(const RegularChain<Field, RecursivePoly>& rc, std::vector
 		cleanedPolys = polys;
 		bool inconsistent = currIntTask.cleanSet(cleanedPolys);
 
+#if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
 		currIntTask.RegChain_UniqueID = RC_UNIQUE_ID.fetch_add(1);
 		float curTime = 0.0f;
 		_stopTimerAddElapsed(&plotTriTime, &curTime);
+#endif
 
 		if (inconsistent) {
 #if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
@@ -2979,16 +2985,17 @@ void triangularizeTask(const RegularChain<Field, RecursivePoly>& rc, std::vector
 }
 
 
-
 template <class Field, class RecursivePoly>
 std::vector<RegularChain<Field,RecursivePoly>> RegularChain<Field,RecursivePoly>::_triangularizeByTasks(std::vector<RecursivePoly>& polys, bool lazardDecompose, int heightBound) const {
 
 	// typedef RegularChain<Field,RecursivePoly> RC_INT_OBJ;
 
+#if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
 	RC_UNIQUE_ID = 0;
 	this->RegChain_UniqueID = RC_UNIQUE_ID.fetch_add(1);
 	fprintf(stdout, "(%f, %d, %d, %d, %ld)\n", 0.0f, -1, this->RegChain_UniqueID, this->dimension(), polys.size());
 	_startTimer(&plotTriTime);
+#endif
 
 	TaskScheduler* tasks = new TaskScheduler;
 	SyncVector_ptr<RegularChain<Field,RecursivePoly>> results(new SynchronizedWriteVector<RegularChain<Field,RecursivePoly>>);

@@ -52,7 +52,7 @@ extern float tsCopyTime;
 extern float rcCopyTime;
 extern float zdrcCopyTime;
 
-#define RC_TRIANGULARIZE_TASKTREEDATA 1
+#define RC_TRIANGULARIZE_TASKTREEDATA 0
 
 
 /* forward declares */
