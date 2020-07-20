@@ -5,7 +5,7 @@ LDARGS = -L../../build/ -lmodpnLINUXINTEL64 -lmaplec -static-libstdc++ -static-l
 
 vpath %.cpp ./
 
-BPAS_LIB = ../../../Main.new/build/libbpas.a
+BPAS_LIB = ../../build/libbpas.a
 NTL_LIB = /usr/lib/libntl.a
 TARGET = BPAS_Solver.bin
 
