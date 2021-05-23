@@ -20,7 +20,6 @@ static inline void convertDUSPFromArray (duspoly_t** a, sfixn* coefs, polysize_t
     setCoefsInForm_spX (a,(long long*) coefs, sz);    
 }
 
-
 /***********************************
  * Basic Arithmetic 
  * For details, see ./DUSP_Support.h 

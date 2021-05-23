@@ -6,7 +6,6 @@
 #include "IntegerPolynomial/mzpolynomial.hpp"
 
 
-MapleInterfaceStream MapleInterfaceStream::_theMISInstance;
 
 void MapleInterfaceStream::sendCommand(const std::vector<std::string>& request, std::vector<std::string>& response) {
 #if (defined(SERIAL) && SERIAL) || !MAPLE_INTERFACE_POOL
@@ -15,7 +14,7 @@ void MapleInterfaceStream::sendCommand(const std::vector<std::string>& request, 
 	MapleInterfacePipe* pipe = m_pool.getMaplePipe();
 	pipe->sendCommand(request, response);
 	m_pool.putbackPipe(pipe);
-#endif		
+#endif
 }
 
 
@@ -26,7 +25,7 @@ void MapleInterfaceStream::sendCommand(const std::vector<std::string>& request, 
 /**
  * Hacky way to give C code access to a C++ method.
  */
-char* (*gcd_maple_string)(const char*, const char*) = &MapleInterfaceStream::gcd_string;
+//char* (*gcd_maple_string)(const char*, const char*) = &MapleInterfaceStream::gcd_string;
 
 float g_mapleWaitTime = 0;
 
@@ -37,7 +36,6 @@ float g_mapleWaitTime = 0;
 // std::atomic<long> mapleFactorTimeUSec;
 
 char* MapleInterfaceStream::gcd_via_string(const char* a, const char* b) {
-
 	std::vector<std::string> request, response;
 	request.emplace_back("gcd");
 	request.emplace_back(a);

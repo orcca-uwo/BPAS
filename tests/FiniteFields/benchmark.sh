@@ -28,22 +28,23 @@ output_name+="$suffix"
 #output_name+=".bnch"
 echo $output_name
 #######################################
-node_control="numactl -N 0 "
-bin="gfpf_six_step_fft_test.bin"
+node_control="" #"numactl -N 0 "
+#bin="gfpf_six_step_fft_test.bin"
+bin="small_prime_field_six_step_fft.bin"
 
-K_list=(8 16 32 64 128 256);
-e_list=(2 3);
-output="$output_dir""/gfpf_$output_name.bnch"
+K_list=(4 8 16 32 64 128 256);
+e_list=(2 3 4);
+output="$output_dir""/small_prime_field_$output_name.bnch"
 
 cat /dev/null > $output
 
 for K in ${K_list[@]}; do	
 	for e in ${e_list[@]}; do	
-		if [[ $e -gt 2 ]] && [[ $K -gt 64 ]]; then
+		if [[ $e -gt 3 ]] && [[ $K -gt 64 ]]; then
 			printf "[SKIP K=$K and e=$e] ...\n";
 			continue;
 		fi;
-		output_tmp="$output_dir""/gfpf_$output_name""_K"$K"_e"$e".bnch"
+		output_tmp="$output_dir""/small_prime_field_$output_name""_K"$K"_e"$e".bnch"
 		printf "testing [$K ^ $e]...\n" > $output_tmp
 		$node_control ./$bin $K $e >> $output_tmp
 		printf "\n===================================\n" >>$output_tmp

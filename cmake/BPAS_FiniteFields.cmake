@@ -6,6 +6,7 @@ target_sources(${BPAS_LIB_TARGET} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FiniteFields/SmallPrimeField_Support.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FiniteFields/GFPF_Support.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FiniteFields/cpu_timer.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FiniteFields/small_prime_field_fft.c
 )
 
 

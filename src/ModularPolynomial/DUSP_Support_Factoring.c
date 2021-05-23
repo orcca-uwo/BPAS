@@ -76,10 +76,10 @@ void squareFreeFactorizationInForm_spX (const duspoly_t* a, factors_t** f, const
 		
 		if (a->elems[0] != lc_a) {
 			monicPolynomialInForm_spX (a, &(*f)->polys[1], &lc_a, Pptr);
-			(*f)->polys[0] = constPolynomialInForm_spX (lc_a, Pptr);
+			(*f)->polys[0] = constPolynomial_spX (lc_a, Pptr);
 			(*f)->exps[0] = 1;
 		} else {
-			(*f)->polys[0] = constPolynomialInForm_spX (lc_a, Pptr);
+			(*f)->polys[0] = constPolynomial_spX (lc_a, Pptr);
 			(*f)->exps[0] = 1;
 			(*f)->polys[1] = deepCopyPolynomial_spX (a);
 			(*f)->exps[1] = 1;
@@ -98,7 +98,7 @@ void squareFreeFactorizationInForm_spX (const duspoly_t* a, factors_t** f, const
 	}
 
 	factors_t* ff = initFactors_spX (degPolynomial_spX (aa)+1);
-	ff->polys[0] = constPolynomialInForm_spX (lc_a, Pptr);
+	ff->polys[0] = constPolynomial_spX (lc_a, Pptr);
 	ff->exps[0] = 1;
 
 	polysize_t i = 1; 
@@ -332,12 +332,12 @@ duspoly_t* expXModSubInForm_spX (polysize_t q, const duspoly_t* f, duspoly_t** h
 		return NULL;
 	}
 
-	duspoly_t* xpoly = XpolynomialInForm_spX ();
+	duspoly_t* xpoly = Xpolynomial_spX ();
 	duspoly_t* xpow = NULL;
 	duspoly_t* res  = NULL;
 
 	if (isZero_spX (*h)) {
-		xpow = makePowerOfXPolynomialInForm_spX (q, Pptr);
+		xpow = makePowerOfXpolynomial_spX (q, Pptr);
 		plainRemPolynomialsInForm_spX_inp (&xpow, f, Pptr);
 
 		if (h != NULL) {
@@ -434,7 +434,7 @@ void modPoweringForEDF_spX (const duspoly_t* a, polysize_t d, const duspoly_t* f
 	}
 
 	if (d == 0) {
-		*mul_pows = constPolynomial_spX (1, Pptr);
+		*mul_pows = constPolynomialInForm_spX (1, Pptr);
 		return;
 	}
 
@@ -525,7 +525,7 @@ int equalDegSplittingInForm_spX (const duspoly_t* f, polysize_t d, duspoly_t** g
 
 	modPoweringForEDF_spX (a, d, f, &b, Pptr);
 
-	duspoly_t* one = constPolynomialInForm_spX (smallprimefield_convert_in (1, Pptr), Pptr);
+	duspoly_t* one = constPolynomial_spX (smallprimefield_convert_in (1, Pptr), Pptr);
 
 	subPolynomialsInForm_spX (b, one, &bb, Pptr);
 	
@@ -882,7 +882,7 @@ int modFactorVerificationInFormll_spX (const duspoly_t* f, factsll_t* G, const P
 	} 
 
 	factsll_t* cur = G;
-	duspoly_t* ff = constPolynomial_spX (1, Pptr);
+	duspoly_t* ff = constPolynomialInForm_spX (1, Pptr);
 	duspoly_t* tmp = NULL;
 	duspoly_t* tmp2 = NULL;
 

@@ -1,6 +1,8 @@
 #include "../../../include/FFT/src/fft_furer1.h"
 #include "../../../include/FFT/src/arraybitreversal.h"
 #include "../../../include/FFT/src/modpn.h"
+#include <iostream>
+#include <string.h>
 #define FFT_THRESHOLD 1024
 #define FFT_THRESHOLD_LOG 10
 #define COMPLETE 18266600088614731775u

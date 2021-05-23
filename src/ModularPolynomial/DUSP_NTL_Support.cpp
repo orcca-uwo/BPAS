@@ -608,7 +608,7 @@ void exponentiatePolynomialInForm1_spX (const duspoly_t* a, polysize_t n, duspol
 
     if (n == 0) {
         elem_t one = smallprimefield_convert_in (1, Pptr);
-        *an = constPolynomialInForm_spX (one, Pptr);
+        *an = constPolynomial_spX (one, Pptr);
         return;
     } else if (n == 1) {
         *an = deepCopyPolynomial_spX (a);
@@ -678,7 +678,7 @@ void modExponentiatePolynomialInForm1_spX (const duspoly_t* a, polysize_t n, con
 
     if (n == 0) {
         elem_t one = smallprimefield_convert_in (1, Pptr);
-        *an = constPolynomialInForm_spX (one, Pptr);
+        *an = constPolynomial_spX (one, Pptr);
         return;
     } else if (n == 1) {
         ntlRemPolynomialsInForm_spX (a, f, an, Pptr);
@@ -745,12 +745,12 @@ duspoly_t* expXModSubInForm1_spX (polysize_t q, const duspoly_t* f, duspoly_t** 
 		return NULL;
 	}
 
-	duspoly_t* xpoly = XpolynomialInForm_spX ();
+	duspoly_t* xpoly = Xpolynomial_spX ();
 	duspoly_t* xpow = NULL;
 	duspoly_t* res  = NULL;
 
 	if (isZero_spX (*h)) {
-		xpow = makePowerOfXPolynomialInForm_spX (q, Pptr);
+		xpow = makePowerOfXpolynomial_spX (q, Pptr);
 		ntlRemPolynomialsInForm_spX_inp (&xpow, f, Pptr);
 		
 		if (h != NULL) {
@@ -844,7 +844,7 @@ void modPoweringForEDF1_spX (const duspoly_t* a, polysize_t d, const duspoly_t* 
 	}
 
 	if (d == 0) {
-		*mul_pows = constPolynomial_spX (1, Pptr);
+		*mul_pows = constPolynomialInForm_spX (1, Pptr);
 		return;
 	}
 
@@ -936,7 +936,7 @@ int equalDegSplittingInForm1_spX (const duspoly_t* f, polysize_t d, duspoly_t** 
 
 	modPoweringForEDF1_spX (a, d, f, &b, Pptr);
 
-	duspoly_t* one = constPolynomialInForm_spX (smallprimefield_convert_in (1, Pptr), Pptr);
+	duspoly_t* one = constPolynomial_spX (smallprimefield_convert_in (1, Pptr), Pptr);
 
 	subPolynomialsInForm_spX (b, one, &bb, Pptr);
 	
@@ -1185,7 +1185,7 @@ int modFactorVerificationInFormll1_spX (const duspoly_t* f, factsll_t* G, const 
 	} 
 
 	factsll_t* cur = G;
-	duspoly_t* ff = constPolynomial_spX (1, Pptr);
+	duspoly_t* ff = constPolynomialInForm_spX (1, Pptr);
 	duspoly_t* tmp;
 	duspoly_t* tmp2;
 

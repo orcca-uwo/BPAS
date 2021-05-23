@@ -10,6 +10,8 @@
  * sym : a list of variables
  */
 
+
+
 void TestingWeierstrassPreparation(Upops_t* f, int bound, const char** sym) {
 
     Upops_t* p_out = NULL;
@@ -749,3 +751,90 @@ void test22(int testDeg)
     fprintf(stderr, "Weierstrass Test 22: \t\t\t\t PASSED \n");
 
 }
+
+
+void test23(int testDeg)
+{
+    const char* sym[] = {"z", "y", "x"};
+    Poly_ptr  poly_1 = generate_altarr_var_defined("1", sym, 3);
+    Poly_ptr  poly_2 = generate_altarr_var_defined("1+x+y", sym, 3);
+    Poly_ptr  poly_3 = generate_altarr_var_defined("y", sym, 3);
+    // Poly_ptr  poly_4 = generate_altarr_var_defined("y+1", sym, 3);
+    Poly_ptr  poly_5 = generate_altarr_var_defined("x", sym, 3);
+    PowerSeries_t* ps_1 = convertPolyToPowerSeries_PS(poly_1);
+    PowerSeries_t* ps_2 = convertPolyToPowerSeries_PS(poly_2);
+    PowerSeries_t* ps_3 = convertPolyToPowerSeries_PS(poly_3);
+    // PowerSeries_t* ps_4 = convertPolyToPowerSeries_PS(poly_4);
+    PowerSeries_t* ps_5 = convertPolyToPowerSeries_PS(poly_5);
+    PowerSeries_t* quo_1 = dividePowerSeries_PS(ps_1, ps_2);
+    PowerSeries_t* ps_array[5];
+    ps_array[0] = ps_5;
+    ps_array[1] = ps_3;
+    ps_array[2] = ps_3;//eroPowerSeries_PS();
+    ps_array[3] = ps_3;//zeroPowerSeries_PS();
+    ps_array[4] = quo_1;
+    Upops_t* upop = convertArrayOfPSToUPOPS_UPOPS(ps_array,5);
+    TestingWeierstrassPreparation(upop, testDeg, sym);
+
+
+    destroyUnivariatePolynomialOverPowerSeries_UPOPS(upop);
+    freePolynomial_AA(poly_1);
+    freePolynomial_AA(poly_2);
+    freePolynomial_AA(poly_3);
+    freePolynomial_AA(poly_5);
+
+    destroyPowerSeries_PS(ps_1);
+    //destroyPowerSeries_PS(ps_array[2]);
+    //destroyPowerSeries_PS(ps_array[3]);
+    destroyPowerSeries_PS(ps_2);
+    destroyPowerSeries_PS(ps_3);
+    destroyPowerSeries_PS(ps_5);
+    destroyPowerSeries_PS(quo_1);
+
+    fprintf(stderr, "Weierstrass Test 23: \t\t\t\t PASSED \n");
+
+}
+
+
+void test24(int testDeg)
+{
+    const char* sym[] = {"z", "y", "x"};
+    Poly_ptr  poly_1 = generate_altarr_var_defined("1", sym, 3);
+    Poly_ptr  poly_2 = generate_altarr_var_defined("1+x+y", sym, 3);
+    Poly_ptr  poly_3 = generate_altarr_var_defined("y", sym, 3);
+    // Poly_ptr  poly_4 = generate_altarr_var_defined("y+1", sym, 3);
+    Poly_ptr  poly_5 = generate_altarr_var_defined("x", sym, 3);
+    PowerSeries_t* ps_1 = convertPolyToPowerSeries_PS(poly_1);
+    PowerSeries_t* ps_2 = convertPolyToPowerSeries_PS(poly_2);
+    PowerSeries_t* ps_3 = convertPolyToPowerSeries_PS(poly_3);
+    // PowerSeries_t* ps_4 = convertPolyToPowerSeries_PS(poly_4);
+    PowerSeries_t* ps_5 = convertPolyToPowerSeries_PS(poly_5);
+    PowerSeries_t* quo_1 = dividePowerSeries_PS(ps_1, ps_2);
+    PowerSeries_t* ps_array[5];
+    ps_array[0] = ps_5;
+    ps_array[1] = ps_3;
+    ps_array[2] = ps_3; //onePowerSeries_PS(3);
+    ps_array[3] = onePowerSeries_PS(3);//onePowerSeries_PS(3);
+    ps_array[4] = quo_1;
+    Upops_t* upop = convertArrayOfPSToUPOPS_UPOPS(ps_array,5);
+    TestingWeierstrassPreparation(upop, testDeg, sym);
+
+
+    destroyUnivariatePolynomialOverPowerSeries_UPOPS(upop);
+    freePolynomial_AA(poly_1);
+    freePolynomial_AA(poly_2);
+    freePolynomial_AA(poly_3);
+    freePolynomial_AA(poly_5);
+
+    destroyPowerSeries_PS(ps_1);
+    //destroyPowerSeries_PS(ps_array[2]);
+    destroyPowerSeries_PS(ps_array[3]);
+    destroyPowerSeries_PS(ps_2);
+    destroyPowerSeries_PS(ps_3);
+    destroyPowerSeries_PS(ps_5);
+    destroyPowerSeries_PS(quo_1);
+
+    fprintf(stderr, "Weierstrass Test 24: \t\t\t\t PASSED \n");
+
+}
+

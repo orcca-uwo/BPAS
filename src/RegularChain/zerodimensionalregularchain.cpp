@@ -229,7 +229,7 @@ ZeroDimensionalRegularChain<Field,RecursivePoly>::ZeroDimensionalRegularChain (c
 
 
 /// Member Functions ///
-		
+
 /**
  * Construct a zero-dimensional regular chain from the current object and an input polynomial
  *
@@ -238,12 +238,12 @@ ZeroDimensionalRegularChain<Field,RecursivePoly>::ZeroDimensionalRegularChain (c
 template <class Field, class RecursivePoly>
 void ZeroDimensionalRegularChain<Field,RecursivePoly>::constructChain(const RecursivePoly& p, int options) {
 	Symbol v(p.leadingVariable());
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "entering constructChain(p,opts) in ZDRC." << std::endl;
 		std::cerr << "opts = " << options << std::endl;
 	#endif
-	
+
 	if ((options & ASSUME_REGULAR) != ASSUME_REGULAR) {
 		// perform a regularity test of p.initial() modulo Sat(T)
 		if (!this->isRegular(p.initial())) {
@@ -257,7 +257,7 @@ void ZeroDimensionalRegularChain<Field,RecursivePoly>::constructChain(const Recu
 	if ((options & ASSUME_ZERODIMENSIONAL) != ASSUME_ZERODIMENSIONAL) {
 		std::vector<Symbol> vs,vs2;
 		vs2.push_back(v);
-	
+
 		if (isAMemberOf(v,algVars)) {
 			std::cerr << "BPAS: error, the leading variable of p is an algebraic variable of the current object, so cannot extend it." << std::endl;
 			#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
@@ -267,11 +267,11 @@ void ZeroDimensionalRegularChain<Field,RecursivePoly>::constructChain(const Recu
 			#endif
 			exit(1);
 		}
-		
+
 		vs = setDifference(p.variables(),this->allVariables());
 //			vs = setDifference(p.variables(),vars);
 //			vs = setDifference(vs,trcVars);
-	
+
 		if (mode == TS_VARIABLE) {
 			if (vs != vs2) {
 				std::cerr << "BPAS: error, cannot add p to current object because resulting object would not be zero-dimensional." << std::endl;
@@ -298,23 +298,23 @@ void ZeroDimensionalRegularChain<Field,RecursivePoly>::constructChain(const Recu
 //					printVariables(trcVars);
 				#endif
 				exit(1);
-				
+
 			}
 		}
 	}
-	
+
 	// make current object temporarily one dimensional to make space for new polynomial
 	if (!isAMemberOf(v,vars)) {
 		vars.insert(vars.begin(),v);
 		set.insert(set.begin(),RecursivePoly());
 	}
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "calling constructChain(p,opts) from ZeroDimensionalRegularChain class" << std::endl;
 	#endif
 	RegularChain<Field,RecursivePoly>::constructChain(p,options);
 }
-		
+
 /**
  * Construct a zero-dimensional regular chain from the current object and an input upper regular chain
  *
@@ -352,8 +352,8 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 	std::vector<RegularChain<Field,RecursivePoly>> rcResults;
 	std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> results;
 	Symbol v(p.leadingVariable());
-	
-	
+
+
 	if ((options & ASSUME_REGULAR) != ASSUME_REGULAR) {
 		// perform a regularity test of p.initial() modulo Sat(T)
 		if (!this->isRegular(p.initial())) {
@@ -364,16 +364,16 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 				exit(1);
 		}
 	}
-	
+
 	if ((options & ASSUME_ZERODIMENSIONAL) != ASSUME_ZERODIMENSIONAL) {
 		std::vector<Symbol> vs,vs2;
 		vs2.push_back(v);
-	
+
 		if (isAMemberOf(v,vars)) {
 			std::cerr << "BPAS: error, the leading variable of p is an algebraic variable of the current object, so cannot extend it." << std::endl;
 			exit(1);
 		}
-	
+
 		vs = setDifference(p.variables(),vars);
 		vs = setDifference(vs,trcVars);
 		if (vs != vs2) {
@@ -381,9 +381,9 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 			exit(1);
 		}
 	}
-	
+
 	options = options | ASSUME_MAKESCHAIN;
-	
+
 	// make root chain T temporarily one dimensional to make space for new polynomial
 	std::vector<Symbol> vs;
 	std::vector<RecursivePoly> polys;
@@ -394,7 +394,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 //		ZeroDimensionalRegularChain<Field,RecursivePoly> T(vs,algVars,trcVars,polys,TS_VARIABLE,this->isStronglyNormalized());
 //		std::cerr << "T = " << T << std::endl;
-	
+
 		std::cerr << "calling constructChains(p,opts) from ZeroDimensionalRegularChain class" << std::endl;
 	#endif
 	RC_GEN_CONSUMER_INIT(RC_CONSTRUCTCH_OBJ, constructChainsTasks, (&ZeroDimensionalRegularChain<Field,RecursivePoly>::constructChainsFromPoly), this, p, true, this->numberOfAlgebraicVariables(), options);
@@ -411,7 +411,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 	#endif
 	return results;
 }
-		
+
 /**
  * Construct a set of regular chains from the current object and an input regular chain above the current object
  *
@@ -419,7 +419,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
  **/
 template <class Field, class RecursivePoly>
 std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalRegularChain<Field,RecursivePoly>::constructChains(const RegularChain<Field,RecursivePoly>& T, int options) const {
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "entering RC constructChains(T,opts)" << std::endl;
 	#endif
@@ -450,7 +450,7 @@ ZeroDimensionalRegularChain<Field,RecursivePoly>& ZeroDimensionalRegularChain<Fi
 	RegularChain<Field,RecursivePoly>::operator=(a);
 	return *this;
 }
-		
+
 /**
  * Assignment operator =
  *
@@ -476,7 +476,7 @@ BPASRegularChain<Field,RecursivePoly>& ZeroDimensionalRegularChain<Field,Recursi
 	else throw (std::invalid_argument("BPAS: Cannot cast BPASRegularChain to ZeroDimensionalRegularChain."));
 	return *this;
 }
-		
+
 /**
  * Assignment operator =
  *
@@ -543,7 +543,7 @@ BPASZeroDimensionalRegularChain<Field,RecursivePoly>& ZeroDimensionalRegularChai
 	else throw (std::invalid_argument("BPAS: Cannot cast BPASZeroDimensionalRegularChain to ZeroDimensionalRegularChain."));
 	return *this;
 }
-		
+
 /**
  * Overload operator +
  * Adds a polynomial to a regular chain and returns a new regular chain
@@ -574,11 +574,11 @@ ZeroDimensionalRegularChain<Field,RecursivePoly>& ZeroDimensionalRegularChain<Fi
 		std::cerr << "entering ZDRC +=(p)" << std::endl;
 		std::cerr << "p = " << p << std::endl;
 	#endif
-	
+
 	// TODO: check that the condition on the variables of p relative
-	//       to the algebraic and transcendental variables of the 
+	//       to the algebraic and transcendental variables of the
 	//       current object is satisfied.
-	
+
 	if (!this->isRegular(p.initial())) {
 		std::cerr << "BPAS: error, initial of p is not regular with respect to the current regular chain T so T+p is not a regular chain." << std::endl;
 		#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
@@ -595,7 +595,7 @@ ZeroDimensionalRegularChain<Field,RecursivePoly>& ZeroDimensionalRegularChain<Fi
 	this->constructChain(p,ASSUME_REGULAR);
 	return *this;
 }
-		
+
 /**
  * Add operator +
  * Adds a polynomial to a regular chain and returns a new regular chain
@@ -616,9 +616,9 @@ ZeroDimensionalRegularChain<Field,RecursivePoly> ZeroDimensionalRegularChain<Fie
  **/
 template <class Field, class RecursivePoly>
 ZeroDimensionalRegularChain<Field,RecursivePoly>& ZeroDimensionalRegularChain<Field,RecursivePoly>::operator+= (const RegularChain<Field,RecursivePoly>& T) {
-	
+
 	std::vector<RecursivePoly> polys(T.polynomials());
-	
+
 	for (int i=polys.size()-1; i>-1; --i) {
 		if (!polys[i].isZero()) {
 			*this += polys[i];
@@ -627,7 +627,7 @@ ZeroDimensionalRegularChain<Field,RecursivePoly>& ZeroDimensionalRegularChain<Fi
 	// TODO: set the properties of *this according to the prior properties of *this and T
 	// TODO: how to handle property conflict between *this and T? This would be a problem if *this requires SQUAREFREE but T does not, e.g.
 	//       this is maybe not such an issue if this function is only called internally, but if it is called externally there could be issues.
-	
+
 	return *this;
 }
 
@@ -653,7 +653,7 @@ bool ZeroDimensionalRegularChain<Field,RecursivePoly>::operator!= (const ZeroDim
 	return !(*this==a);
 }
 
-template <class Field, class RecursivePoly>	
+template <class Field, class RecursivePoly>
 void ZeroDimensionalRegularChain<Field,RecursivePoly>::lower(const Symbol& s, BPASTriangularSet<Field,RecursivePoly>& ts) const {
 	RegularChain<Field,RecursivePoly> ts2;
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
@@ -718,7 +718,7 @@ void ZeroDimensionalRegularChain<Field,RecursivePoly>::cutChain(const Symbol& v,
 		lower(v,Tlv);
 		Tv = select(v);
 }
-		
+
 /**
  * Regularize the input polynomial with respect to the current regular chain,
  * i.e., compute a splitting of pairs (f_i,T_i) such that h_i is invertible
@@ -742,11 +742,11 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 
 	return results;
 }
-		
+
 /**
- * Compute the intersection of the varieties of the input polynomial and the 
- * current regular chain, i.e., compute a set of components (T_i) of T such 
- * that all zeros of T_i are common to p and all common zeros of p and T are 
+ * Compute the intersection of the varieties of the input polynomial and the
+ * current regular chain, i.e., compute a set of components (T_i) of T such
+ * that all zeros of T_i are common to p and all common zeros of p and T are
  * included among the T_i.
  *
  * @param p: input polynomial
@@ -754,7 +754,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 #if defined(RC_WITH_GENERATORS) && RC_WITH_GENERATORS
 template <class Field, class RecursivePoly>
 void ZeroDimensionalRegularChain<Field,RecursivePoly>::_intersect(const RecursivePoly& p, AsyncGenerator<ZeroDimensionalRegularChain<Field,RecursivePoly>>& results) const {
-#else 
+#else
 template <class Field, class RecursivePoly>
 std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalRegularChain<Field,RecursivePoly>::_intersect(const RecursivePoly& p) const {
 #endif
@@ -762,7 +762,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "[0D int] entering intersect: " << p << std::endl;
 	#endif
-	
+
 	typedef ZeroDimensionalRegularChain<Field,RecursivePoly> RC_INT_OBJ;
 	RC_GEN_PRODUCER_DECLARE_RESULT(RC_INT_OBJ, results);
 	typedef PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> RC_REG_OBJ;
@@ -771,7 +771,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 //	std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>> regularComponents;
 //	PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> currRegularComponent;
 	bool reduceMore(false);
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "[0D int] computing squareFreePart:" << std::endl;
 	#endif
@@ -833,7 +833,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 //			tasks.push_back(q);
 //		}
 //	}
-//	
+//
 //	for (int i=0; i<tasks.size(); ++i) {
 //		#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 //			std::cerr << "[0D int] calling regularize: " << tasks[i] << std::endl;
@@ -852,7 +852,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 //			}
 //		}
 //	}
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 //		std::cerr << "[0D int] results.size = " << results.size() << std::endl;
 		std::cerr << "[0D int] leaving intersect: " << p << std::endl;
@@ -860,7 +860,7 @@ std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> ZeroDimensionalReg
 	RC_GEN_PRODUCER_COMPLETE(results);
 //	return results;
 }
-		
+
 /**
  * Regularize the input polynomial with respect to the current regular chain,
  * i.e., compute a splitting of pairs (f_i,T_i) such that h_i is invertible
@@ -884,7 +884,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 
 	return results;
 }
-		
+
 /**
  * Regularize the input polynomial with respect to the current regular chain,
  * i.e., compute a splitting of pairs (f_i,T_i) such that h_i is invertible
@@ -896,7 +896,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 #if defined(RC_WITH_GENERATORS) && RC_WITH_GENERATORS
 template <class Field, class RecursivePoly>
 void ZeroDimensionalRegularChain<Field,RecursivePoly>::_regularize(const RecursivePoly& f, AsyncGenerator<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>>& results) const {
-#else 
+#else
 template <class Field, class RecursivePoly>
 std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>> ZeroDimensionalRegularChain<Field,RecursivePoly>::_regularize(const RecursivePoly& f) const {
 #endif
@@ -904,7 +904,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 		std::cerr << "[0D reg] entering regularize: " << f << std::endl;
 	#endif
 	RecursivePoly c;
-	
+
 	typedef PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> RC_REG_OBJ;
 	RC_GEN_PRODUCER_DECLARE_RESULT(RC_REG_OBJ, results);
 //	std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>> results;
@@ -953,14 +953,14 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 //			results.push_back(t);
 		}
 	}
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "[0D reg] leaving regularize: " << f << std::endl;
 	#endif
 	RC_GEN_PRODUCER_COMPLETE(results);
 //	return results;
 }
-		
+
 /**
  * Regularize the initial of the input polynomial with respect to the current regular chain,
  * i.e., compute a splitting of pairs (f_i,T_i) such that h_i has invertible
@@ -1095,7 +1095,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 //			#endif
 		}
 	}
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "[0D regInit][" << ZDdepth << "][" << ZDregularizeInitialDepth << "] leaving regularize: " << f << std::endl;
 	#endif
@@ -1149,7 +1149,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 	RegularChain<Field,RecursivePoly> U;
 	SubResultantChain<RecursivePoly,RecursivePoly> src;
 	// std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> results, moreResults;
-	
+
 	std::vector<ZeroDimensionalRegularChain<Field,RecursivePoly>> constructedChains, moreConstructedChains;
 
 	typedef BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>> RC_INV_OBJ;
@@ -1162,7 +1162,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 	typedef PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> RC_REGINIT_OBJ;
 	typedef RC_REGINIT_OBJ RC_LNZSR_OBJ;
 	RC_GEN_CONSUMER_DECLARE_LOOPELEM(RC_LNZSR_OBJ, currSubResultantComponent);
-	
+
 	// std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>> regularComponents;
 	RC_GEN_CONSUMER_INIT(RC_REGINIT_OBJ, regularComponents, (&ZeroDimensionalRegularChain<Field, RecursivePoly>::_regularizeInitial), this, f);
 	// regularComponents = regularizeInitial(f);
@@ -1269,7 +1269,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 					std::cerr << "[0D isInv][" << ZDdepth << "][" << ZDisInvertibleDepth << "]\tL = " << L << std::endl;
 				#endif
 				if (g.degree(v) <= 0) {
-					//deg(g, v) = 0 or g = 0	
+					//deg(g, v) = 0 or g = 0
 					#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 						std::cerr << "[0D isInv][" << ZDdepth << "][" << ZDisInvertibleDepth << "] T variables before merge:" << std::endl;
 						printVariables(T.variables());
@@ -1329,7 +1329,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 					#endif
 					T = L;
 //					T.constructChain(g,ASSUME_MAKESCHAIN | ASSUME_REGULAR | ASSUME_SQUAREFREE | ASSUME_PRIMITIVE);
-					
+
 					constructedChains = T.constructChains(g,constructOptions);
 
 					for (int i=0; i<constructedChains.size(); ++i) {
@@ -1359,7 +1359,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 	//					T.constructChain(q.mainPrimitivePart(),ASSUME_MAKESCHAIN | ASSUME_REGULAR | ASSUME_SQUAREFREE | ASSUME_PRIMITIVE);
 
 						constructedChains = T.constructChains(q.mainPrimitivePart(),ASSUME_MAKESCHAIN | ASSUME_REGULAR | ASSUME_SQUAREFREE | ASSUME_PRIMITIVE | ASSUME_ZERODIMENSIONAL);
-						
+
 						for (int i=0; i<constructedChains.size(); ++i) {
 							#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 								std::cerr << "[0D isInv] L+q = " << constructedChains[i] << std::endl;
@@ -1367,7 +1367,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 	//						constructedChains[i].constructChain(U,ASSUME_MAKESCHAIN | ASSUME_REGULAR | ASSUME_SQUAREFREE | ASSUME_PRIMITIVE);
 
 							moreConstructedChains = constructedChains[i].constructChains(U,ASSUME_MAKESCHAIN | ASSUME_REGULAR | ASSUME_SQUAREFREE | ASSUME_PRIMITIVE | ASSUME_ZERODIMENSIONAL);
-							
+
 							for (int k=0; k<moreConstructedChains.size(); ++k) {
 								#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 									std::cerr << "[0D isInv][" << ZDdepth << "][" << ZDisInvertibleDepth << "] L+q+U = " << moreConstructedChains[k] << std::endl;
@@ -1403,7 +1403,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 	RC_GEN_PRODUCER_COMPLETE(results);
 	// return results;
 }
-		
+
 /**
  * Compute the last nonzero subresultant of the subresultant chain src of f and g modulo the current regular chain,
  * i.e., compute a splitting of pairs (R_i,T_i) such that R_i is the last nonzero subresultant modulo T_i.
@@ -1417,7 +1417,7 @@ std::vector<BoolChainPair<ZeroDimensionalRegularChain<Field,RecursivePoly>>> Zer
 #if defined(RC_WITH_GENERATORS) && RC_WITH_GENERATORS
 template <class Field, class RecursivePoly>
 void ZeroDimensionalRegularChain<Field,RecursivePoly>::lastNonZeroSubResultant(const RecursivePoly& f, const RecursivePoly& g, const Symbol& v, bool assumeRegular, AsyncGenerator<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>>& results) const {
-#else 
+#else
 template <class Field, class RecursivePoly>
 std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>> ZeroDimensionalRegularChain<Field,RecursivePoly>::lastNonZeroSubResultant(const RecursivePoly& f, const RecursivePoly& g, const Symbol& v, bool assumeRegular) const {
 #endif
@@ -1429,7 +1429,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 //	std::vector<Symbol> fgvs,Tvs,vs;
 //	fgvs = setUnion(f.variables(),g.variables());
 //	Tvs = setUnion(this->vars,vs);
-	
+
 	vs = this->vars;
 	if (contains(vs,v)) {
 		std::cerr << "BPAS: error, ZeroDimensionalRegularChain cannot contain the variable input to lastNonZeroSubResultant." << std::endl;
@@ -1465,7 +1465,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 		std::cerr << "[0D lnzsr][" << ZDdepth << "][" << ZDlnzsrDepth << "] F.initial = " << F.initial() << std::endl;
 	#endif
 	one.one();
-	
+
 	typedef PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> RC_LNZSR_OBJ;
 	RC_GEN_PRODUCER_DECLARE_RESULT(RC_LNZSR_OBJ, results);
 //	std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>> results;//,moreResults,regularF,regularG;
@@ -1473,7 +1473,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 
 	SubResultantChain<RecursivePoly,RecursivePoly> src;
 	typedef PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> RC_LNZSR_OBJ;
-	RC_GEN_CONSUMER_DECLARE_LOOPELEM(RC_LNZSR_OBJ, currLNZSRIn);	
+	RC_GEN_CONSUMER_DECLARE_LOOPELEM(RC_LNZSR_OBJ, currLNZSRIn);
 
 	typedef RC_LNZSR_OBJ RC_REGINIT_OBJ;
 	RC_GEN_CONSUMER_INIT(RC_REGINIT_OBJ, regularF, (&ZeroDimensionalRegularChain<Field, RecursivePoly>::_regularizeInitial), this, F);
@@ -1593,7 +1593,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 	RC_GEN_PRODUCER_COMPLETE(results);
 //	return results;
 }
-		
+
 /**
  * Compute the last nonzero subresultant of the subresultant chain src of f and g modulo the current regular chain,
  * i.e., compute a splitting of pairs (R_i,T_i) such that R_i is the last nonzero subresultant modulo T_i.
@@ -1625,8 +1625,6 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 	#endif
 	int k(0);
 	RecursivePoly s,c;
-	RecursivePoly uP;
-//	SparseUnivariatePolynomial<RecursivePoly> uP;
 	struct Task {
 		RecursivePoly a;
 		RecursivePoly b;
@@ -1662,25 +1660,18 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] v = " << v << std::endl;
 			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] T = " << currTask.T << std::endl;
 		#endif
-		uP = src.subResultantOfIndex(k);
-		#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
-			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] src[" << k << "] = " << uP << std::endl;
-			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] uP: " << uP << std::endl;
-		#endif
 
-		RecursivePoly supLead = uP.leadingCoefficient();
-		#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
-			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] uP.leadingCoefficient: " << supLead << std::endl;
-		#endif
+		//Feb2/2021:Reworking "principal subres coef" vs "initial of subres"
+		//          We should use initial unless we know the RC is square free
+		if (currTask.T.isSquareFree()) {
+			c = src.principalSubResultantCoefficientOfIndex(k);
+		} else {
+		// std::cerr << "[rGCD][" << regularGCDDepth << "][" << depth <<"] getting initial of index " << i << std::endl;
+			c = src.subResultantInitialOfIndex(k);
+		}
+		// c = src.principalSubResultantCoefficientOfIndex(k);
+		// c = s.leadingCoefficientInVariable(v);
 
-		// TODO: remove either s or uP as both are not needed
-		s = uP;
-		#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
-			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] s = " << s << std::endl;
-			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] s.leadingVariable = " << s.leadingVariable() << std::endl;
-		#endif
-
-		c = s.leadingCoefficientInVariable(v);
 		#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 			std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] c = " << c << std::endl;
 		#endif
@@ -1692,17 +1683,22 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 				RC_GEN_CONSUMER_GET_LOOPELEM(isInv, currIsInv, i);
 				// currIsInv = std::move(isInv[i]);
 				if (currIsInv.isTrue) {
+					s = src.subResultantOfIndex(k);
 					#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] lnzsr found!" << std::endl;
+						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] src[" << k << "] = " << s << std::endl;
+						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] s = " << s << std::endl;
+						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] s.leadingCoefficient: " << s.leadingCoefficient << std::endl;
+						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] s.leadingVariable = " << s.leadingVariable() << std::endl;
+					#endif
+
+					#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] T = " << currIsInv.chain << std::endl;
 						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] S before reduceMinimal: " << s << std::endl;
-						std::cerr << "s = " << currIsInv.chain.reduceMinimal(s) << std::endl;
-//						std::cerr << "s = " << currIsInv.chain.reduce(s) << std::endl;
 					#endif
 					RecursivePoly temp(currIsInv.chain.reduceMinimal(s));
-//					RecursivePoly temp(currIsInv.chain.reduce(s));
 					#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
-						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] \t\t\treduceMinimal(s) = " << temp << std::endl;
+						std::cerr << "[0D lnzsrIn][" << ZDdepth << "][" << ZDlnzsrInnerDepth << "] S after reduceMinimal: " << temp << std::endl;
 					#endif
 					#ifdef REGULARCHAIN_PROFILING
 						startTimer(&rcProfilingStart);
@@ -1774,6 +1770,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 				}
 			}
 			else {
+				s = src.subResultantOfIndex(k);
 				// I think this reduce call is superfluous
 				RecursivePoly temp(currTask.T.reduceMinimal(s));
 //				RecursivePoly temp(currTask.T.reduce(s));
@@ -1787,7 +1784,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 		}
 //		isInv = currTask.T.isInvertible(c);
 	}
-	
+
 //	RecursivePoly h(f);
 //	ZeroDimensionalRegularChain<Field,RecursivePoly> rc(*this);
 //	PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> pcp (h,rc);
@@ -1798,9 +1795,9 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 	--ZDlnzsrInnerDepth;
 	--ZDdepth;
 	RC_GEN_PRODUCER_COMPLETE(results);
-	// return results;		
+	// return results;
 }
-		
+
 /**
  * Compute the gcd of polynomials f and g with respect to v modulo the current object
  * regular chain
@@ -1824,7 +1821,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 
 	return results;
 }
-		
+
 /**
  * Compute the gcd of polynomials f and g with respect to v modulo the current object
  * regular chain
@@ -1836,7 +1833,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 #if defined(RC_WITH_GENERATORS) && RC_WITH_GENERATORS
 template <class Field, class RecursivePoly>
 void ZeroDimensionalRegularChain<Field,RecursivePoly>::_regularGCD(const RecursivePoly& f, const RecursivePoly& g, const Symbol& v, AsyncGenerator<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>>& results) {
-#else 
+#else
 template <class Field, class RecursivePoly>
 std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>>> ZeroDimensionalRegularChain<Field,RecursivePoly>::_regularGCD(const RecursivePoly& f, const RecursivePoly& g, const Symbol& v) {
 #endif
@@ -1849,7 +1846,7 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "[0D regGCD][" << ZDdepth << "][" << ZDregularGCDDepth << "] entering regularGCD: " << std::endl;
 	#endif
-	
+
 	typedef PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,RecursivePoly>> RC_REGGCD_OBJ;
 	RC_GEN_PRODUCER_DECLARE_RESULT(RC_REGGCD_OBJ, results);
 	typedef RC_REGGCD_OBJ RC_LNZSR_OBJ;
@@ -1859,14 +1856,14 @@ std::vector<PolyChainPair<RecursivePoly,ZeroDimensionalRegularChain<Field,Recurs
 	bool assumeReg = true;
 	RC_GEN_CONSUMER_INIT(RC_LNZSR_OBJ, LNZSRResults, (&ZeroDimensionalRegularChain<Field, RecursivePoly>::lastNonZeroSubResultant), this, f, g, v, assumeReg);
 //	result = lastNonZeroSubResultant(f,g,v,true);
-	
+
 	RC_GEN_CONSUMER_LOOP(LNZSRResults, currLNZSRResult, i) {
 //	for (auto res : result) {
 //		RC_GEN_PRODUCER_ACCUMULATE(results, res);
 		RC_GEN_CONSUMER_GET_LOOPELEM(LNZSRResults, currLNZSRResult, i);
 		RC_GEN_PRODUCER_ACCUMULATE(results, currLNZSRResult);
 	}
-	
+
 	#ifdef ZERODIMENSIONALREGULARCHAIN_DEBUG
 		std::cerr << "[0D regGCD][" << ZDdepth << "][" << ZDregularGCDDepth << "] leaving regularGCD: " << std::endl;
 	#endif

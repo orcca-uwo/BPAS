@@ -50,7 +50,7 @@ Node* buildRandomZPoly(int nvar, int nterms, unsigned long int coefBound, degree
 	while(mpz_sgn(mpzNum) == 0) {
 		mpz_urandomb(mpzNum, R_STATE, coefBound);
 	}
-	
+
 	if (includeNeg && rand() % 2) {
 		//50/50 chance of being negative
 		mpz_neg(mpzNum, mpzNum);
@@ -61,7 +61,7 @@ Node* buildRandomZPoly(int nvar, int nterms, unsigned long int coefBound, degree
 	mpz_set(mpq_numref(n->coef), mpzNum);
 	mpz_set(mpq_denref(n->coef), mpzDen);
 	mpq_canonicalize(n->coef);
-	
+
 	head = n;
 	tail = n;
 	--nterms;
@@ -137,6 +137,21 @@ AltArrZ_t* buildRandomPoly_AAZ_unpk(int nvar, int nterms, unsigned long int coef
 
 		// fprintf(stderr, "seed: %lu\n", t);
 		initRand = 1;
+	}
+
+	if (nvar == 0) {
+		AltArrZ_t* aa = makePolynomial_AAZ(1, nvar);
+		mpz_init(aa->elems->coef);
+		while(mpz_sgn(aa->elems->coef) == 0) {
+			mpz_urandomb(aa->elems->coef, R_STATE, coefBound);
+		}
+
+		if (includeNeg && rand() % 2) {
+			//50/50 chance of being negative
+			mpz_neg(aa->elems->coef, aa->elems->coef);
+			// coef_l *= -1;
+		}
+		return aa;
 	}
 
 	degrees_t maxTotalDeg = sparsity * nterms;
@@ -295,10 +310,6 @@ AltArrZ_t* buildRandomZPolyFromMax(int nvar, const int* maxDegs, unsigned long i
 	static gmp_randstate_t R_STATE;
 	if (!initRand) {
 		time_t t = time(NULL);
-/*		t = 1572887766; // freeing an invalid pointer in bivariate factor_test()*/
-/*		t = 1572893480; // segfault in factor_prim_sqf_inner in bvariate factor_test() (related to previous?)*/
-		// t = 1580604430;
-		t = 1580938263;
 		srand(t);
 
 		gmp_randinit_default (R_STATE);
@@ -320,9 +331,9 @@ AltArrZ_t* buildRandomZPolyFromMax(int nvar, const int* maxDegs, unsigned long i
 	AltArrZ_t* res = makePolynomial_AAZ(maxTerms, nvar);
 	AAZElem_t* elems = res->elems;
 	const int* sizes = getExpOffsetArray(nvar);
-	
+
 	float eps = 1e-6;
-	if (sparsity < eps) { 
+	if (sparsity < eps) {
 		//generate dense poly;
 		degrees_t degs = 0;
 		int curIdx = 0;
@@ -350,7 +361,7 @@ AltArrZ_t* buildRandomZPolyFromMax(int nvar, const int* maxDegs, unsigned long i
 						degs |= (curDegs[k] << sizes[k]);
 					}
 					elems[curIdx].degs = degs;
-					
+
 					--(curDegs[i]);
 					++curIdx;
 				}
@@ -362,10 +373,10 @@ AltArrZ_t* buildRandomZPolyFromMax(int nvar, const int* maxDegs, unsigned long i
 					curDegs[k] = maxDegs[k];
 				}
 
-				i = nvar; 
+				i = nvar;
 			}
 		}
-		
+
 		res->size = curIdx;
 
 	} else if (sparsity >= 1.0f) {
@@ -389,7 +400,7 @@ AltArrZ_t* buildRandomZPolyFromMax(int nvar, const int* maxDegs, unsigned long i
 	} else {
 		//we are in the general case
 		unsigned long long int targetTerms = ceil(maxTerms * (1.0 - sparsity));
-	
+
 		//incremement maxDegs for mod operation below
 		int maxDegsL[nvar];
 		for (int k = 0; k < nvar; ++k) {
@@ -415,7 +426,7 @@ AltArrZ_t* buildRandomZPolyFromMax(int nvar, const int* maxDegs, unsigned long i
 			if (i == 0) {
 				for (int k = 0; k < nvar; ++k){
 					elems[0].degs |= ( ((degrees_t)maxDegs[k]) << sizes[k]);
-				}			
+				}
 			} else {
 				for (int k = 0; k < nvar; ++k){
 					curDeg = rand() % (maxDegsL[k]);

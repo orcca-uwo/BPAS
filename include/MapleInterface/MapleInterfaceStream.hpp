@@ -13,23 +13,23 @@ extern float g_mapleWaitTime;
 
 
 /**
- * The MapleInterfaceStream is a singleton 
+ * The MapleInterfaceStream is a singleton
  * designed to serialize requests to the maple kernel.
  * It acts as the single interface to the OpenMaple
  * sub-system (since Maple is not thread safe).
  *
- * Users can get the singleton instance via the 
+ * Users can get the singleton instance via the
  * static instance method.
  */
 class MapleInterfaceStream : public MapleInterface {
-	
+
 #if (defined(SERIAL) && SERIAL) || !MAPLE_INTERFACE_POOL
 	MapleWorkerThread m_thread;
 #else
 	MaplePipePool m_pool;
 #endif
 
-	
+
 	MapleInterfaceStream() :
 #if (defined(SERIAL) && SERIAL) || !MAPLE_INTERFACE_POOL
 		m_thread()
@@ -46,20 +46,20 @@ class MapleInterfaceStream : public MapleInterface {
 
 	char* gcd_via_string(const char* a, const char* b);
 
+
 protected:
 
 	virtual void sendCommand(const std::vector<std::string>& request, std::vector<std::string>& response);
 
 public:
-	
-	static MapleInterfaceStream _theMISInstance;
 
 	/**
 	 * Get the MapleInterfaceStream singleton instance.
 	 * returns the instance.
 	 */
 	static MapleInterfaceStream& instance() {
-		return MapleInterfaceStream::_theMISInstance;
+		static MapleInterfaceStream _theMISInstance;
+		return _theMISInstance;
 	}
 
 	/**

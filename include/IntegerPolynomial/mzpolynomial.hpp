@@ -442,7 +442,8 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 		/**
 		 * Get the content with respect to all variables. That is, a single
-		 * rational number. The content here is one such that this/content is
+		 * integer which is the GCD of all coefficients.
+		 * The content here is one such that this/content is
 		 * an integer polynomial with content of 1.
 		 *
 		 * Moreover, the content is one such that the leading coefficient
@@ -452,10 +453,12 @@ class SparseMultivariateIntegerPolynomial: public BPASRecursivelyViewedPolynomia
 
 		/**
 		 * Get the content of this polynomial with respect to the variables in
-		 * the input vector v.
+		 * the input vector v. That is, viewing the polynomial recursively
+		 * such that the variables in v are the polynomial variables and all
+		 * other variables belong to the coefficient ring.
 		 *
-		 * Moreover, the content is one such that the leading coefficient
-		 * of the corresponding primitive part is positive.
+		 * In this case, the content does not necessarily make the leading
+		 * coefficient of the corresponding primitive part positive.
 		 */
 		SparseMultivariateIntegerPolynomial content(const std::vector<Symbol>& v) const;
 

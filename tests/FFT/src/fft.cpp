@@ -54,8 +54,59 @@ void test0(sfixn p,int K){
 }
 
 
+void testf(sfixn p,int K, int check){
+	printf("fft_furer1\n");
+	p = 180143985094819841;
+	sfixn *Ap = (sfixn *)calloc(K, sizeof(sfixn));
+	Ap = EX_RandomUniPolyCoeffsVec(K, p);
+	sfixn *Bp = (sfixn *)calloc(K, sizeof(sfixn));
+
+	/*
+	for(int i = 0; i < K; ++i)
+	Ap[i] = i+1;*/
+
+
+
+	for(int i = 0; i < K; ++i)
+		Bp[i] = Ap[i];
+	sfixn e = logceiling(K);
+	printf("%ld,%ld\n",p,e);
+	sfixn *SB1 = (sfixn *)my_calloc(K, sizeof(sfixn)); 
+	int K2 = K<<1;
+	sfixn* KRT = (sfixn *)my_calloc(K2<<1, sizeof(sfixn));
+	FURERPBPAS1::RootsTableFurer(K2, e+1, KRT);
+	KRT += K2;
+    
+	
+	unsigned long long start;
+	startTimer(&start);
+ 	FURERPBPAS1::DFT_eff_p1(K, e, Ap, KRT, SB1);
+	float elapsed;
+ 	stopTimer(&start,&elapsed);
+	
+	cout << "1-D FFTs (sec): " <<"\t" << elapsed << endl;
+
+	if (check == 1) {
+	  bool isEq = 1;
+	  for (int i = 0; i < K; ++i) {
+	    sfixn r = FURERPBPAS1::testDFT(K, i, Bp, KRT);
+	    if (r != Ap[i]) {
+	      isEq = 0;
+	      printf("error in index %i!\n", i);
+	      break;
+	    }
+	  }
+	  if (isEq) { cout << "pass." << endl; }
+	}
+
+	my_free(SB1);
+	my_free(KRT-K2);
+	//free(invKRT);
+	free(Ap);
+}
+
+
 void test1(sfixn p,int K, int check){
-	p=180143985094819841u;
 	sfixn *Ap = (sfixn *)calloc(K, sizeof(sfixn));
 	Ap = EX_RandomUniPolyCoeffsVec(K, p);
 	sfixn *Bp = (sfixn *)calloc(K, sizeof(sfixn));
@@ -76,15 +127,15 @@ void test1(sfixn p,int K, int check){
 	sfixn *SB1 = (sfixn *)my_calloc(K, sizeof(sfixn)); 
 	int K2 = K<<1;
 	sfixn* KRT = (sfixn *)my_calloc(K2<<1, sizeof(sfixn));
-	//PBPAS::RootsTableSpe(K2, e+1, KRT, pPtr,1);
-	FURERPBPAS1::RootsTableFurer(K2, e+1,KRT);
+	PBPAS::RootsTableSpe(K2, e+1, KRT, pPtr,1);
+	//FURERPBPAS1::RootsTableFurer(K2, e+1,KRT);
 	KRT += K2;
     
 	
 	unsigned long long start;
 	startTimer(&start);
- //	PBPAS::DFT_eff(K, e, Ap, KRT, pPtr, H, NULL, SB1,1);
- 	FURERPBPAS1:: DFT_eff_p1(K, e,Ap,KRT,SB1);
+ 	PBPAS::DFT_eff(K, e, Ap, KRT, pPtr, H, NULL, SB1,1);
+ //	FURERPBPAS1:: DFT_eff_p1(K, e,Ap,KRT,SB1);
 	float elapsed;
  	stopTimer(&start,&elapsed);
 	
@@ -113,8 +164,8 @@ void test1(sfixn p,int K, int check){
 	if (check == 1) {
 	  bool isEq = 1;
 	  for (int i = 0; i < K; ++i) {
-	   // sfixn r = PBPAS1::testDFT(K, i, Bp, KRT);
-	    sfixn r = FURERPBPAS1::testDFT(K, i, Bp, KRT);
+	    sfixn r = PBPAS1::testDFT(K, i, Bp, KRT);
+	   // sfixn r = FURERPBPAS1::testDFT(K, i, Bp, KRT);
 	    
 	    if (r != Ap[i]) {
 	      isEq = 0;
@@ -1212,7 +1263,7 @@ int main(int argc, char *argv[])
 	else if(fft==15)
                 test_itft_datacollect(p,K,basecase);
         else if(fft==16)
-	         test1(p,K,1);
+	         testf(p,K,1);
 	else
 		test0(p,K);
 

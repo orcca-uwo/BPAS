@@ -1,10 +1,44 @@
 
 
 
-
 #include "PowerSeries_TestCases.h"
+#include "../../include/Parser/bpas_parser.h"
+#include "../../include/Utils/Unix_Timer.h"
+
 
 int main(int argc, char** argv) {
+
+
+	// const char* vars[] = {"x", "y", "z"};
+
+ //    Poly_ptr  polynom = generate_altarr_var_defined("1+x+y+z", vars, 3);
+ //    PowerSeries_t*  a = convertPolyToPowerSeries_PS(polynom);
+ //    PowerSeries_t*  b = inversePowerSeries_PS(a);
+
+ //    unsigned long long start;
+ //    _startTimer(&start);
+ //    Poly_ptr p = homogPart_PS(400, b);
+ //    float elapsed;
+ //    _stopTimer(&start, &elapsed);
+
+ //    // printPoly_AA(stderr, p, vars, 2);
+ //    fprintf(stderr, "\np->size: %d\n", p->size);
+ //    fprintf(stderr, "\ntime: %9.4f\n", elapsed);
+ //    // int longCount = 0;
+ //    // for (int i = 0; i < p->size; ++i) {
+ //    // 	if (mpz_sizeinbase(mpq_numref(p->elems[i].coef), 2) > 63) {
+ //    // 		++longCount;
+ //    // 	}
+ //    // }
+ //    // fprintf(stderr, "\nlongCounf: %d\n", longCount);
+
+
+ //    freePolynomial_AA(polynom);
+
+ //    destroyPowerSeries_PS (a);
+ //    destroyPowerSeries_PS (b);
+
+	// return 0;
 
 	test1();
 	test2();

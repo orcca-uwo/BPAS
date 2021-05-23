@@ -29,12 +29,18 @@ extern "C" {
 #include "../RationalNumberPolynomial/SMQP_Support-AA.h"
 #include "SMZP_Support_Unpacked.h"
 
-#define DUZP_INFNORM_SUBRES_THRESHOLD 256
+#define DUZP_INFNORM_SUBRES_THRESHOLD 16
 #define DUZP_MINDEG_SUBRES_THRESHOLD 50
-#define DBZP_INFNORM_SUBRES_THRESHOLD 5
+#define DBZP_INFNORM_SUBRES_THRESHOLD 8
 #define DBZP_MINDEGY_SUBRES_THRESHOLD 5
 // #define PRINT_WHICH_SUBRES 1
-#define SUBRES_TIME_DEBUG 0
+// #define SUBRES_TIME_DEBUG 0
+
+
+/*****************
+ * Forward Declares
+ *****************/
+typedef struct DBZP DBZP_t;
 
 /*****************
  * Alternating Array definition and helpers
@@ -49,7 +55,7 @@ typedef struct AltArrZ {
 	int size;
 	int alloc;
 	int nvar;
-	int unpacked;
+	int unpacked; //actually a boolean
 	AAZElem_t* elems;
 } AltArrZ_t;
 
@@ -99,7 +105,6 @@ static inline void freePolynomial_AAZDL(AltArrZDegList_t* aa) {
 	}
 }
 
-
 /**
  * Create a new polynomial alternating array with a specified allocation size.
  * The array is not initialized.
@@ -107,6 +112,9 @@ static inline void freePolynomial_AAZDL(AltArrZDegList_t* aa) {
 static inline AltArrZ_t* makePolynomial_AAZ(int allocSize, int nvar) {
 	if (allocSize < 1) {
 		return NULL;
+	}
+	if (nvar > MAX_NVAR_PACKED) {
+		return makePolynomial_AAZ_unpk(allocSize, nvar);
 	}
 	AltArrZ_t* newAA = (AltArrZ_t*) malloc(sizeof(AltArrZ_t));
 	newAA->size = 0;
@@ -134,9 +142,13 @@ static inline AltArrZ_t* makeConstPolynomial_AAZ(int allocSize, int nvar, const 
 		return NULL;
 	}
 
+	if (nvar > MAX_NVAR_PACKED) {
+		return makeConstPolynomial_AAZ_unpk(allocSize, nvar, coef);
+	}
+
 	AltArrZ_t* newAA = (AltArrZ_t*) malloc(sizeof(AltArrZ_t));
 	newAA->size = 1;
-	newAA->alloc = allocSize;
+	newAA->alloc = allocSize;;
 	newAA->nvar = nvar;
 	newAA->unpacked = 0;
 	newAA->elems = (AAZElem_t*) malloc(sizeof(AAZElem_t)*allocSize);
@@ -149,6 +161,14 @@ static inline AltArrZ_t* makeConstPolynomial_AAZ(int allocSize, int nvar, const 
 static inline AltArrZ_t* makeConstIntPolynomial_AAZ(int allocSize, int nvar, long int coef) {
 	if (allocSize < 1) {
 		return NULL;
+	}
+
+	if (nvar > MAX_NVAR_PACKED) {
+		mpz_t c;
+		mpz_init_set_si(c, coef);
+		AltArrZ_t* ret = makeConstPolynomial_AAZ_unpk(allocSize, nvar, c);
+		mpz_clear(c);
+		return ret;
 	}
 
 	AltArrZ_t* newAA = (AltArrZ_t*) malloc(sizeof(AltArrZ_t));
@@ -168,6 +188,13 @@ static inline int isZero_AAZ(const AltArrZ_t* aa) {
     }
 
     int ret = mpz_sgn(aa->elems[0].coef) == 0;
+    // if (ret) {
+    //  //If the leading coefficient is zero, it might indicate a failure
+    //  //to be in canonical form. 0*x^0 MIGHT be considered 0, but
+    //  // 0*x^d, for any d, definitely indicates a problem somewhere.
+    // 	free((int*)-1);
+    // }
+
     if (aa->unpacked) {
     	ret = ret && isZeroExponentVector_unpk(aa->elems[0].degs, aa->nvar);
     } else {
@@ -178,7 +205,7 @@ static inline int isZero_AAZ(const AltArrZ_t* aa) {
 }
 
 static inline int isOne_AAZ(AltArrZ_t* aa) {
-	if (aa != NULL) {
+	if (aa != NULL && aa->size > 0) {
 		int ret = aa->unpacked ? isZeroExponentVector_unpk(aa->elems[0].degs, aa->nvar) : isZeroExponentVector(aa->elems[0].degs);
 		ret = ret && mpz_cmp_ui(aa->elems[0].coef, 1ul) == 0;
 		return ret;
@@ -201,6 +228,9 @@ static inline int isConstant_AAZ(const AltArrZ_t* aa) {
     }
     int isZeroDegs = aa->unpacked ? isZeroExponentVector_unpk(aa->elems->degs, aa->nvar) : isZeroExponentVector(aa->elems->degs);
     if (isZeroDegs) {
+    	if (aa->size > 1) {
+    		fprintf(stderr, "BPAS SMZP WARNING: Polynomial in isConstant_AAZ() is not in canonical form\n");
+    	}
         if (mpz_sgn(aa->elems->coef) >= 0) {
             return 1;
         } else {
@@ -211,11 +241,25 @@ static inline int isConstant_AAZ(const AltArrZ_t* aa) {
 }
 
 /**
+ * Set the partial degree of one variable in one term in the polynomial aa.
+ * The term at index idx should already exist for the partial degree to be set.
+ *
+ * Note that this might cause the resulting polynomial to *not* be in
+ * canonical form. Sorting may be required.
+ *
+ * aa: the poly which partial degree is to be set.
+ * idx: the index of the term whose partial degree is to be set.
+ * k: the index of the variable whose partial degree is to be set.
+ * deg: the new partial degree.
+ */
+void setPartialDegreeTerm_AAZ(AltArrZ_t* aa, int idx, int k, degree_t deg);
+
+/**
  * Get the partial degree of the k-th variable of the term at index idx of aa.
  * returns that partial degree or -1 if k >= nvar or idx > aa->size
  */
 static inline degree_t partialDegreeTerm_AAZ(const AltArrZ_t* aa, int idx, int k) {
-	if (aa == NULL || aa->size == 0) {
+	if (isZero_AAZ(aa)) {
 		return -1;
 	}
 	if (idx >= aa->size || k >= aa->nvar) {
@@ -248,7 +292,31 @@ static inline void partialDegreesTerm_AAZ(const AltArrZ_t* aa, int idx, degree_t
 	}
 }
 
-void printPoly_AAZ(FILE* fp, const AltArrZ_t* aa, const char** syms, int nvar);
+
+/**
+ * Print the poly, aa, to the file pointer fp.
+ * syms are the variable symbols, and should have length at least nvar.
+ */
+void printPolyOptions_AAZ(FILE* fp, const AltArrZ_t* aa, const char** syms, int nvar, int positiveDegsOnly);
+
+/**
+ * Print the poly, aa, to the file pointer fp.
+ * syms are the variable symbols, and should have length at least nvar.
+ * This includes printing all variables and all exponents in a monomial.
+ */
+static inline void printPoly_AAZ(FILE* fp, const AltArrZ_t* aa, const char** syms, int nvar) {
+	printPolyOptions_AAZ(fp, aa, syms, nvar, 0);
+}
+
+/**
+ * Print the poly, aa, to the file pointer fp.
+ * syms are the variable symbols, and should have length at least nvar.
+ * This prints only variables in a monomial with positive exponents.
+ */
+static inline void printPolyClean_AAZ(FILE* fp, const AltArrZ_t* aa, const char** syms, int nvar) {
+	printPolyOptions_AAZ(fp, aa, syms, nvar, 1);
+}
+
 
 /**
  * Determine if the AAZ aa is in canonical form.
@@ -277,7 +345,7 @@ int isExactlyEqual_AAZ(const AltArrZ_t* a, const AltArrZ_t* b);
 /**
  * Get the number of non-zero variabes in aa.
  */
-void nonZeroVariables_AAZ(AltArrZ_t* aa, int* vars);
+void nonZeroVariables_AAZ(const AltArrZ_t* aa, int* vars);
 
 /**
  * Get the total degree of aa.
@@ -292,16 +360,32 @@ degree_t partialDegree_AAZ(const AltArrZ_t* aa, int k);
 
 /**
  * Get the partial degrees of each variable in aa.
- * The partial degree of variable i is returned in degs[i].
+ * The degree of the i'th variable is returned in degs[i].
+ * It is assumed that degs is a pre-allocated array of size at least aa->nvar.
  */
 void partialDegrees_AAZ(const AltArrZ_t* aa, degree_t* degs);
+
+/**
+ * Get the low degree w.r.t. each variable in the polynomial aa.
+ * The low degree of the i'th variable is returned in degs[i].
+ * It is assumed that degs is a pre-allocated array of size at least aa->nvar.
+ */
+void lowDegrees_AAZ(const AltArrZ_t* aa, degree_t* degs);
+
+/**
+ * Get, and remove, the low degree w.r.t. each variable in the polynomial aa.
+ * The low degree of the i'th variable is returned in degs[i].
+ * If degs == NULL, low degrees are only removed and not returned.
+ * Otherwise, degs should be a pre-allocated array of size at least aa->nvar.
+ */
+void removeLowDegrees_AAZ_inp(AltArrZ_t* aa, degree_t* degs);
 
 /**
  * Get the main degree of aa. In particular, the
  * partial degree of the first variable whose partial
  * degree is positive.
  */
-degree_t mainDegree_AAZ(AltArrZ_t* aa);
+degree_t mainDegree_AAZ(const AltArrZ_t* aa);
 
 /**
  * Get the index of the first non-zero variable in aa, the main variable.
@@ -331,6 +415,20 @@ int isEqualWithVariableOrdering_AAZ(AltArrZ_t* a, AltArrZ_t* b, const int* xs, i
  * Get the term of a at index idx. Returns the term as a single term polynomial.
  */
 AltArrZ_t* termAtIdx_AAZ(AltArrZ_t* a, int idx);
+
+/**
+ * Get the homogeneous part of the polynomial a with total degree tdeg.
+ *
+ * @return a homogenous polynomial with total degree tdeg.
+ */
+AltArrZ_t* homogeneousPart_AAZ(AltArrZ_t* a, int tdeg);
+
+/**
+ * Determine if the input polynomial is homogeneous.
+ * @param a the input polynomial
+ * @return 1 iff a is homogeneous
+ */
+int isHomogeneous_AAZ(const AltArrZ_t* a);
 
 /**
  * Determine if the constant term of a is zero.
@@ -563,6 +661,59 @@ AltArrZ_t* deepCopyPolynomial_AAZFromAA(AltArr_t* aa);
 AltArr_t* deepCopyPolynomial_AAFromAAZ(AltArrZ_t* aa);
 
 /**
+ * Convert a DBZP polynomial into a SMZP polynomial, possibly in-plcae.
+ * If aa points to a non-null AltArrZ_t*, then that polynomial will be
+ * modified in-place to take on the value of the DBZP p.
+ *
+ * @param p the DBZP to convert from
+ * @param aa[in,out] a pointer to a possibly pre-allocated SMZP to store the conversion.
+ */
+void convertFromDBZP_AAZ_inp(const DBZP_t* p, AltArrZ_t** aa);
+
+
+/**
+ * Compare the ordering of two polynomials,
+ * returning a positive value if a > b, zero if a == b, or a negative value if a < b.
+ * The ordering is a total order is based on first the lexicographical ordering of leading monomials,
+ * then comparing leading coefficient if leading monomials are equal,
+ * and finally recursively comparing the ordering of the reductum of each of a and b
+ * if the leading terms are equal.
+ *
+ * @note the two input polynomial must have the same number variables.
+ *
+ * @param a the first multivariate integer polynomial
+ * @param b the second multivariate integer polynomial
+ *
+ * @return a positive value if a > b, zero if a == b, or a negative value if a < b.
+ */
+int comparePolynomials_AAZ(const AltArrZ_t* a, const AltArrZ_t* b);
+
+/**
+ * Sort a list of polynomial in-place, in increasing order
+ * based on the total ordering specified by comparePolynomial_AAZ.
+ *
+ * @see comaprePolynomial_AAZ
+ *
+ * @param[in,out] polys an array polynomials to sort
+ * @param n the length of the polys array.
+ */
+void sortPolynomialList_AAZ(AltArrZ_t** polys, int n);
+
+/**
+ * Given two parallel arrays of polynomials and integers (exponents),
+ * such that polys[i] corresponds to integer [i],
+ * sort both arrays in-place based on the total order specificed
+ * by comparePolynomial_AAZ.
+ *
+ * @see comaprePolynomial_AAZ
+ *
+ * @param[in,out] polys an array polynomials to sort
+ * @param[in,out] exps an array integers to sort
+ * @param n the length of the polys array.
+ */
+void sortPolynomialAndExponentList_AAZ(AltArrZ_t** polys, int* exps, int n);
+
+/**
  * Sort a polynomial in place represented by an alternating array.
  *
  * returns the same pointer given.
@@ -604,8 +755,26 @@ static inline void canonicalizePolynomial_AAZ(AltArrZ_t* aa) {
  */
 void negatePolynomial_AAZ(AltArrZ_t* a);
 
+static inline void multiplyByLongInt_AAZ_inp(AltArrZ_t* aa, long z) {
+	if (isZero_AAZ(aa)) {
+		return;
+	}
+	if (z == 0) {
+		resizePolynomial_AAZ(aa, 0);
+		return;
+	}
+
+	for (int i = 0; i < aa->size; ++i) {
+		mpz_mul_si(aa->elems[i].coef, aa->elems[i].coef, z);
+	}
+}
+
 static inline void multiplyByInteger_AAZ_inp(AltArrZ_t* aa, const mpz_t z) {
-	if (aa == NULL || aa->size == 0) {
+	if (isZero_AAZ(aa)) {
+		return;
+	}
+	if (mpz_sgn(z) == 0) {
+		resizePolynomial_AAZ(aa, 0);
 		return;
 	}
 
@@ -615,8 +784,12 @@ static inline void multiplyByInteger_AAZ_inp(AltArrZ_t* aa, const mpz_t z) {
 }
 
 static inline void divideByIntegerExact_AAZ_inp(AltArrZ_t* aa, const mpz_t z) {
-	if (aa == NULL || aa->size == 0) {
+	if (isZero_AAZ(aa)) {
 		return;
+	}
+	if (mpz_sgn(z) == 0) {
+		fprintf(stderr, "BPAS ERROR: Divide by zero in divideByIntegerExact_AAZ_inp\n");
+		exit(1);
 	}
 
 	for (int i = 0; i < aa->size; ++i) {
@@ -625,13 +798,21 @@ static inline void divideByIntegerExact_AAZ_inp(AltArrZ_t* aa, const mpz_t z) {
 }
 
 
-AltArrZ_t* multiplyByInteger_AAZ(AltArrZ_t* a, mpz_t div);
+AltArrZ_t* multiplyByInteger_AAZ(AltArrZ_t* a, const mpz_t div);
+
+/**
+ * Divide a through by integer divisor d. It is assumed that
+ * div divides content(a), otherwise an error occurs.
+ */
+AltArrZ_t* divideByInteger_AAZ(AltArrZ_t* a, mpz_t div);
 
 /**
  * Divide a through by integer divisor d. It is assumed that
  * div divides content(a).
  */
-AltArrZ_t* divideByInteger_AAZ(AltArrZ_t* a, mpz_t div);
+void divideByInteger_AAZ_inp(AltArrZ_t* a, mpz_t div);
+
+void multiplyByMonomial_AAZ_inp(AltArrZ_t* aa, degree_t* __restrict__ degs);
 
 /**
  * Apply a modulo to all of the integer coefficients of the polynomial p,
@@ -680,7 +861,7 @@ AltArrZ_t* leadingTerm_AAZ (AltArrZ_t* aa, int nvar);
  * of this polynomial.
  * returns the postion of leading variable, -1 (for constant polynomials) and -2 (for zero polynomials).
  */
-int leadingVariable_AAZ (AltArrZ_t* aa);
+int leadingVariable_AAZ (const AltArrZ_t* aa);
 
 /**
  * Main Leading Degree
@@ -695,7 +876,7 @@ int mainLeadingDegree_AAZ (AltArrZ_t* aa);
  * the leading coefficient of aa w.r.t the main variable.
  * NOTE: This function is NOT inplace!
  */
-AltArrZ_t* mainLeadingCoefficient_AAZ (AltArrZ_t* aa);
+AltArrZ_t* mainLeadingCoefficient_AAZ (const AltArrZ_t* aa);
 
 /**
  * Main Leading Coefficient w.r.t the e-th variable
@@ -747,7 +928,7 @@ static inline void infinityNorm_AAZ (const AltArrZ_t* a, mpz_t c) {
 
 
 /*****************
- * SMQP Addition
+ * SMZP Addition
  *****************/
 
 void addInteger_AAZ_inp(AltArrZ_t* aa, const mpz_t coef);
@@ -1060,15 +1241,21 @@ void divisionGetNextTerm_AAZ(ProductHeap_AAZ* h, mpz_t* retCoef);
  * such that c = b*a + r.
  * a and r are returned in res_a and res_r, respectively.
  */
-void divideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int nvar);
+void divideBySingleTerm_AAZ(const AltArrZ_t* c, const AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int nvar);
 
 /**
  * Given two polynomials, c and b, find their quotient and remainder such that
  * c = b*a + r. The quotient a is returned in res_a, and the remainder r in res_r
  * Based on Stephen Johnson's "Sparse Polynomial Arithmetic".
  */
-void dividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int nvar);
+void dividePolynomials_AAZ(const AltArrZ_t* c, const AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int nvar);
 
+/**
+ * Given two polynomials, c and b, find their quotient such that
+ * c = b*a. That, is the remainder is 0.
+ * This method should be used when the remainder is known a priori to be 0.
+ * The quotient a is returned in res_a.
+ */
 void exactDividePolynomials_AAZ (AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, register int nvar);
 
 void univariatePseudoDivideBySingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int* e, int lazy);
@@ -1084,8 +1271,8 @@ void univariatePseudoDividePolynomials_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t
  * Otherwise, the value of res_a is undefined.
  * returns 1 iff division is exact. 0 otherwise.
  */
-int divideTest_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar);
-int divideTestSingleTerm_AAZ(AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, int nvar);
+int divideTest_AAZ(const AltArrZ_t* c, const AltArrZ_t* b, AltArrZ_t** res_a, int nvar);
+int divideTestSingleTerm_AAZ(const AltArrZ_t* c, const AltArrZ_t* b, AltArrZ_t** res_a, int nvar);
 
 /**
  * Given two polynomials, c and b, to compute the remainder and quotient
@@ -1177,12 +1364,25 @@ void primitivePart_AAZ_inp(AltArrZ_t* aa);
 void primitivePartAndContent_AAZ_inp(AltArrZ_t* aa, mpz_t content);
 
 /**
+ * Get the content of a polynomial viewing it recursively
+ * such that variables which are "active" are polynomial variables
+ * and inactive variables are in the coefficients.
+ *
+ * The i'th variable of aa is active if active[i] > 0;
+ *
+ * @return the content of aa with respect to the active variables.
+ */
+AltArrZ_t* contentInVars_AAZ(const AltArrZ_t* aa, const int* active);
+
+/**
  * Given two polynomials, both with 1 variable, get their GCD using a heuristic method.
  * Returns NULL if the heuristic fails or if both inputs encode 0.
  *
+ * This is GCDHEU from Char, Geddes, Gonnet in JSC 1989
+ *
  * returns the GCD or NULL
  */
-AltArrZ_t* univariateHeuristicGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
+AltArrZ_t* univariateHeuristicGCD_AAZ(const AltArrZ_t* a, const AltArrZ_t* b);
 
 /**
  * Given two polynomials, both with 1 variable and both primitive,
@@ -1191,7 +1391,7 @@ AltArrZ_t* univariateHeuristicGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
  *
  * returns the GCD or NULL
  */
-AltArrZ_t* univariateHeuristicPrimitiveGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
+AltArrZ_t* univariateHeuristicPrimitiveGCD_AAZ(const AltArrZ_t* a, const AltArrZ_t* b);
 
 /**
  * Given two polynomials, both with 1 variable, get their GCD.
@@ -1199,6 +1399,81 @@ AltArrZ_t* univariateHeuristicPrimitiveGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
  * returns the GCD.
  */
 AltArrZ_t* univariateGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
+
+/**
+ * Given a homogeneous polynomial, dehomogenize it by
+ * removing the variable of index varIdx.
+ * This is equivalent to evaluating the variable at varIdx
+ * to 1.
+ * This operation occurs in-place.
+ *
+ * @note this operation reduces the number of variables of aa
+ */
+void dehomogenizePolynomial_AAZ_inp(AltArrZ_t* aa, int varIdx);
+
+/**
+ * Homogenize a polynomial by introducing an extra variable.
+ *
+ * Performs homogenization by introducing a new variable,
+ * inserted at index varIdx into the exponent vector,
+ * such that this new variable's partial degree in each monomial
+ * results in a homogenized polynomial.
+ *
+ * This operation does not change the total degree of the polynomial;
+ * the polynomial will be modified such that it is a homogeneous polynomial
+ * of degree equal to its total degree.
+ */
+void homogenizePolynomial_AAZ_inp(AltArrZ_t* aa, int varIdx);
+
+/**
+ * Get the GCD of two homogeneous polynomials.
+ * If the input polynomials are not homogeneous, the zero polynomial
+ * is returned; similarly for other errors, such as the polynomials
+ * having a different number of variables.
+ * Thus, inputs should be zero to otherwise confuse
+ * a failing case with a GCD of zero.
+ *
+ * @param aa one input SMZP polynomial
+ * @param bb another input SMZP polynomial
+ * @return the gcd of aa and bb or the zero polynomial if either is not homogeneous.
+ */
+AltArrZ_t* homogeneousGCD_AAZ(const AltArrZ_t* aa, const AltArrZ_t* bb);
+
+/**
+ * Heuristically determine if the two input polynomials are co-prime.
+ * The procedure works through evaluating at points larger than
+ * the Cauchy bound and using integer gcds.
+ *
+ * returns 1 if they are co-prime
+ * returns 0 if they are (possibly) not co-prime
+ * returns -1 if the heuristic test would be too expensive, and thus
+ *            there is no information available on their primality.
+ *
+ */
+int coprimalityHeuristic_AAZ(const AltArrZ_t* aa, const AltArrZ_t* bb);
+
+
+/**
+ * Heuristically determine the GCD of the two input polynomials.
+ * The two polynomials should have no integer content.
+ *
+ */
+AltArrZ_t* heuristicPrimitiveGCD_AAZ(const AltArrZ_t* a, const AltArrZ_t* b);
+
+/**
+ * Compute the GCD of two bivariate polynomials via a modular method.
+ * The two polynomials should be primitive over the integers and, moreover,
+ * should have their low degrees removed (low degrees of both polys should be 0
+ * in both variables).
+ * This method proceeds as: Z[x>y] -> Z_p[x>y] -> Z_p[x] -> Z_p[x>y] -> Z[x>y]
+ * using interpolaton in y following by CRT to recover the bivar. gcd over the integers.
+ *
+ * @param aa a primitive bivariate polynomial
+ * @param bb a primitive bivariate polynomial
+ * @return the gcd of aa and bb
+ */
+AltArrZ_t* bivariatePrimitiveGCD_AAZ(const AltArrZ_t* aa, const AltArrZ_t* bb);
+
 
 /**
  * Given two polynomials, both with 1 variable, get their GCD as a primitive polynomial.
@@ -1210,12 +1485,6 @@ AltArrZ_t* univariateGCD_AAZ(AltArrZ_t* a, AltArrZ_t* b);
 // AltArrZ_t* extendedEuclidean(AltArrZ_t* a, AltArrZ_t* b, AltArrZ_t** s, AltArrZ_t** t);
 
 /**
- * Test for if the polynomial aa is actually an integer polynomial.
- * If so, returns the integral content in mpzG. Otherwise, mpzG is set to 0.
- */
-void integerPolynomialTest_AAZ(AltArrZ_t* aa, mpz_t mpzG);
-
-/**
  * Given a polynomial, find a monic factor common to all terms of the polynomial.
  * If factored is not NULL then the input polynomial with common factor removed
  * is returned in factored.
@@ -1224,6 +1493,13 @@ void integerPolynomialTest_AAZ(AltArrZ_t* aa, mpz_t mpzG);
  */
 AltArrZ_t* commonFactor_AAZ(const AltArrZ_t* a, AltArrZ_t** factored);
 
+
+#if defined(WITH_MAPLE) && (WITH_MAPLE)
+AltArrZ_t* gcdByMaple_AAZ(const AltArrZ_t* P, const AltArrZ_t* Q);
+#endif
+
+//GCD of a and b
+AltArrZ_t* gcd_AAZ_tmp(const AltArrZ_t* a, const AltArrZ_t* b);
 
 
 /*****************
@@ -1234,8 +1510,57 @@ AltArrZ_t* commonFactor_AAZ(const AltArrZ_t* a, AltArrZ_t** factored);
  * Evaluate a univariate polynomial at the point, point. The result is
  * returned as a multi-precision rational number, res.
  */
-void univarEvaluate_AAZ(AltArrZ_t* aa, const mpz_t point, mpz_t res);
+void univarEvaluate_AAZ(const AltArrZ_t* aa, const mpz_t point, mpz_t res);
 
+
+
+/*****************
+ * Conversion for Arithemtic
+ *****************/
+
+/**
+ * Convert a multivariate polynomial f to a univariate polynomial
+ * under some multivariate Kronecker homomorphism.
+ * This homomorphism is Z[x_1,...,x_v] -> Z[x] where each monomial maps as follows:
+ * x_1^e1x_2^e2...x_v^ev -> x^{e1*alpha1 + e2*alpha2 + ... + ev},
+ * where alpha_i = (maxDegs[i+1] + 1)*alpha_{i+1}, and alpha_v = 1.
+ *
+ * @param f: the SMZP to convert
+ * @param maxDegs: the degrees which define the Kronecker substitution.
+ *
+ * @return a DUZP image of f under the homomorphism.
+ */
+DUZP_t* convertToDUZP_KS_AAZ(const AltArrZ_t* f, degree_t* maxDegs);
+
+
+/**
+ * Convert a univariate polynomial fd to a multivariate polynomial
+ * by the inversion of some multivariate Kronecker homomorphism.
+ * This homomorphism is Z[x_1,...,x_v] -> Z[x] where each monomial maps as follows:
+ * x_1^e1x_2^e2...x_v^ev -> x^{e1*alpha1 + e2*alpha2 + ... + ev},
+ * where alpha_i = (maxDegs[i+1] + 1)*alpha_{i+1}, and alpha_v = 1.
+ *
+ * @param fd: the DUZP to convert from
+ * @param maxDegs: the degrees which define the Kronecker substitution.
+ * @param nvar: the number of variables
+ *
+ * @return a SMZP pre-image of fd under the homomorphism.
+ */
+AltArrZ_t* convertFromDUZP_KS_AAZ(const DUZP_t* fd, degree_t* maxDegs, int nvar);
+
+
+/**
+ * Multiply the polynomials f and g using a Kronecker substitution
+ * to univariate integer polynomials. These images are then multiplied
+ * as univariate polynomials and the multivariate product
+ * reconstructed from the image product.
+ *
+ * @see (Moreno Maza and Xie, 2011)
+ *
+ * @note opeands must exist in the same polynomial ring (i.e. same number of variables).
+ *
+ */
+AltArrZ_t* multiplyPolynomials_KS_AAZ(const AltArrZ_t* f, const AltArrZ_t* g);
 
 
 

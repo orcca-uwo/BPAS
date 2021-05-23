@@ -5,7 +5,7 @@
 #if defined(SERIAL) && SERIAL
 #define ASYNC_GEN_SERIAL 1
 #define ASYNC_GEN_PARALLEL 0
-#else 
+#else
 #define ASYNC_GEN_SERIAL 0
 #define ASYNC_GEN_PARALLEL 1
 #endif
@@ -24,22 +24,22 @@
 
 /**
  * A class to encapsulate the asynchronous generation of objects from some
- * function. The general scheme is that some "producer" function will 
+ * function. The general scheme is that some "producer" function will
  * add results to this generator via the generateObject method.
  * Then, the consumer will retrieve objects that were generated via the getNextObject
- * method. 
+ * method.
  *
- * Note1: All functions passed to the generator as "producer" functions should take, 
+ * Note1: All functions passed to the generator as "producer" functions should take,
  * as their final parameter, an AsyncGenerator reference. This allows the producer
  * to obtain a shared instance of the AsyncGenerator and use it to generate
  * the objects. This AsyncGenerator should *not* appear in the last of arguments
  * passed to the AsyncGenerator constructor; it will automatically be inserted.
- * 
- * Note2: this class need not necessarily be asynchronous, say if wishing to build
- * in a serial fashion. In that case the interface remains the same but is the 
- * generation of objects is not done serially. 
  *
- * 
+ * Note2: this class need not necessarily be asynchronous, say if wishing to build
+ * in a serial fashion. In that case the interface remains the same but is the
+ * generation of objects is not done serially.
+ *
+ *
  */
 template <class Object>
 class AsyncGeneratorPool : public AsyncGenerator<Object> {
@@ -57,19 +57,21 @@ class AsyncGeneratorPool : public AsyncGenerator<Object> {
 public:
 
 
-	//Tricky tricky here. Passing this, which is not fully constructed yet, 
+	//Tricky tricky here. Passing this, which is not fully constructed yet,
 	//to the function. If this class ever gets more complicated, can cause
 	//weird errors in order of initialization.
 	/**
 	 * Construct an AsyncGenerator given some "producer" function and the arguments
 	 * to pass to that function.
 	 *
-	 * All functions passed should take, as their final parameter, 
+	 * All functions passed should take, as their final parameter,
 	 * an AsyncGenerator reference. This allows the producer
 	 * to obtain a shared instance of the AsyncGenerator and use it to generate
 	 * the objects. An AsyncGenerator reference should not be passed in the list of args.
 	 * An AsyncGenerator reference will automatically be inserted.
 	 *
+ 	 * @param f: the producer function
+	 * @param args: the arguments to the producer function
 	 */
 	template <class Function, class... Args>
 	explicit AsyncGeneratorPool(Function&& f, Args&&...args) :
@@ -93,6 +95,47 @@ public:
 		boundF();
 		finishedProducing = 1;
 #endif
+	}
+
+
+
+#if ASYNC_GEN_PARALLEL
+	/**
+	 * Construct an AsyncGenerator to execute on a pre-determined
+	 * FunctionExecutorThread given by the threadID tid.
+	 * The producer function to execute is passed as f, with arguments args.
+	 *
+	 * All functions passed should take, as their final parameter,
+	 * an AsyncGenerator reference. This allows the producer
+	 * to obtain a shared instance of the AsyncGenerator and use it to generate
+	 * the objects. An AsyncGenerator reference should not be passed in the list of args.
+	 * An AsyncGenerator reference will automatically be inserted.
+	 *
+	 * @param tid: the thread id to execute the producer function
+	 * @param f: the producer function
+	 * @param args: the arguments to the producer function
+	 *
+	 */
+	template <class Function, class... Args>
+	explicit AsyncGeneratorPool(ExecutorThreadPool::threadID tid, Function&& f, Args&&...args) :
+		stream(),
+		executingAsync(1),
+		finishedProducing(0)
+	{
+		std::function<void()> boundF = std::bind(std::forward<Function>(f), std::forward<Args>(args)..., std::ref(*this));
+		ExecutorThreadPool::getThreadPool().executeTask(tid, boundF);
+	}
+#endif
+
+	AsyncGeneratorPool(std::vector<Object> objects) :
+		stream(),
+		executingAsync(0),
+		results(),
+		finishedProducing(1)
+	{
+		for (Object& o : objects) {
+			results.push(std::move(o));
+		}
 	}
 
 
@@ -130,7 +173,7 @@ public:
 #endif
 			results.push(std::move(obj));
 
-#if ASYNC_GEN_PARALLEL			
+#if ASYNC_GEN_PARALLEL
 		}
 #endif
 	}
@@ -149,7 +192,7 @@ public:
 #endif
 			results.push(obj);
 
-#if ASYNC_GEN_PARALLEL			
+#if ASYNC_GEN_PARALLEL
 		}
 #endif
 	}
@@ -174,7 +217,7 @@ public:
 	/**
 	 * Obtain an Object which was generated.
 	 * The generated object is returned in obj.
-	 * 
+	 *
 	 * returns false iff no more objects could be obtained and
 	 * no more objects will ever be generated.
 	 */

@@ -8,7 +8,7 @@
 
 typedef int degree_t;
 
-typedef long long unsigned int degrees_t; 
+typedef long long unsigned int degrees_t;
 
 typedef int cmpExp_t;
 
@@ -127,7 +127,7 @@ static inline cmpExp_t isGreaterExponentVectors_unpk(degrees_t degs_a, degrees_t
 /**
  * Check if an exponent vector has all 0 exponents.
  * a: the exponent vector to check
- */ 
+ */
 #define isZeroExponentVector(A) ((A) == 0)
 
 static inline cmpExp_t isZeroExponentVector_unpk(degrees_t degs, int nvar) {
@@ -159,9 +159,9 @@ static inline void setExponentVector_unpk(degrees_t dest, degrees_t src, int nva
 
 /**
  * Add two exponent vectors, a and b, and store the result in c.
- * a,b,c: degree_t  
+ * a,b,c: degree_t
  */
-#define addExponentVectors(A, B, C) ((C) = (A) + (B)) 
+#define addExponentVectors(A, B, C) ((C) = (A) + (B))
 
 static inline void addExponentVectors_unpk(degrees_t degs_a, degrees_t degs_b, degrees_t degs_c, int nvar) {
 	if (nvar == 0) {
@@ -207,87 +207,12 @@ static inline void subtractExponentVectors_unpk(degrees_t degs_a, degrees_t degs
 	}
 }
 
-//forward declare
-static const degrees_t* getMaxExpArray (int nvar);
-static const degrees_t* getExpMaskArray(int nvar);
-static const int* getExpOffsetArray(int nvar);
-
-static inline int isPackableExponentVector(degree_t* degs, int nvar) {
-	const degrees_t* maxExps = getMaxExpArray(nvar);
-	int ret = 1;
-	for (int k = 0; k < nvar; ++k) {
-		if ((degrees_t) degs[k] > maxExps[k]) {
-			ret = 0;
-			break;
-		}
-	}
-	return ret;
-}
-
-static inline void unpackExponentVector(degrees_t packedExp, degree_t* unpackedExp, int nvar) {
-	const degrees_t* masks = getExpMaskArray(nvar);
-	const int* sizes = getExpOffsetArray(nvar);
-
-	for (int k = 0; k < nvar; ++k) {
-		unpackedExp[k] = GET_NTH_EXP(packedExp, masks[k], sizes[k]);
-	}
-
-}
 
 
-static int checkValidMonomialMult(degrees_t maxA, degrees_t maxB, int nvar) {
-	if (nvar <= 0) {
-		return 1;
-	}
-
-	const degrees_t* masks = getExpMaskArray(nvar);
-	const int* sizes = getExpOffsetArray(nvar);
-	const degrees_t* maxExps = getMaxExpArray(nvar);
-
-	degree_t a, b;
-	for (int j = 0; j < nvar; ++j) {
-		a = GET_NTH_EXP(maxA, masks[j], sizes[j]);
-		b = GET_NTH_EXP(maxB, masks[j], sizes[j]);
-		if ((degrees_t) (a + b) > maxExps[j]) {
-			fprintf(stderr, "SMQP ERROR: Overflow in exponent packing for mult at index %d; %d + %d.\n", j, a, b);
-			free((void*) -1);
-
-			exit(1); //TODO
-		}
-	}
-
-	return 1;
-}
-
-static int monomialMultFitsPacked(degrees_t maxA, degrees_t maxB, int nvar) {
-	if (nvar <= 0) {
-		return 1;
-	}
-
-	const degrees_t* masks = getExpMaskArray(nvar);
-	const int* sizes = getExpOffsetArray(nvar);
-	const degrees_t* maxExps = getMaxExpArray(nvar);
-
-	int fits = 1;
-	degree_t a, b;
-	for (int j = 0; j < nvar; ++j) {
-		a = GET_NTH_EXP(maxA, masks[j], sizes[j]);
-		b = GET_NTH_EXP(maxB, masks[j], sizes[j]);
-		if ((degrees_t) (a + b) > maxExps[j]) {
-			fits = 0;
-			break;
-		}
-	}
-
-	return fits;
-}
-
-
-
-static int getMVarExpOffset(int nvar) {
+static inline int getMVarExpOffset(int nvar) {
 	switch(nvar) {
     	case 1: {
-			return EXP_OFFSET_1_V1;    		
+			return EXP_OFFSET_1_V1;
     	}
     	case 2: {
 			return EXP_OFFSET_1_V2;
@@ -391,7 +316,7 @@ static int getMVarExpOffset(int nvar) {
 
 
 
-static const degrees_t* getExpMaskArray (int nvar) {
+static inline const degrees_t* getExpMaskArray (int nvar) {
 	switch(nvar) {
 		case 1: {
 			return (EXP_MASK_LIST);
@@ -497,7 +422,7 @@ static const degrees_t* getExpMaskArray (int nvar) {
 }
 
 
-static const int* getExpOffsetArray (int nvar) {
+static inline const int* getExpOffsetArray (int nvar) {
 	switch(nvar) {
 		case 1: {
 			return (EXP_OFFSET_LIST);
@@ -602,10 +527,10 @@ static const int* getExpOffsetArray (int nvar) {
 	}
 }
 
-static degrees_t getMVarExpMask(int nvar) {
+static inline degrees_t getMVarExpMask(int nvar) {
 	switch(nvar) {
     	case 1: {
-			return EXP_1_V1;    		
+			return EXP_1_V1;
     	}
     	case 2: {
 			return EXP_1_V2;
@@ -708,7 +633,7 @@ static degrees_t getMVarExpMask(int nvar) {
 }
 
 
-static const degrees_t* getMaxExpArray (int nvar) {
+static inline const degrees_t* getMaxExpArray (int nvar) {
 
 	switch(nvar) {
 		case 1: {
@@ -813,6 +738,57 @@ static const degrees_t* getMaxExpArray (int nvar) {
 		}
 	}
 }
+
+
+static inline int isPackableExponentVector(degree_t* degs, int nvar) {
+	if (nvar > MAX_NVAR_PACKED) {
+		return 0;
+	}
+	const degrees_t* maxExps = getMaxExpArray(nvar);
+	int ret = 1;
+	for (int k = 0; k < nvar; ++k) {
+		if ((degrees_t) degs[k] > maxExps[k]) {
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
+}
+
+static inline void unpackExponentVector(degrees_t packedExp, degree_t* unpackedExp, int nvar) {
+	const degrees_t* masks = getExpMaskArray(nvar);
+	const int* sizes = getExpOffsetArray(nvar);
+
+	for (int k = 0; k < nvar; ++k) {
+		unpackedExp[k] = GET_NTH_EXP(packedExp, masks[k], sizes[k]);
+	}
+
+}
+
+
+static int monomialMultFitsPacked(degrees_t maxA, degrees_t maxB, int nvar) {
+	if (nvar <= 0) {
+		return 1;
+	}
+
+	const degrees_t* masks = getExpMaskArray(nvar);
+	const int* sizes = getExpOffsetArray(nvar);
+	const degrees_t* maxExps = getMaxExpArray(nvar);
+
+	int fits = 1;
+	degree_t a, b;
+	for (int j = 0; j < nvar; ++j) {
+		a = GET_NTH_EXP(maxA, masks[j], sizes[j]);
+		b = GET_NTH_EXP(maxB, masks[j], sizes[j]);
+		if ((degrees_t) (a + b) > maxExps[j]) {
+			fits = 0;
+			break;
+		}
+	}
+
+	return fits;
+}
+
 
 
 #endif

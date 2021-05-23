@@ -28,6 +28,7 @@ void triangularizeTests() {
 	bool laz(true);
 	bool kalk(false);
 
+
 //  	cerr << "\"VeryEasyTests\":" << endl;
 	Sys126Test(working,laz);
 	Sys130Test(working,laz);
@@ -122,7 +123,7 @@ void triangularizeTests() {
 	Sys3127Test(working,laz); // LHLP6
 	Sys3128Test(working,laz); // Neural-network
 	Sys3129Test(working,laz); // NLD-10-3
-	Sys3130Test(working,laz); // NLD-3-4: 
+	Sys3130Test(working,laz); // NLD-3-4:
 	// Sys3131Test(working,laz); // NLD-3-5: slow (~1m) to run, segfault lazBF, (~46s) kalk
 //	Sys3132Test(testing,laz); // NLD-4-5: very slow, gave up after 90m kalk FAILED TODO: verify this is still the case.
 	Sys3133Test(working,laz); // NLD-7-3
@@ -133,7 +134,7 @@ void triangularizeTests() {
 	// Sys3138Test(testing,laz); // NQL-15-2: very slow (~220s) to run, Maple dnf after 1h, (~3s) kalk but validation behaves strangely; Jan22/2020: validation probably fixed, but in lazard mode fails to factorize via maple.
 	// Sys3139Test(working,laz); // NQL-5-4: blad out of memory exception, (<1s) kalk but slow (~1m) to validate
 	Sys3140Test(working,laz); // P3P-special: segfault problem post-fac
-	Sys3141Test(working,laz); // PlateForme2d-easy: slow to run, <10 s post-fac	
+	Sys3141Test(working,laz); // PlateForme2d-easy: slow to run, <10 s post-fac
 	Sys3142Test(working,laz); // R-5: MD factorization not done
 	Sys3143Test(working,laz); // R-6
 	// Sys3144Test(working,laz); // Reif: (156s) kalk
@@ -144,7 +145,7 @@ void triangularizeTests() {
 	Sys3149Test(working,laz); // Trinks-2
 	Sys3150Test(working,laz); // Trinks-difficult
 //	Sys3151Test(testing,laz); // Uteshev-Bikker: slow, gave up (expression swell); Jan15/2020: error, cannot add a constant to a TriangularSet
-	Sys3152Test(working,laz); // Wilkinson20	
+	Sys3152Test(working,laz); // Wilkinson20
 	Sys3153Test(working,laz); // Wilkinsonxy
 
 	// cerr << "\"CM09-intersect-posdim\":" << endl;

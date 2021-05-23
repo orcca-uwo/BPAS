@@ -1,4 +1,5 @@
 #include "../../../include/FFT/src/transpose.h"
+#include <cilk/cilk.h>
 
 /* out-of-place transpose A[i0..i1][j0..j1] into B[j0..j1][i0..i1] */
 //    int lda = nj;  // how many columns
@@ -19,7 +20,7 @@ void transpose_serial(sfixn *A, int lda, sfixn *B, int ldb,
 	  j0 = jm; goto tail;
      } else {
 	  for (int i = i0; i < i1; ++i)
-	       for (int j = j0; j < j1; ++j) 
+	       for (int j = j0; j < j1; ++j)
 		    B[j * ldb + i] = A[i * lda + j];
      }
 }
@@ -40,14 +41,14 @@ void transpose(sfixn *A, int lda, sfixn *B, int ldb,
 	  j0 = jm; goto tail;
      } else {
 	  for (int i = i0; i < i1; ++i)
-	       for (int j = j0; j < j1; ++j) 
+	       for (int j = j0; j < j1; ++j)
 		    B[j * ldb + i] = A[i * lda + j];
      }
 }
 
- 
-//invec is a matrix 2*4, SB is the output 
+
+//invec is a matrix 2*4, SB is the output
 /*
   transpose_serial(invec,4,SB,2,0,2,0,4);
 */
- 
+

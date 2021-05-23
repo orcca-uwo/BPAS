@@ -2,6 +2,11 @@
 #define GFPF_TYPES_H_
 
 #include <stdio.h>
+#ifdef SERIAL
+#define cilk_spawn
+#define cilk_sync
+#define cilk_for for
+#endif
 /**************************************/
 typedef unsigned short usfixn16;
 typedef unsigned int usfixn32;

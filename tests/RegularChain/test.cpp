@@ -121,7 +121,7 @@ void testRCPolynomialAddWithTranscendentalsConstructor() {
 }
 
 void testRCCopyConstructor() {
-    
+
     RegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -135,7 +135,7 @@ void testRCCopyConstructor() {
 }
 
 void testRCMoveConstructor() {
-    
+
 //    RegularChain<RN,SMQP> ts;
 //	int nterms(14);
 //	unsigned long int coefBound(6ul);
@@ -170,7 +170,7 @@ void testRCMoveConstructor() {
 void testRCComputationalConstructor() {}
 
 void testRCAssignmentOperator() {
-    
+
     RegularChain<RN,SMQP> ts,ts2;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -200,7 +200,7 @@ void testRCAssignmentOperator() {
 }
 
 void testRCMoveAssignmentOperator() {
-    
+
     RegularChain<RN,SMQP> ts,ts2,ts3;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -208,20 +208,20 @@ void testRCMoveAssignmentOperator() {
 	bool includeNeg(1);
     ts.randomRegularChain(4,3,2,nterms,coefBound,sparsity,includeNeg);
     ts2 = ts;
-    
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
-    
+
     ts3 = move(ts);
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
     if (ts3.variables() != ts2.variables() || ts3.transcendentalVariables() != ts2.transcendentalVariables() || ts3.polynomials() != ts2.polynomials() || !ts.isEmpty()) {
         std::cerr << "RC move assignment operator test:\t\t\t\t FAILED" << std::endl;
         std::cerr << "ts.isEmpty = " << ts.isEmpty() << std::endl;
@@ -259,29 +259,29 @@ void testRCAddOperator() {
 	vs.push_back(vars[1]);
 	vs.insert(vs.end(),ps.begin(),ps.end());
 	p2.setRingVariables(vs);
-	
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
-	
+
     RegularChain<RN,SMQP> ts(p1,ps);
     ts = ts + p2;
 	std::vector<SMQP> polys,tsPolys,ts2Polys;
     polys.push_back(p1);
     polys.push_back(p2);
     tsPolys = ts.polynomials();
-    
+
 //    ZeroDimensionalRegularChain<RN,SMQP> ts2(ps);
 //    printVariables(ps);
     RegularChain<RN,SMQP> ts2(xs,ps);
     ts2 = ts2 + p2;
     ts2 = ts2 + p1;
     ts2Polys = ts2.polynomials();
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
 
@@ -322,15 +322,15 @@ void testRCAddAssignmentOperator() {
 	vs.push_back(vars[1]);
 	vs.insert(vs.end(),ps.begin(),ps.end());
 	p2.setRingVariables(vs);
-	
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     //cout.rdbuf (ss.rdbuf());
     //cerr.rdbuf (ss.rdbuf());
-	
+
     // cout << "p2 = " << p2 << endl;
     RegularChain<RN,SMQP> ts(p2,ps);
     // cout << "p1 = " << p1 << endl;
@@ -340,14 +340,14 @@ void testRCAddAssignmentOperator() {
     polys.push_back(p1);
     polys.push_back(p2);
     tsPolys = ts.polynomials();
-    
+
 //    ZeroDimensionalRegularChain<RN,SMQP> ts2(ps);
 //    printVariables(ps);
     RegularChain<RN,SMQP> ts2(xs,ps);
     ts2 += p1;
     ts2 += p2;
     ts2Polys = ts2.polynomials();
-    
+
     //cout.rdbuf (oldcout);              // <-- restore
     //cerr.rdbuf (oldcerr);              // <-- restore
 
@@ -365,7 +365,7 @@ void testRCAddAssignmentOperator() {
 }
 
 void testRCIdentityOperator() {
-    
+
     RegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -387,7 +387,7 @@ void testRCIdentityOperator() {
 }
 
 void testRCNumberOfVariables() {
-    
+
     RegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -403,7 +403,7 @@ void testRCNumberOfVariables() {
 }
 
 void testRCSize() {
-    
+
     RegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -419,7 +419,7 @@ void testRCSize() {
 }
 
 void testRCNumberOfAlgebraicVariables() {
-    
+
     RegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -440,7 +440,7 @@ void testRCNumberOfAlgebraicVariables() {
 }
 
 void testRCNumberOfTranscendentalVariables() {
-    
+
     RegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -634,7 +634,7 @@ void testRCSelect() {
 }
 
 void testRCLower() {
-    
+
 //     RegularChain<RN,SMQP> ts,ts2;
 //     std:vector<SMQP> tslp,ts2p;
 //     std::vector<Symbol> vars;
@@ -644,20 +644,20 @@ void testRCLower() {
 // 	bool includeNeg(1);
 //     ts.randomRegularChain(4,4,2,maxDegs,coefBound,sparsity,includeNeg);
 //     vars = ts.mainVariables();
-    
+
 //     // Redirect stdout, stderr
 //     stringstream ss;
 //     streambuf *oldcout,*oldcerr;
-//     oldcout = cout.rdbuf(); // <-- save  
-//     oldcerr = cerr.rdbuf(); // <-- save  
+//     oldcout = cout.rdbuf(); // <-- save
+//     oldcerr = cerr.rdbuf(); // <-- save
 //     cout.rdbuf (ss.rdbuf());
 //     cerr.rdbuf (ss.rdbuf());
-    
+
 //     ts.lower(vars[0],ts2);
-    
+
 //     cout.rdbuf (oldcout);              // <-- restore
 //     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
 // //	std::cerr << "ts2 in testLower = " << ts2 << std::endl;
 // //	ts.display();
 // //	ts2.display();
@@ -680,7 +680,7 @@ void testRCLower() {
 }
 
 void testRCUpper() {
-    
+
 //     RegularChain<RN,SMQP> ts,ts2;
 //     std:vector<SMQP> tsup,ts2p;
 //     std::vector<Symbol> vars;
@@ -690,20 +690,20 @@ void testRCUpper() {
 // 	bool includeNeg(1);
 //     ts.randomRegularChain(4,4,2,maxDegs,coefBound,sparsity,includeNeg);
 //     vars = ts.mainVariables();
-    
+
 //     // Redirect stdout, stderr
 //     stringstream ss;
 //     streambuf *oldcout,*oldcerr;
-//     oldcout = cout.rdbuf(); // <-- save  
-//     oldcerr = cerr.rdbuf(); // <-- save  
+//     oldcout = cout.rdbuf(); // <-- save
+//     oldcerr = cerr.rdbuf(); // <-- save
 //     cout.rdbuf (ss.rdbuf());
 //     cerr.rdbuf (ss.rdbuf());
-    
+
 //     ts.upper(vars[3],ts2);
-    
+
 //     cout.rdbuf (oldcout);              // <-- restore
 //     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
 // //    ts.display();
 // //    ts2.display();
 // 	tsup = ts.polynomials();
@@ -726,7 +726,7 @@ void testRCUpper() {
 }
 
 void testRCPseudoDivide() {
-    
+
     RegularChain<RN,SMQP> ts;
 	SMQP p,check;
 	std::vector<SMQP> set;
@@ -770,22 +770,22 @@ void testRCPseudoDivide() {
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-//    oldcout = cout.rdbuf(); // <-- save  
-//    oldcerr = cerr.rdbuf(); // <-- save  
+//    oldcout = cout.rdbuf(); // <-- save
+//    oldcerr = cerr.rdbuf(); // <-- save
 //    cout.rdbuf (ss.rdbuf());
 //    cerr.rdbuf (ss.rdbuf());
-    
+
 	SMQP r,c;
 	vector<SMQP> Q;
 	r = ts.pseudoDivide(p,&Q,&c);
-	
+
 //    cout.rdbuf (oldcout);              // <-- restore
 //    cerr.rdbuf (oldcerr);              // <-- restore
 //	cout << "c = " << c << endl;
 //	cout << "r = " << r << endl;
 //	for (int i=0; i<Q.size(); ++i)
 //		cout << "Q[" << i << "] = " << Q[i] << endl;
-//		
+//
 //	cerr << "compute constraint:" << endl;
 //	set = ts.polynomials();
 //	check.zero();
@@ -913,8 +913,8 @@ void testRCPseudoDivide() {
         std::string getQuoStr = "qList[" + std::to_string(nvars+2-idx) + "]:";
         cstr = new char[getQuoStr.length()+1];
         std::strcpy(cstr, getQuoStr.c_str());
-        ALGEB mapleQuo = EvalMapleStatement(kv, cstr); 
-        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo); 
+        ALGEB mapleQuo = EvalMapleStatement(kv, cstr);
+        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo);
         comp = EvalMapleProc(kv, cmpF, 2, mapleQuo, resultAlgebs[idx]);
         compBool = compBool && MapleToM_BOOL(kv, comp);
     	if (!MapleToM_BOOL(kv, comp)) {
@@ -937,7 +937,7 @@ void testRCPseudoDivide() {
         std::cerr << "Got multiplier: " << c << std::endl;
         std::cerr << "Got maple m: " << mapleTest->algebToString(kv, mapleM) << std::endl << std::endl;
 
-        for (int i = 0; i < mapleQuoList.size(); ++i) {   
+        for (int i = 0; i < mapleQuoList.size(); ++i) {
             std::cerr << "Got quotient " << i << ": " << Q[i] << std::endl;
             std::cerr << "Got maple quo : " << mapleTest->algebToString(kv, mapleQuoList[i]) << std::endl;
         }
@@ -948,7 +948,7 @@ void testRCPseudoDivide() {
 }
 
 void testRCNormalForm() {
-    
+
     RegularChain<RN,SMQP> ts;
 	SMQP p,check;
 	std::vector<SMQP> set;
@@ -973,26 +973,26 @@ void testRCNormalForm() {
     for (int i = 0; i < 2; ++i) {
         p *= set[i];
     }
-    
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
 
     SMQP r;
 	vector<SMQP> Q;
 	r = ts.normalForm(p,&Q);
-	
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
 
 //	cout << "r = " << r << endl;
 //	for (int i=0; i<Q.size(); ++i)
 //		cout << "Q[" << i << "] = " << Q[i] << endl;
-		
+
 //	cerr << "compute constraint:" << endl;
 	// set = ts.polynomials();
 	// check.zero();
@@ -1100,8 +1100,8 @@ void testRCNormalForm() {
         std::string getQuoStr = "qList[" + std::to_string(idx) + "]:";
         cstr = new char[getQuoStr.length()+1];
         std::strcpy(cstr, getQuoStr.c_str());
-        ALGEB mapleQuo = EvalMapleStatement(kv, cstr); 
-        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo); 
+        ALGEB mapleQuo = EvalMapleStatement(kv, cstr);
+        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo);
         comp = EvalMapleProc(kv, cmpF, 2, mapleQuo, resultAlgebs[idx]);
         compBool = compBool && MapleToM_BOOL(kv, comp);
         mapleQuoList.push_back(mapleQuo);
@@ -1118,7 +1118,7 @@ void testRCNormalForm() {
         std::cerr << "Got remainder: " << r << std::endl;
         std::cerr << "Got maple rem: " << mapleResStr << std::endl << std::endl;
 
-        for (int i = 0; i < mapleQuoList.size(); ++i) {   
+        for (int i = 0; i < mapleQuoList.size(); ++i) {
             std::cerr << "Got quotient " << i << ": " << Q[i] << std::endl;
             std::cerr << "Got maple quo : " << mapleTest->algebToString(kv, mapleQuoList[i]) << std::endl;
         }
@@ -1140,19 +1140,19 @@ void testRCConvertToExpressionTree() {
 	double sparsity(0.1);
 	bool includeNeg(1);
     ts.randomRegularChain(4,4,2,maxDegs,coefBound,sparsity,includeNeg);
-    
+
     // Redirect stdout, stderr
     stringstream ss2;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss2.rdbuf());
     cerr.rdbuf (ss2.rdbuf());
     ExpressionTree et = ts.convertToExpressionTree();
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
     // cout << "et = " << et.toString() << endl;
     ss << ts;
     str = ss.str();
@@ -1162,45 +1162,45 @@ void testRCConvertToExpressionTree() {
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
-    
+
     // et:
     std::string etStr = et.toString() + ":";
     char* cstr = new char[etStr.size() + 1];
     std::strcpy (cstr, etStr.c_str());
     ALGEB resET = EvalMapleStatement(kv, cstr);
     delete[] cstr;
- 
+
     // str:
     std::string tsStr = str + ":";
     cstr = new char[tsStr.size() + 1];
     std::strcpy (cstr, tsStr.c_str());
     ALGEB resTS = EvalMapleStatement(kv, cstr);
     delete[] cstr;
- 
+
     // operator:
     std::string procStr = "ArrayTools:-IsEqual:";
     cstr = new char[procStr.length() + 1];
     std::strcpy (cstr, procStr.c_str());
     ALGEB testProc = EvalMapleStatement(kv, cstr);
     delete[] cstr;
- 
+
     // Maple:
     ALGEB equalityRes = EvalMapleProc(kv, testProc, 2, resET, resTS);
     M_BOOL cmpBool = MapleToM_BOOL(kv, equalityRes);
 
     // Redirect stdout, stderr
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss2.rdbuf());
     cerr.rdbuf (ss2.rdbuf());
-    
+
     ts = RegularChain<RN,SMQP>();
     ExpressionTree et2;
     et2 = ts.convertToExpressionTree();
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
 //  cout << "et2 = " << et2.toString() << endl;
     ss = stringstream();
     ss << ts;
@@ -1328,7 +1328,7 @@ void testZDRCPolynomialAddWithTranscendentalsConstructor() {
 }
 
 void testZDRCCopyConstructor() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -1342,7 +1342,7 @@ void testZDRCCopyConstructor() {
 }
 
 void testZDRCMoveConstructor() {
-    
+
 //    ZeroDimensionalRegularChain<RN,SMQP> ts;
 //	int nterms(14);
 //	unsigned long int coefBound(6ul);
@@ -1377,7 +1377,7 @@ void testZDRCMoveConstructor() {
 void testZDRCComputationalConstructor() {}
 
 void testZDRCAssignmentOperator() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts,ts2;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -1407,28 +1407,28 @@ void testZDRCAssignmentOperator() {
 }
 
 void testZDRCMoveAssignmentOperator() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts,ts2,ts3;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
 	degree_t sparsity(4);
 	bool includeNeg(1);
     ts.randomZeroDimensionalRegularChain(4,2,nterms,coefBound,sparsity,includeNeg);
-    
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
-    
+
     ts2 = ts;
     ts3 = move(ts);
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
     if (ts3.variables() != ts2.variables() || ts3.transcendentalVariables() != ts2.transcendentalVariables() || ts3.polynomials() != ts2.polynomials() || !ts.isEmpty()) {
         std::cerr << "ZDRC move assignment operator test:\t\t\t\t FAILED" << std::endl;
         std::cerr << "ts.isEmpty = " << ts.isEmpty() << std::endl;
@@ -1461,25 +1461,25 @@ void testZDRCAddOperator() {
 	vs.push_back(vars[1]);
 	vs.insert(vs.end(),ps.begin(),ps.end());
 	p2.setRingVariables(vs);
-    
+
     // Redirect stdout, stderr
     std::cout.setstate(std::ios::failbit);
     std::cerr.setstate(std::ios::failbit);
-	
+
     ZeroDimensionalRegularChain<RN,SMQP> ts(p2,ps);
     ts = ts + p1;
 	std::vector<SMQP> polys,tsPolys,ts2Polys;
     polys.push_back(p1);
     polys.push_back(p2);
     tsPolys = ts.polynomials();
-    
+
 //    ZeroDimensionalRegularChain<RN,SMQP> ts2(ps);
 //    printVariables(ps);
     RegularChain<RN,SMQP> ts2(xs,ps);
     ts2 = ts2 + p2;
     ts2 = ts2 + p1;
     ts2Polys = ts2.polynomials();
-    
+
     std::cout.clear();
     std::cerr.clear();
 
@@ -1520,29 +1520,29 @@ void testZDRCAddAssignmentOperator() {
 	vs.push_back(vars[1]);
 	vs.insert(vs.end(),ps.begin(),ps.end());
 	p2.setRingVariables(vs);
-    
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
-	
+
     ZeroDimensionalRegularChain<RN,SMQP> ts(p2,ps);
     ts += p1;
 	std::vector<SMQP> polys,tsPolys,ts2Polys;
     polys.push_back(p1);
     polys.push_back(p2);
     tsPolys = ts.polynomials();
-    
+
 //    ZeroDimensionalRegularChain<RN,SMQP> ts2(ps);
 //    printVariables(ps);
     RegularChain<RN,SMQP> ts2(xs,ps);
     ts2 += p2;
     ts2 += p1;
     ts2Polys = ts2.polynomials();
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
 
@@ -1560,7 +1560,7 @@ void testZDRCAddAssignmentOperator() {
 }
 
 void testZDRCIdentityOperator() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -1582,7 +1582,7 @@ void testZDRCIdentityOperator() {
 }
 
 void testZDRCNumberOfVariables() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -1598,7 +1598,7 @@ void testZDRCNumberOfVariables() {
 }
 
 void testZDRCSize() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -1614,7 +1614,7 @@ void testZDRCSize() {
 }
 
 void testZDRCNumberOfAlgebraicVariables() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -1631,7 +1631,7 @@ void testZDRCNumberOfAlgebraicVariables() {
 }
 
 void testZDRCNumberOfTranscendentalVariables() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	int nterms(14);
 	unsigned long int coefBound(6ul);
@@ -1673,17 +1673,17 @@ void testZDRCVariables() {
         p1 += SMQP(v);
     }
     p2 += SMQP(xs[1]);
-    
+
     // Redirect stdout, stderr
 //    std::cout.setstate(std::ios::failbit);
 //    std::cerr.setstate(std::ios::failbit);
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts(p2,ps);
     ts += p1;
-    
+
 //    std::cout.clear();
 //    std::cerr.clear();
-    
+
     vs.clear();
     vs.insert(vs.end(),vars.begin(),vars.begin()+2);
 
@@ -1723,18 +1723,18 @@ void testZDRCMainVariables() {
         p1 += SMQP(v);
     }
     p2 += SMQP(xs[1]);
-    
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts(p2,ps);
     ts += p1;
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
 
@@ -1775,14 +1775,14 @@ void testZDRCTranscendentalVariables() {
         p1 += SMQP(v);
     }
     p2 += SMQP(xs[1]);
-    
+
     // Redirect stdout, stderr
     std::cout.setstate(std::ios::failbit);
     std::cerr.setstate(std::ios::failbit);
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts(p2,ps);
     ts += p1;
-    
+
     std::cout.clear();
     std::cerr.clear();
 
@@ -1814,7 +1814,7 @@ void testZDRCIsAlgebraic() {
     for (auto v : xs) {
         p += SMQP(v);
     }
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts(p,ps);
     vector<Symbol> vars;
     vars.push_back(p.leadingVariable());
@@ -1888,7 +1888,7 @@ void testZDRCSelect() {
 }
 
 void testZDRCLower() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
     ZeroDimensionalRegularChain<RN,SMQP> ts2;
     std:vector<SMQP> tslp,ts2p;
@@ -1900,16 +1900,16 @@ void testZDRCLower() {
     ts.randomZeroDimensionalRegularChain(3,2,maxDegs,coefBound,sparsity,includeNeg);
 //    ts.display();
     vars = ts.mainVariables();
-    
+
     // Redirect stdout, stderr
     std::cout.setstate(std::ios::failbit);
     std::cerr.setstate(std::ios::failbit);
-    
+
     ts.lower(vars[1],ts2);
-    
+
     std::cout.clear();
     std::cerr.clear();
-    
+
 //	std::cerr << "ts2 in testLower = " << ts2 << std::endl;
 //	ts.display();
 //	ts2.display();
@@ -1932,7 +1932,7 @@ void testZDRCLower() {
 }
 
 void testZDRCUpper() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
     RegularChain<RN,SMQP> ts2;
     std:vector<SMQP> tsup,ts2p;
@@ -1943,20 +1943,20 @@ void testZDRCUpper() {
 	bool includeNeg(1);
     ts.randomZeroDimensionalRegularChain(4,2,nterms,coefBound,sparsity,includeNeg);
     vars = ts.mainVariables();
-    
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
-    
+
     ts.upper(vars[2],ts2);
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
 //    ts.display();
 //    ts2.display();
 	tsup = ts.polynomials();
@@ -1979,7 +1979,7 @@ void testZDRCUpper() {
 }
 
 void testZDRCPseudoDivide() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	SMQP p,check;
 	std::vector<SMQP> set;
@@ -2022,23 +2022,23 @@ void testZDRCPseudoDivide() {
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
-    
+
 	SMQP r,c;
 	vector<SMQP> Q;
 	r = ts.pseudoDivide(p,&Q,&c);
-	
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
 //	cout << "c = " << c << endl;
 //	cout << "r = " << r << endl;
 //	for (int i=0; i<Q.size(); ++i)
 //		cout << "Q[" << i << "] = " << Q[i] << endl;
-//		
+//
 //	cerr << "compute constraint:" << endl;
 //	set = ts.polynomials();
 //	check.zero();
@@ -2166,8 +2166,8 @@ void testZDRCPseudoDivide() {
         std::string getQuoStr = "qList[" + std::to_string(nvars+2-idx) + "]:";
         cstr = new char[getQuoStr.length()+1];
         std::strcpy(cstr, getQuoStr.c_str());
-        ALGEB mapleQuo = EvalMapleStatement(kv, cstr); 
-        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo); 
+        ALGEB mapleQuo = EvalMapleStatement(kv, cstr);
+        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo);
         comp = EvalMapleProc(kv, cmpF, 2, mapleQuo, resultAlgebs[idx]);
         compBool = compBool && MapleToM_BOOL(kv, comp);
     	if (!MapleToM_BOOL(kv, comp)) {
@@ -2190,7 +2190,7 @@ void testZDRCPseudoDivide() {
         std::cerr << "Got multiplier: " << c << std::endl;
         std::cerr << "Got maple m: " << mapleTest->algebToString(kv, mapleM) << std::endl << std::endl;
 
-        for (int i = 0; i < mapleQuoList.size(); ++i) {   
+        for (int i = 0; i < mapleQuoList.size(); ++i) {
             std::cerr << "Got quotient " << i << ": " << Q[i] << std::endl;
             std::cerr << "Got maple quo : " << mapleTest->algebToString(kv, mapleQuoList[i]) << std::endl;
         }
@@ -2201,7 +2201,7 @@ void testZDRCPseudoDivide() {
 }
 
 void testZDRCNormalForm() {
-    
+
     ZeroDimensionalRegularChain<RN,SMQP> ts;
 	SMQP p,check;
 	std::vector<SMQP> set;
@@ -2225,26 +2225,26 @@ void testZDRCNormalForm() {
     for (int i = 0; i < 2; ++i) {
         p *= set[i];
     }
-    
+
     // Redirect stdout, stderr
     stringstream ss;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss.rdbuf());
     cerr.rdbuf (ss.rdbuf());
 
     SMQP r;
 	vector<SMQP> Q;
 	r = ts.normalForm(p,&Q);
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
 
 //	cout << "r = " << r << endl;
 //	for (int i=0; i<Q.size(); ++i)
 //		cout << "Q[" << i << "] = " << Q[i] << endl;
-		
+
 //	cerr << "compute constraint:" << endl;
 	// set = ts.polynomials();
 	// check.zero();
@@ -2352,8 +2352,8 @@ void testZDRCNormalForm() {
         std::string getQuoStr = "qList[" + std::to_string(idx) + "]:";
         cstr = new char[getQuoStr.length()+1];
         std::strcpy(cstr, getQuoStr.c_str());
-        ALGEB mapleQuo = EvalMapleStatement(kv, cstr); 
-        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo); 
+        ALGEB mapleQuo = EvalMapleStatement(kv, cstr);
+        mapleQuo = EvalMapleProc(kv, expandF, 1, mapleQuo);
         comp = EvalMapleProc(kv, cmpF, 2, mapleQuo, resultAlgebs[idx]);
         compBool = compBool && MapleToM_BOOL(kv, comp);
         mapleQuoList.push_back(mapleQuo);
@@ -2370,7 +2370,7 @@ void testZDRCNormalForm() {
         std::cerr << "Got remainder: " << r << std::endl;
         std::cerr << "Got maple rem: " << mapleResStr << std::endl << std::endl;
 
-        for (int i = 0; i < mapleQuoList.size(); ++i) {   
+        for (int i = 0; i < mapleQuoList.size(); ++i) {
             std::cerr << "Got quotient " << i << ": " << Q[i] << std::endl;
             std::cerr << "Got maple quo : " << mapleTest->algebToString(kv, mapleQuoList[i]) << std::endl;
         }
@@ -2402,47 +2402,47 @@ void testZDRCConvertToExpressionTree() {
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
-    
+
     // et:
     std::string etStr = et.toString() + ":";
     char* cstr = new char[etStr.size() + 1];
     std::strcpy (cstr, etStr.c_str());
     ALGEB resET = EvalMapleStatement(kv, cstr);
     delete[] cstr;
- 
+
     // str:
     std::string tsStr = str + ":";
     cstr = new char[tsStr.size() + 1];
     std::strcpy (cstr, tsStr.c_str());
     ALGEB resTS = EvalMapleStatement(kv, cstr);
     delete[] cstr;
- 
+
     // operator:
     std::string procStr = "ArrayTools:-IsEqual:";
     cstr = new char[procStr.length() + 1];
     std::strcpy (cstr, procStr.c_str());
     ALGEB testProc = EvalMapleStatement(kv, cstr);
     delete[] cstr;
- 
+
     // Maple:
     ALGEB equalityRes = EvalMapleProc(kv, testProc, 2, resET, resTS);
     M_BOOL cmpBool = MapleToM_BOOL(kv, equalityRes);
-    
+
     // Redirect stdout, stderr
     stringstream ss2;
     streambuf *oldcout,*oldcerr;
-    oldcout = cout.rdbuf(); // <-- save  
-    oldcerr = cerr.rdbuf(); // <-- save  
+    oldcout = cout.rdbuf(); // <-- save
+    oldcerr = cerr.rdbuf(); // <-- save
     cout.rdbuf (ss2.rdbuf());
     cerr.rdbuf (ss2.rdbuf());
 
     ts = ZeroDimensionalRegularChain<RN,SMQP>();
     ExpressionTree et2;
     et2 = ts.convertToExpressionTree();
-    
+
     cout.rdbuf (oldcout);              // <-- restore
     cerr.rdbuf (oldcerr);              // <-- restore
-    
+
 //  cout << "et2 = " << et2.toString() << endl;
     ss = stringstream();
     ss << ts;
@@ -2465,9 +2465,9 @@ bool isInvertibleValidate(SMQP f, ZeroDimensionalRegularChain<RN,SMQP> rc, vecto
 		std::cout.setstate(std::ios::failbit);
 		std::cerr.setstate(std::ios::failbit);
     }
-    
+
 	results = rc.isInvertible(f);
-    
+
     for (int l=0; l<results.size(); ++l) {
 //    	cout << "b_" << l << " = " << results[l].isTrue << endl;
 //    	cout << "T_" << l << " = " << results[l].chain << endl;
@@ -2476,7 +2476,7 @@ bool isInvertibleValidate(SMQP f, ZeroDimensionalRegularChain<RN,SMQP> rc, vecto
     	else
     		resultsFalse.push_back(results[l].chain);
     }
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
@@ -2486,7 +2486,7 @@ bool isInvertibleValidate(SMQP f, ZeroDimensionalRegularChain<RN,SMQP> rc, vecto
     	std::cerr << "rc = " << std::endl;
     	rc.display();
     }
-	
+
 	std::cerr << "BPAS:" << std::endl;
 	std::cerr << "[";
 	for (int i=0; i<resultsTrue.size(); ++i) {
@@ -2502,7 +2502,7 @@ bool isInvertibleValidate(SMQP f, ZeroDimensionalRegularChain<RN,SMQP> rc, vecto
 			std::cerr << ", ";
 	}
 	std::cerr << "]" << std::endl;
-    
+
     if (!showOutput) {
 		// Redirect stdout, stderr
 		std::cout.setstate(std::ios::failbit);
@@ -2524,6 +2524,10 @@ bool isInvertibleValidate(SMQP f, ZeroDimensionalRegularChain<RN,SMQP> rc, vecto
     inputs.push_back(listTrueTrees.toMapleString() + ":");
     inputs.push_back(listFalseTrees.toMapleString() + ":");
 
+    for (auto v : inputs) {
+        std::cerr << v << std::endl;
+    }
+
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
@@ -2542,7 +2546,7 @@ bool isInvertibleValidate(SMQP f, ZeroDimensionalRegularChain<RN,SMQP> rc, vecto
 
     std::string checkTrueBranch = "IsInvertibleValidate := proc (f::polynom, in_rc::list, Rlist::list, list1true::list, list1false::list) local lrcs1true, lrcs1false, lrcs2true, lrcs2false, n, rc, R, inverse, lrs, cs1, cs2, pass, i; R := RegularChains:-PolynomialRing(Rlist); n := nops(list1true); lrcs1true := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(numer(op(i, list1true))), RegularChains:-ChainTools:-Empty(R), R); lrcs1true := [op(lrcs1true), rc] end do; n := nops(list1false); lrcs1false := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(numer(op(i, list1false))), RegularChains:-ChainTools:-Empty(R), R); lrcs1false := [op(lrcs1false), rc] end do; rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(numer(in_rc)), RegularChains:-ChainTools:-Empty(R), R); inverse := RegularChains:-Inverse(numer(f), rc, R); if nops(op(1, inverse)) = 1 then lrcs2true := [op(3, op(op(1, inverse)))] else lrcs2true := op(1, inverse) end if; lrcs2false := op(2, inverse); lrs := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrcs1true, [1], R); cs1 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs, R); lrs := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrcs2true, [1], R); cs2 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs, R); if RegularChains:-ConstructibleSetTools:-IsContained(cs1, cs2, R) and RegularChains:-ConstructibleSetTools:-IsContained(cs2, cs1, R) then pass := true else pass := false end if; end proc:";
     std::string checkFalseBranch = "IsInvertibleValidate := proc (f::polynom, in_rc::list, Rlist::list, list1true::list, list1false::list) local lrcs1true, lrcs1false, lrcs2true, lrcs2false, n, rc, R, inverse, lrs, cs1, cs2, pass, i; R := RegularChains:-PolynomialRing(Rlist); n := nops(list1true); lrcs1true := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(numer(op(i, list1true))), RegularChains:-ChainTools:-Empty(R), R); lrcs1true := [op(lrcs1true), rc] end do; n := nops(list1false); lrcs1false := []; for i to n do rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(numer(op(i, list1false))), RegularChains:-ChainTools:-Empty(R), R); lrcs1false := [op(lrcs1false), rc] end do; rc := RegularChains:-ChainTools:-Chain(ListTools:-Reverse(numer(in_rc)), RegularChains:-ChainTools:-Empty(R), R); inverse := RegularChains:-Inverse(numer(f), rc, R); if nops(op(1, inverse)) = 1 then lrcs2true := [op(3, op(op(1, inverse)))] else lrcs2true := op(1, inverse) end if; lrcs2false := op(2, inverse); lrs := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrcs1true, [1], R); cs1 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs, R); lrs := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrcs2true, [1], R); cs2 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs, R); lrs := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrcs1false, [1], R); cs1 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs, R); lrs := map(RegularChains:-ConstructibleSetTools:-RegularSystem, lrcs2false, [1], R); cs2 := RegularChains:-ConstructibleSetTools:-ConstructibleSet(lrs, R); if RegularChains:-ConstructibleSetTools:-IsContained(cs1, cs2, R) and RegularChains:-ConstructibleSetTools:-IsContained(cs2, cs1, R) then return true else return false end if end proc:";
-    
+
     std::string procStr = checkFalseBranch;
 
     cstr = new char[procStr.length()+1];
@@ -2561,18 +2565,18 @@ bool isInvertibleValidate(SMQP f, ZeroDimensionalRegularChain<RN,SMQP> rc, vecto
 //     std::cerr << mapleTest->algebToString(kv, algebList[3]) << "\n\n";
 //     std::cerr << mapleTest->algebToString(kv, algebList[4]) << "\n\n";
 //     std::cerr << "\n\n";
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
 	}
-	
+
 //	std::cerr << "Maple:" << std::endl;
 //	std::cerr << mapleTest->algebToString(kv, algebList[3]) << "\n";
 //	std::cerr << mapleTest->algebToString(kv, algebList[4]) << "\n\n";
-	
+
     return mapleTest->testEquality(result, "true");
-	
+
 }
 
 void testZDRCIsInvertible(bool showOutput) {
@@ -2582,12 +2586,11 @@ void testZDRCIsInvertible(bool showOutput) {
 		std::cout.setstate(std::ios::failbit);
 		std::cerr.setstate(std::ios::failbit);
     }
-    
     SMQP f,T1,T2,T3;
     vector<Symbol> vars;
     ZeroDimensionalRegularChain<RN,SMQP> zdrc;
     std::vector<SMQP> zdrcPolys;
-    
+
     f = (SMQP("x")+SMQP("y"))*(SMQP("x")+RN(3)*SMQP("y"));
 	cout << "f = " << f << endl;
 	T1 = (SMQP("x")-SMQP("y"))*(SMQP("x")+SMQP("y"));
@@ -2606,15 +2609,15 @@ void testZDRCIsInvertible(bool showOutput) {
 	// zdrc += T1;
 	cout << "zdrc = " << zdrc << endl;
 //	printVariables(zdrc.variables(),"zdrc");
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
 	}
-	
+
 	bool firstResultCorrect = isInvertibleValidate(f,zdrc,vars,showOutput);
     // bool firstResultCorrect = true;
-    
+
     if (!showOutput) {
         // Redirect stdout, stderr
         std::cout.setstate(std::ios::failbit);
@@ -2652,20 +2655,20 @@ void testZDRCIsInvertible(bool showOutput) {
 	// zdrc += T2;
 	// zdrc += T1;
 	cout << "zdrc = " << zdrc << endl;
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
 	}
 
 	bool secondResultCorrect = isInvertibleValidate(f,zdrc,vars,showOutput);
-	
+
     if (!showOutput) {
 		// Redirect stdout, stderr
 		std::cout.setstate(std::ios::failbit);
 		std::cerr.setstate(std::ios::failbit);
     }
-    
+
     SMQP x("x"),y("y"),z("z");
 	f = ((z*z)-RN(1))*(y+RN(2));
 	cout << "f = " << f << endl;
@@ -2694,7 +2697,7 @@ void testZDRCIsInvertible(bool showOutput) {
 	// zdrc += T2;
 	// zdrc += T1;
 	cout << "zdrc = " << zdrc << endl;
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
@@ -2702,14 +2705,14 @@ void testZDRCIsInvertible(bool showOutput) {
 
 	bool thirdResultCorrect = isInvertibleValidate(f,zdrc,vars,showOutput);
     // bool thirdResultCorrect = true;
-	
+
 	showOutput = false;
     if (!showOutput) {
 		// Redirect stdout, stderr
 		std::cout.setstate(std::ios::failbit);
 		std::cerr.setstate(std::ios::failbit);
     }
-	
+
 	SMQP g;
 //	std::vector<int> maxDegs = {3,2,1};
 //	std::vector<int> maxDegs = {2,3,1}; // hits an unhandled corner case.
@@ -2747,7 +2750,7 @@ void testZDRCIsInvertible(bool showOutput) {
     T3.setRingVariables(xs);
     T3 += SMQP(xs[0])^5;
     T3 += RN(1);
-    
+
 	cout << "T3 = " << T3 << endl;
     zdrcPolys = {T1, T2, T3};
 	zdrc = ZeroDimensionalRegularChain<RN,SMQP>(zdrcPolys);
@@ -2755,7 +2758,7 @@ void testZDRCIsInvertible(bool showOutput) {
 	// zdrc += T2;
 	// zdrc += T1;
 	cout << "zdrc = " << zdrc << endl;
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
@@ -2763,11 +2766,11 @@ void testZDRCIsInvertible(bool showOutput) {
 
 	bool fourthResultCorrect = isInvertibleValidate(f,zdrc,vars,showOutput);
 	// bool fourthResultCorrect = true;
-	
+
 
     if(!(firstResultCorrect && secondResultCorrect && thirdResultCorrect && fourthResultCorrect)) {
         std::cerr << "ZDRC isInvertible test:\t\t\t\t\t\t FAILED" << std::endl;
-        
+
         if (!firstResultCorrect)
         	std::cerr << "First Example FAILED!" << std::endl;
         if (!secondResultCorrect)
@@ -2784,15 +2787,15 @@ void testZDRCIsInvertible(bool showOutput) {
 //bool regularGCDValidate(SMQP f, SMQP g, Symbol v, ZeroDimensionalRegularChain<RN,SMQP> rc, vector<Symbol> vars, bool showOutput) {
 //    vector<ZeroDimensionalRegularChain<RN,SMQP>> resultsTrue,resultsFalse;
 //    vector<PolyChainPair<SMQP,ZeroDimensionalRegularChain<RN,SMQP>>> results;
-//    
+//
 //    if (!showOutput) {
 //		// Redirect stdout, stderr
 //		std::cout.setstate(std::ios::failbit);
 //		std::cerr.setstate(std::ios::failbit);
 //    }
-//    
+//
 //	results = rc.regularGCD(f,g,v);
-//    
+//
 //    for (int l=0; l<results.size(); ++l) {
 ////    	cout << "b_" << l << " = " << results[l].isTrue << endl;
 ////    	cout << "T_" << l << " = " << results[l].chain << endl;
@@ -2850,12 +2853,12 @@ void testZDRCIsInvertible(bool showOutput) {
 ////     std::cerr << mapleTest->algebToString(kv, algebList[3]) << "\n\n";
 ////     std::cerr << mapleTest->algebToString(kv, algebList[4]) << "\n\n";
 ////     std::cerr << "\n\n";
-//	
+//
 //	if (!showOutput) {
 //		std::cout.clear();
 //		std::cerr.clear();
 //	}
-//	
+//
 //	std::cerr << "BPAS:" << std::endl;
 //	std::cerr << "[";
 //	for (int i=0; i<resultsTrue.size(); ++i) {
@@ -2874,13 +2877,13 @@ void testZDRCIsInvertible(bool showOutput) {
 //	std::cerr << "Maple:" << std::endl;
 //	std::cerr << mapleTest->algebToString(kv, algebList[3]) << "\n";
 //	std::cerr << mapleTest->algebToString(kv, algebList[4]) << "\n\n";
-//	
+//
 //	return (mapleTest->algebToString(kv, result) == "true");
-//	
+//
 //}
 
 void testZDRCregularGCD(bool showOutput) {
-	
+
     if (!showOutput) {
 		// Redirect stdout, stderr
 		std::cout.setstate(std::ios::failbit);
@@ -2888,15 +2891,15 @@ void testZDRCregularGCD(bool showOutput) {
     }
 
 	cout << "regularGCD	Examples:" << endl;
-    
+
 	cout << "Example 1:" << endl;
-	
+
     ZeroDimensionalRegularChain<RN,SMQP> zdrc;
     vector<PolyChainPair<SMQP,ZeroDimensionalRegularChain<RN,SMQP>>> result;
     SMQP m,f1,f2;
 	SMQP x("x"),y("y"),z("z");
     vector<Symbol> vars;
-    
+
 	m = (x-RN(1))*(x+RN(2));
 	f1 = ((RN(2)*x+RN(1))*(y*y)) + ((RN(5)*x+RN(10))*y) + ((RN(6)*x) + RN(12));
 	f2 = (RN(3)*(y*y)) + ((RN(4)*x+RN(8))*y) + (RN(4)*x) + RN(5);
@@ -2910,18 +2913,18 @@ void testZDRCregularGCD(bool showOutput) {
 	cout << "f2 = " << f2 << endl;
 	zdrc = ZeroDimensionalRegularChain<RN,SMQP>(m);
     result = zdrc.regularGCD(f1,f2,Symbol("y"));
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
 	}
-    
+
     for (int l=0; l<result.size(); ++l) {
 //    	cout << result[l] << endl;
     	cout << "G_" << l << " = " << result[l].poly << endl;
     	cout << "T_" << l << " = " << result[l].chain << endl;
     }
-	
+
     if (!showOutput) {
 		// Redirect stdout, stderr
 		std::cout.setstate(std::ios::failbit);
@@ -2929,7 +2932,7 @@ void testZDRCregularGCD(bool showOutput) {
     }
 
 	cout << "Example 2:" << endl;
-    
+
 	m = (x+RN(1))*(x+RN(2));
 	f1 = ((x+RN(1))*(y*y)) + RN(1)*y + ((RN(2)*x) + RN(4));
 	f2 = ((RN(2)*x+RN(3))*(y*y));
@@ -2945,25 +2948,25 @@ void testZDRCregularGCD(bool showOutput) {
 	cout << "f2 = " << f2 << endl;
     zdrc = ZeroDimensionalRegularChain<RN,SMQP>(m);
     result = zdrc.regularGCD(f1,f2,Symbol("y"));
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
 	}
-    
+
     for (int l=0; l<result.size(); ++l) {
     	cout << "G_" << l << " = " << result[l].poly << endl;
     	cout << "T_" << l << " = " << result[l].chain << endl;
     }
-	
+
     if (!showOutput) {
 		// Redirect stdout, stderr
 		std::cout.setstate(std::ios::failbit);
 		std::cerr.setstate(std::ios::failbit);
     }
-    
+
 	cout << "Example 3:" << endl;
-    
+
 	// requires vars, m and zdrc from example 2!
 	f1 = ((x+RN(2))*(y*y)) + (RN(2)*x+RN(3))*y - RN(2);
 	f2 = ((x+RN(1))*(y*y)) + (RN(4)*x+RN(5))*y + (RN(4)*x) + RN(6);
@@ -2973,22 +2976,22 @@ void testZDRCregularGCD(bool showOutput) {
 	cout << "f1 = " << f1 << endl;
 	cout << "f2 = " << f2 << endl;
     result = zdrc.regularGCD(f1,f2,Symbol("y"));
-	
+
 	if (!showOutput) {
 		std::cout.clear();
 		std::cerr.clear();
 	}
-    
+
     for (int l=0; l<result.size(); ++l) {
     	cout << "G_" << l << " = " << result[l].poly << endl;
     	cout << "T_" << l << " = " << result[l].chain << endl;
     }
-	
+
 //	bool firstResultCorrect = isInvertibleValidate(f,zdrc,vars,showOutput);
 
 //    if(!(firstResultCorrect && secondResultCorrect)) {
 //        std::cerr << "ZDRC regularGCD test:\t\t\t\t\t\t FAILED" << std::endl;
-//        
+//
 //        if (!firstResultCorrect)
 //        	std::cerr << "First Example FAILED!" << std::endl;
 //        if (!secondResultCorrect)
@@ -3002,7 +3005,7 @@ void testZDRCregularGCD(bool showOutput) {
 
 //bool triangularizeValidateOld(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symbol> vars) {
 //    vector<RegularChain<RN,SMQP>> results;
-//    
+//
 //	results = rc.triangularize(F);
 
 //    ExpressionTree FTree;
@@ -3047,7 +3050,7 @@ void testZDRCregularGCD(bool showOutput) {
 ////     std::cerr << "calling maple proc: \n\n";
 ////     std::cerr << mapleTest->algebToString(kv, testProc) << "\n\n";
 ////     std::cerr << "\n\n";
-//	
+//
 //	if (mapleTest->algebToString(kv, result) == "true")
 //		return true;
 //	else {
@@ -3063,24 +3066,24 @@ void testZDRCregularGCD(bool showOutput) {
 
 //bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symbol> vars, bool showOutput) {
 //    vector<RegularChain<RN,SMQP>> results;
-//    
+//
 //    stringstream ss;
 //    // Redirect stdout
 //    streambuf *oldcout,*oldcerr;
-//    
+//
 //    if (!showOutput) {
-//		oldcout = cout.rdbuf(); // <-- save  
-//		oldcerr = cerr.rdbuf(); // <-- save  
+//		oldcout = cout.rdbuf(); // <-- save
+//		oldcerr = cerr.rdbuf(); // <-- save
 //		cout.rdbuf (ss.rdbuf());
 //		cerr.rdbuf (ss.rdbuf());
 //    }
-//    
+//
 //    for (int i=0; i<F.size(); ++i) {
 //    	cerr << "F[" << i << "] = " << F[i] << endl;
 //    }
-//    
+//
 //	results = rc.triangularize(F);
-//	
+//
 //    if (!showOutput) {
 //		cout.rdbuf (oldcout);   // <-- restore
 //		cerr.rdbuf (oldcerr);   // <-- restore
@@ -3142,10 +3145,10 @@ void testZDRCregularGCD(bool showOutput) {
 //    std::strcpy (cstr, procStr.c_str());
 //    testProc = EvalMapleStatement(kv, cstr);
 //    delete[] cstr;
-//    
+//
 //    result = EvalMapleProc(kv, testProc, 3, algebList2[0], algebList2[1], algebList2[2]);
-//	
-//	
+//
+//
 //	if (mapleTest->algebToString(kv, result) == "true") {
 //		if (showOutput) {
 //			std::cerr << "BPAS result:" << std::endl;
@@ -4133,7 +4136,7 @@ void testZDRCregularGCD(bool showOutput) {
 //	poly += c_4*c_1;
 //	poly.setRingVariables(vars);
 //	polys.push_back(poly);
-//	
+//
 //	RegularChain<RationalNumber,SMQP> rc(variables,params);
 //	bool pass = triangularizeValidate(polys,rc,vars,showOutput);
 //	if (showOutput) {
@@ -4266,8 +4269,8 @@ int main() {
 	testRCPseudoDivide();
 	testRCNormalForm();
 	testRCConvertToExpressionTree();
-	
-	
+
+
 	testZDRCDefaultConstructor();
 	testZDRCTranscendentalVariableSpecificationConstructor();
 	testZDRCPolynomialAddConstructor();
@@ -4299,8 +4302,8 @@ int main() {
 	testZDRCregularGCD(false);
 
 //	triangularizeTests();
-    
-    	
+
+
 //	cout << "RC Triangularize Tests:" << endl;
 //	SMQP T1,T2,T3;
 //	vector<SMQP> F;
@@ -4324,14 +4327,14 @@ int main() {
 ////	F.push_back(SMQP("z"));
 //	TT = rc.triangularize(F);
 //	cout << "in test code: TT.size = " << TT.size() << endl;
-//	for (int i=0; i<TT.size(); ++i) 
+//	for (int i=0; i<TT.size(); ++i)
 //		cout << "TT[" << i << "] = " << TT[i] << endl;
-//		
+//
 //	cout << "rc.isKnownToBePrime = " << rc.isKnownToBePrime() << endl;
 //	cout << "rc.isKnownToBeSquareFree = " << rc.isKnownToBeSquareFree() << endl;
-//	
+//
 //	cout << "triangularizeValidate: " << triangularizeValidate(F,rc,rcvs) << endl;
-	
+
 //	cout << "sphere intersecting circle example: " << endl;
 //	T1 = (SMQP("x")*SMQP("x")) + (SMQP("y")*SMQP("y")) + (SMQP("z")*SMQP("z")) - RN(1);
 //	T2 = ((SMQP("x")*SMQP("x")) + (SMQP("y")*SMQP("y")) - RN(1))*SMQP("z");
@@ -4349,29 +4352,29 @@ int main() {
 //	RegularChain<RN,SMQP> rc2;
 ////	TT = rc2.triangularize(F);
 ////	cout << "in test code: TT.size = " << TT.size() << endl;
-////	for (int i=0; i<TT.size(); ++i) 
+////	for (int i=0; i<TT.size(); ++i)
 ////		cout << "TT[" << i << "] = " << TT[i] << endl;
-//		
+//
 //	cout << "triangularizeValidate: " << triangularizeValidate(F,rc2,rcvs) << endl;
-		
-		
-		
-		
-		
-		
-		
-		
-	
+
+
+
+
+
+
+
+
+
 //	cout << "regularGCD	Examples for RegularChain:" << endl;
 //    vector<PolyChainPair<SMQP,RegularChain<RN,SMQP>>> rcResults;
 //	cout << "Example 1:" << endl;
-//	
+//
 ////    // Redirect stdout, stderr
-////    oldcout = cout.rdbuf(); // <-- save  
-////    oldcerr = cerr.rdbuf(); // <-- save  
+////    oldcout = cout.rdbuf(); // <-- save
+////    oldcerr = cerr.rdbuf(); // <-- save
 ////    cout.rdbuf (ss.rdbuf());
 ////    cerr.rdbuf (ss.rdbuf());
-//    
+//
 //	m = (x-RN(1))*(x+RN(2));
 //	f1 = ((RN(2)*x+RN(1))*(y*y)) + ((RN(5)*x+RN(10))*y) + ((RN(6)*x) + RN(12));
 //	f2 = (RN(3)*(y*y)) + ((RN(4)*x+RN(8))*y) + (RN(4)*x) + RN(5);
@@ -4385,11 +4388,11 @@ int main() {
 //	cout << "f2 = " << f2 << endl;
 //	rc = RegularChain<RN,SMQP>(m);
 //    result = rc.regularGCD(f1,f2,Symbol("y"));
-//	
+//
 ////	// Restore stdout, stderr
 ////    cout.rdbuf (oldcout);              // <-- restore
 ////    cerr.rdbuf (oldcerr);              // <-- restore
-//    
+//
 //    for (int l=0; l<result.size(); ++l) {
 ////    	cout << result[l] << endl;
 //    	cout << "G_" << l << " = " << result[l].poly << endl;
@@ -4435,8 +4438,8 @@ int main() {
 //	cout << "p = " << p << endl;
 //	cout << "q = " << q << endl;
 //	cout << "g = " << g << endl;
-     
-    
+
+
 ////    ZeroDimensionalRegularChain<RN,SMQP> ts;
 //	SMQP p,check;
 //	std::vector<SMQP> set;
@@ -4468,15 +4471,15 @@ int main() {
 
 //int main() {
 //	RegularChain<RN,SMQP> rc;
-//	
+//
 //	cout << "rc = " << rc << endl;
-//	
+//
 //	ZeroDimensionalRegularChain<RN,SMQP> rc2;
 
 //	cout << "zdrc = " << rc2 << endl;
-////	
+////
 //    RegularChain<RN,SMQP> ts;
-//	
+//
 //	SMQP f,g,h,check;
 //	std::vector<SMQP> set;
 //	std::vector<Symbol> vars,trcVars;
@@ -4491,7 +4494,7 @@ int main() {
 //    rc2.display();
 //    f.randomPolynomial(nvars+nTrcVars,nterms,coefBound,sparsity,includeNeg);
 //    g.randomPolynomial(nvars+nTrcVars,nterms,coefBound,sparsity,includeNeg);
-//    
+//
 //    vars = rc2.variables();
 //    trcVars = rc2.transcendentalVariables();
 //    vars.insert(vars.end(),trcVars.begin(),trcVars.end());
@@ -4502,6 +4505,6 @@ int main() {
 //    if (f.leadingVariable() == g.leadingVariable())
 //    	h = rc2.regularGCD(f,g,f.leadingVariable());
 //    cout << "h = " << h << endl;
-//	
+//
 //	return 0;
 //}

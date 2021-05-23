@@ -102,12 +102,26 @@ public:
 	Ring resultant(bool lazy = 0) const;
 
 	/**
-	 * Select the leading coefficient of a subresultant given the index;
-	 * if no such polynomial exists, 0 is returned.
+	 * Select the principal subresultant coefficient of the given index;
+	 * the coefficient of degree i for the i'th subresultant.
 	 *
-	 * @param i: index of the leading coefficient of the desired subresultant
+	 * @param i: index of the subresultant
 	 **/
-	Ring principleSubResultantCoefficientOfIndex(int i) const;
+	Ring principalSubResultantCoefficientOfIndex(int i) const;
+
+	/**
+	 * Select the initial of the subresultant of the given index;
+	 * the leading coefficient of the subresultant viewed as a
+	 * univariate polynomial in v.
+	 *
+	 * @note: this is different than the principal subresultant coefficient;
+	 *        this method returns the actual leading coefficient,
+	 *        thus returning 0 iff the polynomial is identically 0.
+	 *
+	 * @param i: index of the subresultant
+	 */
+	Ring subResultantInitialOfIndex(size_t i) const;
+
 
 	/**
 	 * Given an output stream, print the subresultant chain.

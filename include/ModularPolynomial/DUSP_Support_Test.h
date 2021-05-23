@@ -7,13 +7,15 @@
 #endif
 
 #include "./DUSP_Support.h"
+#include "./DBSP_Support.h"
 #include "./DUSP_Support_Factoring.h"
-    	
+
 // Print polynomial
 void printPolynomial_spX (const duspoly_t* a, const Prime_ptr* Pptr);
 void printPolynomialOutForm_spX (const duspoly_t* a, const Prime_ptr* Pptr);
-    
-// print Matrix 2*2 of polynomials 
+void printPolynomialOutForm_spXY (const dbspoly_t* a, const Prime_ptr* Pptr);
+
+// print Matrix 2*2 of polynomials
 void printMat4_spX (dusmat4_t* A, const Prime_ptr* Pptr);
 void printMat4OutForm_spX (dusmat4_t* A, const Prime_ptr* Pptr);
 
@@ -38,7 +40,7 @@ int ExtEuclideanTestInForm (const duspoly_t* a, const duspoly_t* b, const duspol
 
 int SFFVerificationInForm_spX (const duspoly_t* a, factors_t* f, const Prime_ptr* Pptr);
 
-		
+
 #ifdef __cplusplus
 }
 #endif

@@ -46,6 +46,19 @@ typedef struct UnivariatePolynomialOverPowerSeries {
  */
 Upops_t* allocateUnivariatePolynomialOverPowerSeries_UPOPS(int alloc);
 
+
+/**
+ * Given a UPOPS, reallocate its
+ * power series coefficients so that they store
+ * at least alloc number of homogeneous parts.
+ *
+ * @param upops: the UPOPS to resize
+ * @param alloc: the new size of each power series coefficient.
+ * @see resizePowerSeries_PS
+ */
+void resizeCoefficients_UPOPS(Upops_t* upops, int alloc);
+
+
 /**
  * Destroy the input upops. Actually, decrement its reference count and destroy conditionally.
  * @param upops : a given univariate polynomial over power series

@@ -25,7 +25,7 @@ set(NTL_POSSIBLE_LIB_PATHS
   /usr/local/lib
 )
 
-find_path(NTL_INCLUDES NAMES version.h `PATHS ${INCLUDE_INSTALL_DIR} HINTS ${NTL_POSSIBLE_INCLUDE_PATHS})
+find_path(NTL_INCLUDES NAMES version.h PATHS ${INCLUDE_INSTALL_DIR} HINTS ${NTL_POSSIBLE_INCLUDE_PATHS})
 
 
 # Set NTL_FIND_VERSION to 3.0.0 if no minimum version is specified

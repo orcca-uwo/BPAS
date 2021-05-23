@@ -26,15 +26,20 @@ duspoly_t* convertToPrimeField_DUZP(const DUZP_t* p, const Prime_ptr* pptr) {
 }
 
 void convertToPrimeField_DUZP_inp(const DUZP_t* p, const Prime_ptr* pptr, duspoly_t** pp) {
+	if (pp == NULL) {
+		return;
+	}
+
 	if (p == NULL || p->alloc == 0) {
 		freePolynomial_spX (&*pp);
 		*pp = NULL;
 		return;
 	}
 
-	if ((*pp)->alloc < p->lt+1) {
-		freePolynomial_spX (&*pp);
-		*pp = makePolynomial_spX(p->lt + 1);
+	if (*pp == NULL) {
+		*pp = makePolynomial_spX(p->lt+1);
+	} else if ((*pp)->alloc < p->lt+1) {
+    	reallocatePolynomial_spX(pp, p->lt+1);
 	}
 	polysize_t lt = (*pp)->lt = p->lt;
 	mpz_t* coefs = p->coefs;
@@ -47,7 +52,6 @@ void convertToPrimeField_DUZP_inp(const DUZP_t* p, const Prime_ptr* pptr, duspol
 	}
 
 	(*pp)->lt = lt;
-
 }
 
 void applyModulo_DUZP_inp(DUZP_t* p, const mpz_t mod) {
@@ -86,7 +90,7 @@ void applyModuloSymmetric_DUZP_inp(DUZP_t* p, const mpz_t mod) {
 	int foundLt = 0;
 	for (polysize_t i = lt; i >= 0; --i) {
 		// fprintf(stderr, "moding poly %p at %ld\n",p, i);
-		mpz_mod(p->coefs[i], p->coefs[i], mod); 
+		mpz_mod(p->coefs[i], p->coefs[i], mod);
 		if(mpz_cmp(p->coefs[i], halfMod) > 0) {
 			mpz_sub(p->coefs[i], p->coefs[i], mod);
 		}
@@ -139,6 +143,40 @@ DUZP_t* deepCopyPolynomial_DUZP(const DUZP_t* p) {
 	}
 
 	return ret;
+}
+
+void deepCopyPolynomial_DUZP_inp(const DUZP_t* a, DUZP_t** bb) {
+	if (bb == NULL) {
+		return;
+	}
+
+	if (a == NULL) {
+		if (*bb != NULL) {
+			freePolynomial_DUZP(*bb);
+			*bb = NULL;
+		}
+		return;
+	}
+
+	DUZP_t* b = *bb;
+	if (b == NULL) {
+		b = makePolynomial_DUZP(a->lt + 1);
+		*bb = b;
+	} else if (b->alloc <= a->lt) {
+		resizePolynomial_DUZP(b, a->lt + 1);
+	}
+
+	int i;
+	for (i = b->lt + 1; i <= a->lt; ++i) {
+		mpz_init(b->coefs[i]);
+	}
+	for (i = a->lt + 1; i <= b->lt; ++i) {
+		mpz_clear(b->coefs[i]);
+	}
+	for (i = 0; i <= a->lt; ++i) {
+		mpz_set(b->coefs[i], a->coefs[i]);
+	}
+	b->lt = a->lt;
 }
 
 DUZP_t* deepCopyPolynomial_DUZPFromspX(const duspoly_t* p, const Prime_ptr* pptr) {
@@ -212,7 +250,7 @@ int isEqual_DUZP(const DUZP_t* a, const DUZP_t* b) {
 
 
 void printPoly_DUZP(const DUZP_t* poly, char* sym) {
-	if (poly == NULL || (poly->lt == 0 && mpz_sgn(poly->coefs[0]) == 0)) {
+	if (poly == NULL || poly->coefs == NULL || (poly->lt == 0 && mpz_sgn(poly->coefs[0]) == 0)) {
 		fprintf(stderr, "0\n");
 		return;
 	}
@@ -250,8 +288,8 @@ void printPoly_DUZP_maple(DUZP_t* poly, char* sym, char* maplevar) {
 		fprintf(stderr, "%s := 0;\n", maplevar);
 		return;
 	}
-	
-	fprintf(stderr, "%s := ", maplevar);	
+
+	fprintf(stderr, "%s := ", maplevar);
 	polysize_t lt = poly->lt;
 	mpz_t* coefs = poly->coefs;
 	int first = 1;
@@ -276,6 +314,40 @@ void printPoly_DUZP_maple(DUZP_t* poly, char* sym, char* maplevar) {
 		}
 	}
 	fprintf(stderr, ";\n");
+
+	mpz_clear(tmp);
+}
+
+void printPolyToFile_DUZP(FILE* fp, DUZP_t* poly, char* sym) {
+	if (poly == NULL || (poly->lt == 0 && mpz_sgn(poly->coefs[0]) == 0)) {
+		fprintf(fp, "0\n");
+		return;
+	}
+
+	polysize_t lt = poly->lt;
+	mpz_t* coefs = poly->coefs;
+	int first = 1;
+	mpz_t tmp;
+	mpz_init(tmp);
+	for (polysize_t i = 0; i <= lt; ++i) {
+		if (mpz_sgn(coefs[i]) == 0) {
+			continue;
+		}
+		if (first) {
+			gmp_fprintf(fp, "%Zd*%s^%ld", coefs[i], sym, i);
+			first = 0;
+			continue;
+		}
+		if (mpz_sgn(coefs[i]) > 0) {
+			fprintf(fp, " + ");
+			gmp_fprintf(fp, "%Zd*%s^%ld", coefs[i], sym, i);
+		} else {
+			fprintf(fp, " - ");
+			mpz_abs(tmp, coefs[i]);
+			gmp_fprintf(fp, "%Zd*%s^%ld", tmp, sym, i);
+		}
+	}
+	fprintf(fp, "\n");
 
 	mpz_clear(tmp);
 }
@@ -365,7 +437,7 @@ DUZP_t* buildRandomPoly_DUZP(polysize_t maxDeg, int coefBoundBits, float sparsit
 	return p;
 }
 
-void content_DUZP(DUZP_t* p, mpz_t c) {
+void content_DUZP(const DUZP_t* p, mpz_t c) {
 	if (p == NULL || p->alloc == 0){
 		mpz_set_ui(c, 0ul);
 		return;
@@ -386,6 +458,9 @@ void content_DUZP(DUZP_t* p, mpz_t c) {
 		if (mpz_sgn(coefs[i]) != 0) {
 			mpz_gcd(c, c, coefs[i]);
 			if (mpz_cmp_si(c, 1l) == 0) {
+				if (mpz_sgn(coefs[lt]) < 0) {
+					mpz_neg(c,c);
+				}
 				return;
 			}
 		}
@@ -476,7 +551,7 @@ DUZP_t* subtractDUSP_DUZP(DUZP_t* a, duspoly_t* b, const Prime_ptr* Pptr) {
 	for (polysize_t i = 1; i < minSize; ++i) {
 		mpz_init(d->coefs[i]);
 		mpz_sub_ui(d->coefs[i], a->coefs[i], (unsigned long long) smallprimefield_convert_out(b->elems[i], Pptr));
-	} 
+	}
 
 	//if deg a  < deg b
 	if (minSize == a->lt + 1) {
@@ -513,7 +588,7 @@ DUZP_t* addPolynomials_DUZP(DUZP_t* a, DUZP_t* b) {
 	for (polysize_t i = 1; i < minSize; ++i) {
 		mpz_init(d->coefs[i]);
 		mpz_add(d->coefs[i], a->coefs[i], b->coefs[i]);
-	} 
+	}
 
 	//if deg a  < deg b
 	if (minSize == a->lt + 1) {
@@ -535,7 +610,7 @@ DUZP_t* addPolynomials_DUZP(DUZP_t* a, DUZP_t* b) {
     		break;
     	}
     }
-    
+
 
 	return d;
 }
@@ -663,7 +738,7 @@ void addPolynomialsPreAlloc_DUZP(DUZP_t* a, DUZP_t* b, DUZP_t** sump) {
 				mpz_init_set(sum->coefs[i], a->coefs[i]);
 			}
 		}
-		return;	
+		return;
 	}
 
 
@@ -763,7 +838,7 @@ DUZP_t* subtractPolynomials_DUZP(DUZP_t* a, DUZP_t* b) {
 	for (polysize_t i = 1; i < minSize; ++i) {
 		mpz_init(d->coefs[i]);
 		mpz_sub(d->coefs[i], a->coefs[i], b->coefs[i]);
-	} 
+	}
 
 	//if deg a  < deg b
 	if (minSize == a->lt + 1) {
@@ -886,7 +961,7 @@ void subtractPolynomials_DUZP_inpRHS(const DUZP_t* a, DUZP_t** b) {
 			mpz_clear(belems[i]);
 		} else {
 			(*b)->lt = i;
-			break;			
+			break;
 		}
 
 		if (i == 0) {
@@ -941,12 +1016,12 @@ DUZP_t* multiplyPolynomials_DUZP(const DUZP_t* a, const DUZP_t* b) {
     register polysize_t i, j;
     register polysize_t jmin = 0;
     register polysize_t jmax = 0;
-    
+
     mpz_t* a_coefs = a->coefs;
     mpz_t* b_coefs = b->coefs;
     mpz_t* c_coefs = c->coefs;
 
-    // poly * poly = 
+    // poly * poly =
     mpz_addmul(c_coefs[0], a_coefs[0], b_coefs[0]);
     for (i = 1; i <= lt_c; i++) {
 		mpz_init(c_coefs[i]);
@@ -977,7 +1052,7 @@ DUZP_t* multiplyPolynomials_DUZP(const DUZP_t* a, const DUZP_t* b) {
 // 			freePolynomial_DUZP(prod);
 // 			prod = tmpProd;
 // 		}
-// 		return prod;		
+// 		return prod;
 // 	} else if (excludeIdx == 1) {
 // 		DUZP_t* prod = multiplyPolynomials_DUZP(polys[0], polys[2]);
 // 		DUZP_t* tmpProd;
@@ -1102,7 +1177,7 @@ void multiplyAllButOnePolynomialsPreAlloc_DUZP(DUZP_t const*const* polys, int n,
 				mpz_init_set(prod->coefs[i], polys[k]->coefs[i]);
 			}
 		}
-		return;			
+		return;
 	}
 
 //1: Naive iteartive way
@@ -1153,7 +1228,7 @@ DUZP_t* multiplyManyPolynomials_DUZP(DUZP_t const*const* polys, int n) {
 	for (int i = 2; i < n; ++i) {
 		multiplyPolynomials_DUZP_inp(polys[i], &prod);
 	}
-//2: Do a tree; 
+//2: Do a tree;
 	// //do a serial reduce for elements of index larger than a power of 2
 	// int max = 2;
 	// while ( 2*max <= n) { max <<= 1; }
@@ -1192,7 +1267,7 @@ DUZP_t* multiplyManyPolynomials_DUZP(DUZP_t const*const* polys, int n) {
 	// 		freePolynomial_DUZP(prod);
 	// 	}
 	// }
-	
+
 	// int step = 1; //actually step is 2 w.r.t original list
 
 	// // fprintf(stderr, "\ndoing generic steps:\n");
@@ -1277,7 +1352,7 @@ void multiplyManyPolynomialsPreAlloc_DUZP(DUZP_t const*const* polys, int n, DUZP
 	for (polysize_t i = 0; i <= lt_c; ++i) {
 		mpz_set(c->coefs[i], polys[0]->coefs[i]);
 	}
-	
+
     register polysize_t i, j;
     register polysize_t jmin = 0;
     register polysize_t jmax = 0;
@@ -1323,7 +1398,7 @@ void multiplyManyPolynomialsPreAlloc_DUZP(DUZP_t const*const* polys, int n, DUZP
 		}
 
 	}
-    
+
 	c->lt = lt_c;
 }
 
@@ -1354,7 +1429,7 @@ void multiplyPolynomialsPreAlloc_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t**
     	if (cc == NULL) {
     		cc = makePolynomial_DUZP(bSize);
     		*c = cc;
-    	} 	
+    	}
     	if (cc->alloc < bSize) {
 			resizePolynomial_DUZP(cc, bSize);
     	}
@@ -1374,13 +1449,13 @@ void multiplyPolynomialsPreAlloc_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t**
 			}
 		} else {
 			for (polysize_t i = 0; i < bSize; ++i) {
-				mpz_mul(ccoefs[i], bcoefs[i], a->coefs[0]);				
+				mpz_mul(ccoefs[i], bcoefs[i], a->coefs[0]);
 			}
 			for (polysize_t i = bSize; i < cSize; ++i) {
 				mpz_clear(ccoefs[i]);
 			}
 		}
-		return;	
+		return;
     }
 
     if (b->lt == 0) {
@@ -1408,13 +1483,13 @@ void multiplyPolynomialsPreAlloc_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t**
 			}
 		} else {
 			for (polysize_t i = 0; i < aSize; ++i) {
-				mpz_mul(ccoefs[i], acoefs[i], b->coefs[0]);				
+				mpz_mul(ccoefs[i], acoefs[i], b->coefs[0]);
 			}
 			for (polysize_t i = aSize; i < cSize; ++i) {
 				mpz_clear(ccoefs[i]);
 			}
 		}
-		return;	
+		return;
     }
 
 	DUZP_t* cc = *c;
@@ -1431,21 +1506,21 @@ void multiplyPolynomialsPreAlloc_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t**
 
     if (cc->alloc < lt_c + 1) {
     	// fprintf(stderr, "resize poly\n" );
-		resizePolynomial_DUZP(cc, lt_c+1); 
+		resizePolynomial_DUZP(cc, lt_c+1);
     }
-    
+
     polysize_t lt_c_old = cc->lt;
 
     mpz_t* a_coefs = a->coefs;
     mpz_t* b_coefs = b->coefs;
     mpz_t* c_coefs = cc->coefs;
-    
+
     cc->lt = lt_c;
-    
+
     register polysize_t i, j;
     register polysize_t jmin = 0;
     register polysize_t jmax = 0;
-    
+
 
     if (lt_c_old > lt_c) {
     	for (i = 0; i <= lt_c; ++i) {
@@ -1460,7 +1535,7 @@ void multiplyPolynomialsPreAlloc_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t**
 	    }
     	for (int i = lt_c + 1; i < lt_c_old; ++i) {
 	    	// fprintf(stderr, "pralloc %p clear %ld\n", cc, i);
-			mpz_clear(c_coefs[i]);    		
+			mpz_clear(c_coefs[i]);
     	}
     } else {
 	    for (i = 0; i <= lt_c_old; ++i) {
@@ -1519,14 +1594,14 @@ void multiplyPolynomials_DUZP_inp(const DUZP_t* a, DUZP_t** bb) {
     register polysize_t i, j;
     register polysize_t jmin = 0;
     register polysize_t jmax = 0;
-    
+
     mpz_t* __restrict__ a_coefs = a->coefs;
     mpz_t* __restrict__ b_coefs = b->coefs;
 
     for (i = lt_b + 1; i <= lt_c; ++i) {
     	mpz_init(b_coefs[i]);
     }
- 
+
     for (i = lt_c; i >= 0; --i) {
 		jmin = MIN_spX(i, lt_b);
 		jmax = MAX_spX(i - lt_a, 0);
@@ -1549,7 +1624,7 @@ void multiplyByBinomial_DUZP_inp(DUZP_t** a_ptr, const mpz_t b) {
 	DUZP_t* a = *a_ptr;
 	if (a == NULL) {
 		a = makePolynomial_DUZP(2);
-		
+
 		mpz_init_set_ui(a->coefs[0], 1ul);
 		mpz_init_set(a->coefs[1], b);
 		a->lt = 1;
@@ -1570,7 +1645,7 @@ void multiplyByBinomial_DUZP_inp(DUZP_t** a_ptr, const mpz_t b) {
 	for (int i = 0; i < a->lt; ++i) {
 		mpz_submul(a->coefs[i], a->coefs[i+1], b);
 	}
-	
+
 	//shift right
 	memmove(a->coefs+1, a->coefs, sizeof(mpz_t)*(a->lt+1));
 	//strict copy of struct contents; don't clear tmp.
@@ -1625,7 +1700,7 @@ int divideTest_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t** q) {
 
     		mpz_init(quo->coefs[i]);
     		mpz_divexact(quo->coefs[i], rr_coefs[lt_b + i], *lcb);
-    	    
+
   			mpz_set_si(rr_coefs[lt_b + i], 0l);
     	    --(rr->lt);
     	    for (j = 0; j < lt_b; ++j) {
@@ -1662,7 +1737,7 @@ int divideByMonicLinear_DUZP(const DUZP_t* a, const mpz_t b, DUZP_t** q, mpz_t* 
 	if (q == NULL && rem == NULL) {
 		return -1;
 	}
-	
+
 	if (a == NULL) {
 		if (q != NULL) {
 			freePolynomial_DUZP(*q);
@@ -1712,7 +1787,7 @@ int dividePolynomials_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t** q, DUZP_t*
     	fprintf (stderr, "DUZP Error: Division by zero!\n");
     	exit (1);
     }
-    
+
     // 0 / b = 0
     if (isZero_DUZP (a)) {
     	if (r != NULL) {
@@ -1734,10 +1809,10 @@ int dividePolynomials_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t** q, DUZP_t*
 		}
 		return 1;
     }
-    
+
     polysize_t deg_a = a->lt;
     polysize_t deg_b = b->lt;
-    
+
     // deg(a) < deg(b) => a = 0*b + a
     if (deg_a < deg_b) {
     	if (r != NULL) {
@@ -1750,7 +1825,7 @@ int dividePolynomials_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t** q, DUZP_t*
     }
 
     polysize_t diff_deg = deg_a - deg_b;
-    
+
     DUZP_t* rr = deepCopyPolynomial_DUZP(a); // rr = a;
     DUZP_t* qq = makePolynomial_DUZP(diff_deg+1);
 
@@ -1758,23 +1833,23 @@ int dividePolynomials_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t** q, DUZP_t*
     	mpz_init(qq->coefs[i]);
     }
     qq->lt = diff_deg;
-    
+
     register polysize_t i, j;
     mpz_t* lc_b = b->coefs + b->lt;
     mpz_t* rCoefs = rr->coefs;
     mpz_t* qCoefs = qq->coefs;
-        
+
     // a = b*qq + rr
     for (i = diff_deg; i >= 0; --i) {
     	if (mpz_sgn(rCoefs[deg_b + i])) {
     		if (mpz_divisible_p(rCoefs[deg_b + i], *lc_b)) {
     			mpz_divexact(qCoefs[i], rCoefs[deg_b + i], *lc_b);
-    			
+
     			// mpz_set_ui(rCoefs[deg_b + i], 0ul);
 
     			mpz_clear(rCoefs[deg_b + i]);
 				--(rr->lt);
-    			
+
     			for (j = deg_b-1; j >= 0; --j) {
     				mpz_submul(rCoefs[i+j], b->coefs[j], qCoefs[i]);
     			}
@@ -1798,26 +1873,26 @@ int dividePolynomials_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t** q, DUZP_t*
 
 
   //   // a = b*qq + rr
-  //   for (i = diff_deg; i >= 0; i--) {	
+  //   for (i = diff_deg; i >= 0; i--) {
 		// lc_rr_in = idxCoeffInForm_spX (rr, deg_b + i);
 		// /* lc_rr_in = smallprimefield_convert_in (lc_rr_in, Pptr); */
 
 		// if (lc_rr_in) {
 		// 	lc_rr_in = smallprimefield_mul (lc_rr_in, lc_b_in, Pptr);
 
-		// 	qq->elems[i] =  lc_rr_in; // smallprimefield_convert_out (lc_rr_in, Pptr); 
-	    
+		// 	qq->elems[i] =  lc_rr_in; // smallprimefield_convert_out (lc_rr_in, Pptr);
+
 		// 	rr->elems[deg_b+i] = 0;
 		// 	rr->lt -= 1;
 		// 	rr->alloc -= 1;
-		// 	for (j = deg_b-1;j >= 0; j--) {		   
+		// 	for (j = deg_b-1;j >= 0; j--) {
 		// 		/* b_in = smallprimefield_convert_in (b->elems[j], Pptr); */
 		// 		b_in = smallprimefield_mul (b->elems[j], lc_rr_in, Pptr);
 		// 		/* b_in = smallprimefield_convert_out (b_in, Pptr); */
-		
+
 		// 		rr->elems[i+j] = smallprimefield_sub (rr->elems[i+j], b_in, Pptr);
 		// 	}
-		// }	
+		// }
   //   }
 
     for (i = rr->lt; i >= 1; --i) {
@@ -1828,13 +1903,13 @@ int dividePolynomials_DUZP(const DUZP_t* a, const DUZP_t* b, DUZP_t** q, DUZP_t*
     		break;
     	}
     }
-    
+
     if (q != NULL) {
     	*q = qq;
     }
 	if (r != NULL) {
     	*r = rr;
-	}    
+	}
 
 	return 1;
 }
@@ -1847,20 +1922,20 @@ int remainder_DUZP_inp(DUZP_t** aa, DUZP_t* b) {
 		return 0;
 	}
 
-    // a / 0 = 
+    // a / 0 =
     if (isZero_DUZP (b)) {
     	fprintf (stderr, "DUZP Error: Division by zero!\n");
     	exit (1);
     }
-    
+
     // 0 / b = 0
     if (isZero_DUZP (*aa)) {
     	return 1;
     }
 
-    // a / const = 
+    // a / const =
     if (b->lt == 0) {
-    	mpz_t cont; 
+    	mpz_t cont;
     	mpz_init(cont);
     	content_DUZP(*aa, cont);
     	if (mpz_divisible_p(cont, b->coefs[0])) {
@@ -1869,10 +1944,10 @@ int remainder_DUZP_inp(DUZP_t** aa, DUZP_t* b) {
 			mpz_clear(cont);
     		return 1;
     	}
-		mpz_clear(cont);	
+		mpz_clear(cont);
 		return 0;
     }
-    
+
     // a/a = 1
     if (isEqual_DUZP (*aa, b)) {
 		freePolynomial_DUZP(*aa);
@@ -1880,7 +1955,7 @@ int remainder_DUZP_inp(DUZP_t** aa, DUZP_t* b) {
 		return 1;
     }
 
-    
+
     DUZP_t* r = *aa;
     polysize_t deg_a = r->lt;
     polysize_t deg_b = b->lt;
@@ -1896,11 +1971,11 @@ int remainder_DUZP_inp(DUZP_t** aa, DUZP_t* b) {
     mpz_t* rCoefs = r->coefs;
 
     // a = b*qq + rr
-    for (i = diff_deg; i >= 0; --i) {	
+    for (i = diff_deg; i >= 0; --i) {
     	if (mpz_sgn(rCoefs[deg_b + i])) {
     		if (mpz_divisible_p(rCoefs[deg_b + i], *lc_b)) {
     			mpz_divexact(rCoefs[deg_b + i], rCoefs[deg_b + i], *lc_b);
-    			
+
     			for (j = deg_b-1; j >= 0; --j) {
     				mpz_submul(rCoefs[i+j], b->coefs[j], rCoefs[deg_b + i]);
     			}
@@ -1939,18 +2014,18 @@ int remainderMod_DUZP_inp(DUZP_t** aa, const DUZP_t* b, const mpz_t mod) {
 		return 0;
 	}
 
-    // a / 0 = 
+    // a / 0 =
     if (isZero_DUZP (b)) {
     	fprintf (stderr, "DUZP Error: Division by zero!\n");
     	exit (1);
     }
-    
+
     // 0 / b = 0
     if (isZero_DUZP (*aa)) {
     	return 1;
     }
 
-    // a / const = 
+    // a / const =
     if (b->lt == 0) {
     	mpz_t lcinv;
     	mpz_init(lcinv);
@@ -1965,7 +2040,7 @@ int remainderMod_DUZP_inp(DUZP_t** aa, const DUZP_t* b, const mpz_t mod) {
     	applyModulo_DUZP_inp(*aa, mod);
 		return 1;
     }
-    
+
     // a/a = 1
     if (isEqual_DUZP (*aa, b)) {
 		freePolynomial_DUZP(*aa);
@@ -1973,7 +2048,7 @@ int remainderMod_DUZP_inp(DUZP_t** aa, const DUZP_t* b, const mpz_t mod) {
 		return 1;
     }
 
-    
+
     DUZP_t* r = *aa;
     polysize_t deg_a = r->lt;
     polysize_t deg_b = b->lt;
@@ -1998,10 +2073,10 @@ int remainderMod_DUZP_inp(DUZP_t** aa, const DUZP_t* b, const mpz_t mod) {
     mpz_t* rCoefs = r->coefs;
 
     // a = b*qq + rr
-    for (i = diff_deg; i >= 0; --i) {	
+    for (i = diff_deg; i >= 0; --i) {
     	if (mpz_sgn(rCoefs[deg_b + i])) {
     		mpz_mul(rCoefs[deg_b + i], rCoefs[deg_b + i], lcinv);
-    			
+
 			for (j = deg_b-1; j >= 0; --j) {
 				mpz_submul(rCoefs[i+j], b->coefs[j], rCoefs[deg_b + i]);
 			}
@@ -2030,7 +2105,7 @@ int remainderMod_DUZP_inp(DUZP_t** aa, const DUZP_t* b, const mpz_t mod) {
 
 
 /**
- * Get the GCD of two DUZP primitive polynomials. 
+ * Get the GCD of two DUZP primitive polynomials.
  */
 DUZP_t* primitiveGCD_DUZP(const DUZP_t* a, const DUZP_t* b) {
 	if (a == NULL || b == NULL) {
@@ -2045,7 +2120,7 @@ DUZP_t* primitiveGCD_DUZP(const DUZP_t* a, const DUZP_t* b) {
 
 	DUZP_t* g_work = makePolynomial_DUZP(d+1); //gcd currrently being built up by CRT
 	mpz_t* g_work_coefs = g_work->coefs;
-	for (polysize_t i = 0; i <= d; ++i) {
+	for (polysize_t i = 1; i <= d; ++i) {
 		mpz_init(g_work_coefs[i]);
 	}
 	g_work->lt = d;
@@ -2068,15 +2143,16 @@ DUZP_t* primitiveGCD_DUZP(const DUZP_t* a, const DUZP_t* b) {
 	duspoly_t* moda = makePolynomial_spX(a->lt + 1);
 	duspoly_t* modb = makePolynomial_spX(b->lt + 1);
 	duspoly_t* modg = NULL;
-	
-	int fibs[] = {1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584};
+
+	//TODO instead of fibs maybe just store two g_work_coefs and
+	//do divide test when it stops changing.
+	int fibs[] = {0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584};
 	int fibIdx = 0, nFibs = 17;
 
-	for(; primeIdx < n_prime64_ptr; ++primeIdx) {	
+	for(; primeIdx < n_prime64_ptr; ++primeIdx) {
 		*Pptr = prime64_ptr[primeIdx];
 		if (mpz_divisible_ui_p(lcgm, (unsigned long long) Pptr->prime)) {
 			//bad prime
-			// fprintf(stderr, "bad prime: %lld\n", Pptr->prime);
 			continue;
 		}
 
@@ -2088,7 +2164,7 @@ DUZP_t* primitiveGCD_DUZP(const DUZP_t* a, const DUZP_t* b) {
 		// plainGCDInForm_spX(moda, modb, &modg, Pptr);
 //2
 		GCDInForm_spX (moda, modb, &modg, Pptr);
-		
+
 		if (modg->lt == 0) {
 			//then gcd is 1
 			DUZP_t* ret = makePolynomial_DUZP(1);
@@ -2124,69 +2200,73 @@ DUZP_t* primitiveGCD_DUZP(const DUZP_t* a, const DUZP_t* b) {
 			//TODO fix this so that GCD puts result into already allocated g
 			freePolynomial_spX (&modg);
 			modg = NULL;
-			continue;
 		} else if (modg->lt > g_work->lt) {
 			//current image is bad, ignore it and move on
 			//TODO fix this so that GCD puts result into already allocated g
 			freePolynomial_spX (&modg);
 			modg = NULL;
 			continue;
-		}	
+		} else {
 
-		long long int lcg_pf = smallprimefield_convert_in(mpz_fdiv_ui(lcg, Pptr->prime), Pptr);
-		scalarMulPolynomialInForm_spX_inp (&modg, lcg_pf, Pptr);
+			long long int lcg_pf = smallprimefield_convert_in(mpz_fdiv_ui(lcg, Pptr->prime), Pptr);
+			scalarMulPolynomialInForm_spX_inp (&modg, lcg_pf, Pptr);
 
-		mpz_set_si(mpz_prime, Pptr->prime);
-		mpz_gcdext(lcgm, s, t, mpz_prime, m);
+			mpz_set_si(mpz_prime, Pptr->prime);
+			mpz_gcdext(lcgm, s, t, mpz_prime, m);
 
-		mpz_mul(newm, m, mpz_prime);
-		mpz_sub_ui(halfm, newm, 1ul);
-		mpz_fdiv_q_2exp(halfm, halfm, 1ul);
+			mpz_mul(newm, m, mpz_prime);
+			// mpz_sub_ui(halfm, mpz_prime, 1ul);
+			mpz_sub_ui(halfm, newm, 1ul);
+			mpz_fdiv_q_2exp(halfm, halfm, 1ul);
 
-		//CRT
-		polysize_t lt = modg->lt;
-		unsigned long long modg_out;
-		for (int i = 0; i <= lt; ++i) {
-			//only use lcgm as a temporary holder since it gets overwritten at end of loop
-			//s*prime + t*m = 1; t is s for current prime
+			//CRT
+			polysize_t lt = modg->lt;
+			unsigned long long modg_out;
+			for (int i = 0; i <= lt; ++i) {
+				//only use lcgm as a temporary holder since it gets overwritten at end of loop
+				//s*prime + t*m = 1; t is s for current prime
 
-			//naive application of bezout coefficients
-			// mpz_mul(g_work_coefs[i], g_work_coefs[i], s);
-			// mpz_mod(g_work_coefs[i], g_work_coefs[i], m);
-			// mpz_mul(g_work_coefs[i], g_work_coefs[i], mpz_prime);
-			// mpz_mul_si(lcgm, t, smallprimefield_convert_out(modg->elems[i], Pptr));
-			// mpz_mod(lcgm, lcgm, mpz_prime);
-			// mpz_mul(lcgm, lcgm, m);
-			// mpz_add(g_work_coefs[i], g_work_coefs[i], lcgm);
+				//naive application of bezout coefficients
+				// mpz_mul(g_work_coefs[i], g_work_coefs[i], s);
+				// mpz_mod(g_work_coefs[i], g_work_coefs[i], m);
+				// mpz_mul(g_work_coefs[i], g_work_coefs[i], mpz_prime);
+				// mpz_mul_si(lcgm, t, smallprimefield_convert_out(modg->elems[i], Pptr));
+				// mpz_mod(lcgm, lcgm, mpz_prime);
+				// mpz_mul(lcgm, lcgm, m);
+				// mpz_add(g_work_coefs[i], g_work_coefs[i], lcgm);
 
-			//optimized application of bezout coefs by rearranging 
-			// s*prime + t*m = 1 after multiplying through by modg[i].
-			// we have the two extended gcd equations: s*prime + t*m = 1, s'*m + t'*prime = 1;
-			// therefore s = t', t = s'. Using this fact to rearrange as follows:
-			// 1) modg[i]*s'*m + modg[i]*t'*prime = modg[i]
-			// 2) modg[i] - modg[i]*s*prime = modg[i]*s'*m.
-			// Notice RHS of eq. is a term of CRT summation for modg[i] (except for mod prime).
-			// 3) we want (g[i]*s mod m)*prime + (modg[i]*s' mod prime)*m. Replace mods with u*m and w*prime, respectively.
-			// 4) (g[i]*s + u*m)*prime + (modg[i]*s' + w*prime)*m 
-			// 5) g[i]*s*prime + modg[i]*s'*m - (u+w)*(prime*m)
-			// 6) (5) & (2) -> g[i]*s*prime + modg[i] - modg[i]*s*prime + (u*w)*(prime*m);
-			// 7) modg[i] + s*prime*(g[i] - modg[i]) + (u*w)*(prime*m); 
-			// Finally, we implement (7) mod (prime*m)
-			// This reduces cost from 4 mults, 2 mods, 1 add to 2 mults, 1 mod, 2 adds. 
-			modg_out = (unsigned long long) smallprimefield_convert_out(modg->elems[i], Pptr);
-			mpz_sub_ui(g_work_coefs[i], g_work_coefs[i], modg_out);
-			mpz_mul(g_work_coefs[i], g_work_coefs[i], s);
-			mpz_mul(g_work_coefs[i], g_work_coefs[i], mpz_prime);
-			mpz_add_ui(g_work_coefs[i], g_work_coefs[i], modg_out);
-			mpz_mod(g_work_coefs[i], g_work_coefs[i], newm);
+				//optimized application of bezout coefs by rearranging
+				// s*prime + t*m = 1 after multiplying through by modg[i].
+				// we have the two extended gcd equations: s*prime + t*m = 1, s'*m + t'*prime = 1;
+				// therefore s = t', t = s'. Using this fact to rearrange as follows:
+				// 1) modg[i]*s'*m + modg[i]*t'*prime = modg[i]
+				// 2) modg[i] - modg[i]*s*prime = modg[i]*s'*m.
+				// Notice RHS of eq. is a term of CRT summation for modg[i] (except for mod prime).
+				// 3) we want (g[i]*s mod m)*prime + (modg[i]*s' mod prime)*m. Replace mods with u*m and w*prime, respectively.
+				// 4) (g[i]*s + u*m)*prime + (modg[i]*s' + w*prime)*m
+				// 5) g[i]*s*prime + modg[i]*s'*m - (u+w)*(prime*m)
+				// 6) (5) & (2) -> g[i]*s*prime + modg[i] - modg[i]*s*prime + (u*w)*(prime*m);
+				// 7) modg[i] + s*prime*(g[i] - modg[i]) + (u*w)*(prime*m);
+				// Finally, we implement (7) mod (prime*m)
+				// This reduces cost from 4 mults, 2 mods, 1 add to 2 mults, 1 mod, 2 adds.
 
-			//normalize in symmetric range
-			if(mpz_cmp(g_work_coefs[i], halfm) > 0) {
-				mpz_sub(g_work_coefs[i], g_work_coefs[i], newm);
+				modg_out = (unsigned long long) smallprimefield_convert_out(modg->elems[i], Pptr);
+				mpz_sub_ui(g_work_coefs[i], g_work_coefs[i], modg_out);
+				mpz_mul(g_work_coefs[i], g_work_coefs[i], s);
+				mpz_mul(g_work_coefs[i], g_work_coefs[i], mpz_prime);
+				mpz_add_ui(g_work_coefs[i], g_work_coefs[i], modg_out);
+				mpz_mod(g_work_coefs[i], g_work_coefs[i], newm);
+				//normalize in symmetric range
+				if(mpz_cmp(g_work_coefs[i], halfm) > 0) {
+					mpz_sub(g_work_coefs[i], g_work_coefs[i], newm);
+				}
 			}
-		}
 
-		freePolynomial_spX (&modg);
+			mpz_swap(m, newm);
+			mpz_mul(lcgm, m, lcg);
+
+			freePolynomial_spX (&modg);
+		}
 
 		int doDivideTest = fibIdx < nFibs ? (primeIdx == fibs[fibIdx++]) : 1;
 		if (doDivideTest) {
@@ -2201,14 +2281,12 @@ DUZP_t* primitiveGCD_DUZP(const DUZP_t* a, const DUZP_t* b) {
 			}
 		}
 
-		mpz_set(m, newm);
-		mpz_mul(lcgm, m, lcg);
 	}
 
 	mpz_clears(lcg, lcgm, s, t, mpz_prime, newm, halfm, m, NULL);
 
 
-	//all primes failed.... 
+	//all primes failed....
 	DUZP_t* ret = makePolynomial_DUZP(1);
 	mpz_set_si(ret->coefs[0], 1l);
 	ret->lt = 0;
@@ -2226,25 +2304,25 @@ void differentiate_DUZP_inp(DUZP_t** a) {
 	if (isZero_DUZP(*a)) {
 		return;
 	}
-	
+
 	mpz_t t1;
 	mpz_init(t1);
-	
+
 	for (int i=0; i<(*a)->lt; ++i) {
 		mpz_set_ui(t1,i+1);
 		mpz_mul(t1,t1,(*a)->coefs[i+1]);
 		mpz_set((*a)->coefs[i],t1);
 	}
-	
+
 	if ((*a)->lt != 0) {
 		mpz_clear((*a)->coefs[(*a)->lt]);
 		(*a)->lt--;
 	}
 	else
 		mpz_set_ui((*a)->coefs[(*a)->lt],0);
-	
+
 	mpz_clear(t1);
-	
+
 
 }
 
@@ -2307,7 +2385,7 @@ DUZP_t* convertFromAltArr_DUZP(const AltArr_t* aa) {
 		for (int i = 1; i <= curDeg; ++i) {
 			mpz_init(retPoly->coefs[i]);
 		}
-	
+
 		int aaSize = aa->size;
 		for (int i = 0; i < aaSize; ++i) {
 			curDeg = aaElems[i].degs;
@@ -2357,7 +2435,7 @@ DUZP_t* convertFromDUSP_DUZP(const duspoly_t* a, const Prime_ptr* Pptr) {
 
 	polysize_t size = a->lt + 1;
 	elem_t* pelems = a->elems;
-	
+
 	DUZP_t* ret = makePolynomial_DUZP(size);
 	mpz_set_si(ret->coefs[0], smallprimefield_convert_out(pelems[0], Pptr));
 	for(polysize_t i = 1; i < size; ++i) {
@@ -2376,7 +2454,7 @@ DUZP_t* convertFromDUSP_DUZP_inRange (const duspoly_t* a, const Prime_ptr* Pptr)
 
 	polysize_t size = a->lt + 1;
 	elem_t* pelems = a->elems;
-	
+
 	DUZP_t* ret = makePolynomial_DUZP(size);
 	mpz_set_si(ret->coefs[0], smallprimefield_convert_out(pelems[0], Pptr));
 	if (mpz_cmp_si (ret->coefs[0], Pptr->prime>>1) > 0) {
@@ -2453,7 +2531,7 @@ DUZP_t* convertFromAltArrZ_DUZP(const AltArrZ_t* aa) {
 		for (int i = 0; i <= curDeg; ++i) {
 			mpz_init(retPoly->coefs[i]);
 		}
-	
+
 		int aaSize = aa->size;
 		for (int i = 0; i < aaSize; ++i) {
 			curDeg = aaElems[i].degs;
@@ -2476,7 +2554,7 @@ AltArrZ_t* convertToAltArrZ_DUZP(const DUZP_t* poly) {
 		}
 	}
 
-AltArrZ_t* retPoly = makePolynomial_AAZ(polySize, 1);
+	AltArrZ_t* retPoly = makePolynomial_AAZ(polySize, 1);
 	polySize = 0;
 	for (int i = poly->lt; i >= 0; --i){
 		if (mpz_sgn(poly->coefs[i]) != 0) {
@@ -2486,7 +2564,9 @@ AltArrZ_t* retPoly = makePolynomial_AAZ(polySize, 1);
 			++polySize;
 		}
 	}
-	retPoly->size = polySize;
+	if (polySize) {
+		retPoly->size = polySize;
+	}
 
 	return retPoly;
 }
@@ -2498,7 +2578,7 @@ DUZP_t* modularResultant_DUZP (const DUZP_t* a, const DUZP_t* b, mpz_t uBound, i
 		if (isZero_DUZP (b) || b->lt) {
 			return NULL;
 		} else {
-			return makeConstPolynomial_DUZP (1, 1l);	
+			return makeConstPolynomial_DUZP (1, 1l);
 		}
 	} else if (isZero_DUZP (b)) {
 		if (a->lt) {
@@ -2512,7 +2592,7 @@ DUZP_t* modularResultant_DUZP (const DUZP_t* a, const DUZP_t* b, mpz_t uBound, i
 		return makeConstPolynomial_DUZP (1, 1l);
 	}
 
-	mpz_t bound; 
+	mpz_t bound;
 	mpz_init (bound);
 	if (deterministic) {
 		// coef bound
@@ -2520,7 +2600,7 @@ DUZP_t* modularResultant_DUZP (const DUZP_t* a, const DUZP_t* b, mpz_t uBound, i
 			mpz_t* coefs = a->coefs;
 			mpz_t maxA, maxB;
 			mpz_t n1, m1;
-			// compute Norm_max (f) and Norm_max (g) 
+			// compute Norm_max (f) and Norm_max (g)
 			mpz_init (maxA);
 			mpz_init (maxB);
 			for (polysize_t i = 0; i <= a->lt; i++) {
@@ -2583,7 +2663,7 @@ DUZP_t* modularResultant_DUZP (const DUZP_t* a, const DUZP_t* b, mpz_t uBound, i
 
 	for (; primeIdx < n_prime64_ptr; ++primeIdx) {
 		*Pptr = prime64_ptr[primeIdx];
-		if (mpz_divisible_ui_p (a->coefs[a->lt], (unsigned long) Pptr->prime) || 
+		if (mpz_divisible_ui_p (a->coefs[a->lt], (unsigned long) Pptr->prime) ||
 		    mpz_divisible_ui_p (b->coefs[b->lt], (unsigned long) Pptr->prime) ) {
 				// bad prime
 				// fprintf (stderr, "bad prime: %lld\n", (&prime64_ptr[primeIdx])->prime);
@@ -2591,15 +2671,16 @@ DUZP_t* modularResultant_DUZP (const DUZP_t* a, const DUZP_t* b, mpz_t uBound, i
 			}
 
 		// if good prime:
-		// convert modular images 
+		// convert modular images
 		convertToPrimeField_DUZP_inp (a, Pptr, &modA);
 		convertToPrimeField_DUZP_inp (b, Pptr, &modB);
 		// call resultant mod this prime
 		if (!hgcd) {
-			sylvResultantInForm_spX (modA, modB, &modRes, Pptr);		
+			sylvResultantInForm_spX (modA, modB, &modRes, Pptr);
 		} else {
 			hgcdResultantInForm_spX (modA, modB, &modRes, Pptr);
 		}
+		// @note modRes != NULL for all modA, modB \in DUZP
 
 		mpz_set_si (mpz_pr, Pptr->prime);
 		mpz_gcdext (g,s,t, mpz_pr, m);
@@ -2607,16 +2688,16 @@ DUZP_t* modularResultant_DUZP (const DUZP_t* a, const DUZP_t* b, mpz_t uBound, i
 		mpz_mul (newm, m, mpz_pr);
 		mpz_sub_ui (halfm, newm, 1ul);
 		mpz_fdiv_q_2exp (halfm, halfm, 1ul);
-		
+
 		mpz_set (res_work_prev, res_work_coef);
 		res_out = (unsigned long) smallprimefield_convert_out (modRes->elems[0], Pptr);
 
 		// MCA-CRT (not-efficient!!)
 		// mpz_gcdext (g, s, t, divm, mpz_pr);
-		// mpz_mul (vs, mpz_coef, s); 
-		// mpz_mod (cc, vs, mpz_pr);  
-		// mpz_mul (ccdivm, cc, divm); 
-		// mpz_add (tsum, tsum, ccdivm); 
+		// mpz_mul (vs, mpz_coef, s);
+		// mpz_mod (cc, vs, mpz_pr);
+		// mpz_mul (ccdivm, cc, divm);
+		// mpz_add (tsum, tsum, ccdivm);
 
 		// optimized-CRT (Garner's algorithm)
 		mpz_sub_ui (res_work_coef, res_work_coef, res_out);
@@ -2651,7 +2732,7 @@ DUZP_t* modularResultant_DUZP (const DUZP_t* a, const DUZP_t* b, mpz_t uBound, i
 				mpz_init_set (res_work->coefs[0], res_work_coef);
 				res_work->lt = 0;
 			}
-			
+
 			freePolynomial_spX (&modA);
 			freePolynomial_spX (&modB);
 			mpz_clears (bound, m, halfm, newm, g, s, t, mpz_pr, res_work_coef, res_work_prev, NULL);
@@ -2694,7 +2775,7 @@ DUZP_t** modularSubresultantChain_DUZP (const DUZP_t* a, const DUZP_t* b, int* c
 		}
 	}
 
-	if (!a->lt) { 
+	if (!a->lt) {
 		if (!b->lt) {
 			subres = (DUZP_t**) malloc (sizeof(DUZP_t*));
 			subres[0] = modularResultant_DUZP (a, b, uBound, deterministic, 0);
@@ -2713,14 +2794,14 @@ DUZP_t** modularSubresultantChain_DUZP (const DUZP_t* a, const DUZP_t* b, int* c
 			return 	subres;
 	}
 
-	mpz_t bound; 
+	mpz_t bound;
 	mpz_init (bound);
 	if (deterministic) {
 		if (uBound == NULL || mpz_sgn (uBound) <= 0) {
 			mpz_t* coefs = a->coefs;
 			mpz_t maxA, maxB;
 			mpz_t n1, m1;
-			// compute Norm_max (f) and Norm_max (g) 
+			// compute Norm_max (f) and Norm_max (g)
 			mpz_init (maxA);
 			mpz_init (maxB);
 			for (polysize_t i = 0; i <= a->lt; i++) {
@@ -2789,38 +2870,47 @@ DUZP_t** modularSubresultantChain_DUZP (const DUZP_t* a, const DUZP_t* b, int* c
 
 	duspoly_t* modA = makePolynomial_spX (a->lt + 1);
 	duspoly_t* modB = makePolynomial_spX (b->lt + 1);
-	duspolysA_t* modSubres= NULL;	
+	duspolysA_t* modSubres= NULL;
 	unsigned long coef_out = 0;
 	polysize_t mod_chain_size = 0;
 	polysize_t mod_chain_size_prev = 0;
 
 	int fibs[] = {1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584}; // using Fib for determinisitic=0
-	int fibIdx=0, nFibs=17;	
+	int fibIdx=0, nFibs=17;
 	int isNULL = 0;
 	int isDone = 0;
-	
+	mpz_t tc;
+
 	// fprintf (stderr, "start testing primes...\n"); //TEST
 	for (; primeIdx < n_prime64_ptr; ++primeIdx) {
 		*Pptr = prime64_ptr[primeIdx];
-		if (mpz_divisible_ui_p (a->coefs[a->lt], (unsigned long) Pptr->prime) || 
-			mpz_divisible_ui_p (b->coefs[b->lt], (unsigned long) Pptr->prime) ) {
-				// bad prime
-				// fprintf (stderr, "bad prime: %lld\n", (&prime64_ptr[primeIdx])->prime);
-				continue;
+
+		mpz_init(tc);
+		mpz_mod_ui(tc, a->coefs[a->lt],  (unsigned long) Pptr->prime);
+		if(!smallprimefield_convert_in(mpz_get_si (tc), Pptr)) {
+			mpz_clear(tc);
+			continue;
 		}
+		mpz_mod_ui(tc, b->coefs[b->lt],  (unsigned long) Pptr->prime);
+		if(!smallprimefield_convert_in(mpz_get_si (tc), Pptr)) {
+			mpz_clear(tc);
+			continue;
+		}
+		mpz_clear(tc);
+
 		// if good prime:
-		// convert modular images 
+		// convert modular images
 		convertToPrimeField_DUZP_inp (a, Pptr, &modA);
 		convertToPrimeField_DUZP_inp (b, Pptr, &modB);
 		// call subresultant mod this prime
-		sylvSubResultantInFormA_spX (modA, modB, &modSubres, &mod_chain_size, Pptr);
+		subresultantChainInForm_spX (modA, modB, &modSubres, &mod_chain_size, Pptr);
 
 		// fprintf (stderr, "subresultant called for pr_idx=%d\n", primeIdx); //TEST
 		// for (int kk = 0; kk < mod_chain_size; kk++) { // TEST
 		// 	fprintf (stderr, "modsubres[%d]=", kk);
 		// 	printPolynomialOutForm_spX (modSubres->polys[kk], Pptr);
 		// } // TEST
- 
+
 		if (mod_chain_size_prev && mod_chain_size_prev != mod_chain_size) {
 			// bad prime
 			fprintf (stderr, "bad prime (mod_chain_size is different: %ld != %ld): %lld\n", mod_chain_size, mod_chain_size_prev, (&prime64_ptr[primeIdx])->prime);
@@ -2835,7 +2925,7 @@ DUZP_t** modularSubresultantChain_DUZP (const DUZP_t* a, const DUZP_t* b, int* c
 		mpz_mul(newm, m, mpz_pr);
 		mpz_sub_ui(halfm, newm, 1ul);
 		mpz_fdiv_q_2exp(halfm, halfm, 1ul);
-		
+
 		// mpz_set (res_work_prev, subres_work[0]->coefs[0]);
 		// subres_work_prev = subres_work
 		for (int k = 0; k < min_deg; k++) {
@@ -2847,7 +2937,7 @@ DUZP_t** modularSubresultantChain_DUZP (const DUZP_t* a, const DUZP_t* b, int* c
 
 		for (int k = 0; k < mod_chain_size; k++) {
 			if (isZero_spX (modSubres->polys[k])) {
-				continue;				
+				continue;
 			}
 			polysize_t lt = modSubres->polys[k]->lt;
 			subres_work[lt]->lt = lt; // update lt
@@ -2859,14 +2949,14 @@ DUZP_t** modularSubresultantChain_DUZP (const DUZP_t* a, const DUZP_t* b, int* c
 				mpz_mul (subres_work[lt]->coefs[i], subres_work[lt]->coefs[i], mpz_pr);
 				mpz_add_ui (subres_work[lt]->coefs[i], subres_work[lt]->coefs[i], coef_out);
 				mpz_mod (subres_work[lt]->coefs[i], subres_work[lt]->coefs[i], newm);
-			
+
 				if (mpz_cmp (subres_work[lt]->coefs[i], halfm) > 0) {
 					mpz_sub(subres_work[lt]->coefs[i], subres_work[lt]->coefs[i], newm);
 				}
 			}
 		}
-		
-		freePolysA_spX (modSubres); 
+
+		freePolysA_spX (modSubres);
 		modSubres=NULL;
 
 		if (!deterministic) {
@@ -2932,9 +3022,15 @@ DUZP_t** modularSubresultantChain_DUZP (const DUZP_t* a, const DUZP_t* b, int* c
 	return subres_work;
 }
 
-
 DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k, int* chain_size, mpz_t uBound, int deterministic, int hgcd)
 {
+
+	// char sym[1] = {'x'}; // TEST
+	// fprintf (stderr, "In modularSubresultantAtDeg_DUZP: a := ");
+	// printPoly_DUZP (a, sym); // TEST
+	// fprintf (stderr, "In modularSubresultantAtDeg_DUZP: b := ");
+	// printPoly_DUZP (b, sym); // TEST
+
 	// corner cases
 	DUZP_t** subres;
 	if (isZero_DUZP (a)) {
@@ -2977,13 +3073,13 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 	if (!hgcd) {
 		int all_chain_size, all_idx=0;
 		DUZP_t** all_subres = modularSubresultantChain_DUZP (a, b, &all_chain_size, uBound, deterministic);
-		
+
 		// char sym[1] = {'x'}; // TEST
 		// for (int i = 0; i < all_chain_size; i++) { // TEST
 		// 	fprintf (stderr, "all_subres[%d] := ", i);
 		// 	printPoly_DUZP (all_subres[i], sym);
 		// } // TEST
-		
+
 		subres = (DUZP_t**) malloc (sizeof (DUZP_t*));
 		while (all_idx < all_chain_size) {
 			if (isZero_DUZP (all_subres[all_idx]) || all_subres[all_idx]->lt < k) {
@@ -2999,7 +3095,7 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 			subres[0] = deepCopyPolynomial_DUZP (all_subres[all_idx+1]);
 			subres[1] = deepCopyPolynomial_DUZP (all_subres[all_idx]);
 			*chain_size = 2;
-			
+
 			for (int i = 0; i < all_chain_size; i++) {
 				freePolynomial_DUZP (all_subres[i]);
 			}
@@ -3009,7 +3105,7 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 		} else {
 			fprintf (stderr, "DUZP Warning: In modularSubresultantAtDeg, all_idx exceeds valid range.\n");
 		}
-			
+
 		for (int i = 0; i < all_chain_size; i++) {
 			freePolynomial_DUZP (all_subres[i]);
 		}
@@ -3019,14 +3115,14 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 		return NULL;
 	}
 
-	mpz_t bound; 
+	mpz_t bound;
 	mpz_init(bound);
 	if (deterministic) {
 		if (uBound == NULL || mpz_sgn (uBound) <= 0) {
 			mpz_t* coefs = a->coefs;
 			mpz_t maxA, maxB;
 			mpz_t n1, m1;
-			// compute Norm_max (f) and Norm_max (g) 
+			// compute Norm_max (f) and Norm_max (g)
 			mpz_init (maxA);
 			mpz_init (maxB);
 			for (polysize_t i = 0; i <= a->lt; i++) {
@@ -3063,18 +3159,18 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 		}
 	}
 
-	// polysize_t min_deg = MIN_spX (a->lt, b->lt);
+	// polysize_t min_deg = MIN_spX (a->lt, b->lt):
 	DUZP_t** subres_work = (DUZP_t**) malloc (2 * sizeof(DUZP_t*));
 	for (int i = 0; i < 2; i++) {
-		subres_work[i] = makePolynomial_DUZP (k+5);
-		for (int j = 0; j < k+5; j++) {
+		subres_work[i] = makePolynomial_DUZP (k+10);
+		for (int j = 0; j < k+10; j++) {
 			mpz_init (subres_work[i]->coefs[j]);
 		}
 	}
 	DUZP_t** subres_work_prev = (DUZP_t**) malloc (2* sizeof (DUZP_t*));
 	for (int i = 0; i < 2; i++) {
-		subres_work_prev[i] = makePolynomial_DUZP (k+5);
-		for (int j = 0; j < k+5; j++) {
+		subres_work_prev[i] = makePolynomial_DUZP (k+10);
+		for (int j = 0; j < k+10; j++) {
 			mpz_init (subres_work_prev[i]->coefs[j]);
 		}
 	}
@@ -3095,46 +3191,98 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 	int primeIdx = 0;
 	Prime_ptr Pptr[1];
 
+	mpz_t tc;
+	mpz_t *tmp_coef;
 	duspoly_t* modA = makePolynomial_spX (a->lt + 1);
 	duspoly_t* modB = makePolynomial_spX (b->lt + 1);
 	duspolysA_t* modSubres= NULL;
 	unsigned long coef_out = 0;
 	polysize_t mod_chain_size = 0;
 	polysize_t mod_chain_size_prev = 0;
+	polysize_t max_allocs;
 
 	int fibs[] = {1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584}; // using Fib for determinisitic=0
-	int fibIdx=0, nFibs=17;	
+	int fibIdx=0, nFibs=17;
 	int isNULL = 0;
 	int isDone = 0;
-	
+
 	// fprintf (stderr, "start testing primes...\n"); //TEST
 	for (; primeIdx < n_prime64_ptr; ++primeIdx) {
 		*Pptr = prime64_ptr[primeIdx];
-		if (mpz_divisible_ui_p (a->coefs[a->lt], (unsigned long) Pptr->prime) || 
-			mpz_divisible_ui_p (b->coefs[b->lt], (unsigned long) Pptr->prime) ) {
-				// bad prime
-				// fprintf (stderr, "bad prime: %lld\n", (&prime64_ptr[primeIdx])->prime);
-				continue;
+
+		mpz_init(tc);
+		mpz_mod_ui(tc, a->coefs[a->lt],  (unsigned long) Pptr->prime);
+		if(!smallprimefield_convert_in(mpz_get_si (tc), Pptr)) {
+			mpz_clear(tc);
+			continue;
 		}
+		mpz_mod_ui(tc, b->coefs[b->lt],  (unsigned long) Pptr->prime);
+		if(!smallprimefield_convert_in(mpz_get_si (tc), Pptr)) {
+			mpz_clear(tc);
+			continue;
+		}
+		mpz_clear(tc);
+
 		// if good prime:
-		// convert modular images 
+		// convert modular images
 		convertToPrimeField_DUZP_inp (a, Pptr, &modA);
 		convertToPrimeField_DUZP_inp (b, Pptr, &modB);
 		// call subresultant mod this prime
 		hgcdSubResultantInFormA_spX (modA, modB, k, &modSubres, &mod_chain_size, Pptr);
 
-		// fprintf (stderr, "subresultant called for pr_idx=%d (mod_chain_size = %ld)\n", primeIdx, mod_chain_size); //TEST
+		// fprintf (stderr, "In modularSubresultantAtDeg_DUZP: subresultant called for pr_idx=%d (mod_chain_size = %ld)\n", primeIdx, mod_chain_size); //TEST
 		// for (int kk = 0; kk < 2; kk++) { // TEST
-		// 	fprintf (stderr, "modsubres[%d]=", kk);
+		// 	fprintf (stderr, "modularSubresultantAtDeg_DUZP: modsubres[%d]=", kk);
 		// 	printPolynomialOutForm_spX (modSubres->polys[kk], Pptr);
 		// } // TEST
- 
+
 		if (mod_chain_size_prev && mod_chain_size_prev != mod_chain_size) {
 			// bad prime
 			fprintf (stderr, "bad prime (mod_chain_size is different: %ld != %ld): %lld\n", mod_chain_size, mod_chain_size_prev, (&prime64_ptr[primeIdx])->prime);
 			exit(1);
+			// TODO: return 0;
 		} else if (!mod_chain_size_prev) {
 			mod_chain_size_prev = mod_chain_size;
+		}
+
+		max_allocs = -1;
+		for(int i = 0; i < 2; i++) {
+			if(modSubres->polys[mod_chain_size-1-i] != NULL &&
+			subres_work[i]->alloc < modSubres->polys[mod_chain_size-1-i]->alloc &&
+			max_allocs < modSubres->polys[mod_chain_size-1-i]->alloc) {
+				max_allocs = modSubres->polys[mod_chain_size-1-i]->alloc;
+			}
+		}
+		if (max_allocs != -1) {
+			// TODO: not a good implementation! this case rarely happens though..
+			// fprintf (stderr, "max_allocs = %ld\n", max_allocs);
+			for (int i = 0; i < 2; i++) {
+				// fprintf (stderr, "subres_work[%d]->alloc = %ld\n", i, subres_work[i]->alloc);
+				tmp_coef = (mpz_t*) malloc (max_allocs * sizeof(mpz_t));
+				for (int j = 0; j < subres_work[i]->alloc; j++) {
+					mpz_init(tmp_coef[j]);
+					mpz_set(tmp_coef[j], subres_work[i]->coefs[j]);
+					mpz_clear(subres_work[i]->coefs[j]);
+				}
+				for (int j = subres_work[i]->alloc; j < max_allocs; j++) {
+					mpz_init (tmp_coef[j]);
+				}
+				free(subres_work[i]->coefs);
+				subres_work[i]->coefs = tmp_coef;
+				tmp_coef = (mpz_t*) malloc (max_allocs * sizeof(mpz_t));
+				for (int j = 0; j < subres_work_prev[i]->alloc; j++) {
+					mpz_init(tmp_coef[j]);
+					mpz_set(tmp_coef[j], subres_work_prev[i]->coefs[j]);
+					mpz_clear(subres_work_prev[i]->coefs[j]);
+				}
+				for (int j = subres_work_prev[i]->alloc; j < max_allocs; j++) {
+					mpz_init (tmp_coef[j]);
+				}
+				free(subres_work_prev[i]->coefs);
+				subres_work_prev[i]->coefs = tmp_coef;
+				subres_work[i]->alloc = max_allocs;
+				subres_work_prev[i]->alloc = max_allocs;
+			}
 		}
 
 		mpz_set_si(mpz_pr, Pptr->prime);
@@ -3143,7 +3291,7 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 		mpz_mul(newm, m, mpz_pr);
 		mpz_sub_ui(halfm, newm, 1ul);
 		mpz_fdiv_q_2exp(halfm, halfm, 1ul);
-		
+
 		// mpz_set (res_work_prev, subres_work[0]->coefs[0]);
 		// mpz_set (res1_work_prev, subres_work[1]->coefs[0]);
 		for (int kk = 0; kk < 2; kk++) {
@@ -3153,34 +3301,34 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 			}
 		}
 
-
 		for (int kk = 0; kk < mod_chain_size; kk++) {
-			
+
 			// fprintf (stderr, "[kk=%d] modSubres->poly[kk] := ", kk); // TEST
 			// printPolynomialOutForm_spX (modSubres->polys[kk], Pptr); // TEST
 
 			if (isZero_spX (modSubres->polys[kk])) {
-				continue;				
+				continue;
 			}
 			polysize_t lt = modSubres->polys[kk]->lt;
 			polysize_t kk_idx = mod_chain_size-1-kk;
-			subres_work[kk_idx]->lt = lt; // update lt 
+			subres_work[kk_idx]->lt = lt; // update lt
 			for (int i = 0; i <= lt; ++i) {
 				coef_out = (unsigned long) smallprimefield_convert_out (modSubres->polys[kk]->elems[i], Pptr);
 				// optimized-CRT (Garner's algorithm)
+				// gmp_fprintf (stderr, "subres_work[%d]->coefs[%d] = %Zd\t coef_out = %lu\n", kk_idx, i, subres_work[kk_idx]->coefs[i], coef_out); // TEST
 				mpz_sub_ui (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], coef_out);
 				mpz_mul (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], s);
 				mpz_mul (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], mpz_pr);
 				mpz_add_ui (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], coef_out);
 				mpz_mod (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], newm);
-			
+
 				if (mpz_cmp (subres_work[kk_idx]->coefs[i], halfm) > 0) {
 					mpz_sub(subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], newm);
 				}
 			}
 		}
-		
-		freePolysA_spX (modSubres); 
+
+		freePolysA_spX (modSubres);
 		modSubres=NULL;
 
 		if (!deterministic) {
@@ -3199,7 +3347,7 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 					break;
 				}
 			}
-			
+
 			if (doDivideTest || EqualityTest) {
 				isDone = 1;
 			}
@@ -3241,6 +3389,323 @@ DUZP_t** modularSubresultantAtDeg_DUZP (const DUZP_t* a, const DUZP_t* b, int k,
 	return subres_work;
 }
 
+DUZP_t** regularGCDUnivariateSpeculativeSRC_DUZP (const DUZP_t* a, const DUZP_t* b, int k, int* chain_size, 
+											polysize_t *degs, mpz_t uBound, specAQRArray_spX_t **uspecInfoArray, 
+											int *info_size, int results_mode)
+{
+	// corner cases
+	DUZP_t** subres;
+	if (isZero_DUZP (a)) {
+		if (isZero_DUZP (b) || b->lt) {
+			return NULL;
+		} else {
+			subres = (DUZP_t**) malloc (sizeof(DUZP_t*));
+			subres[0] = makeConstPolynomial_DUZP (1, 1l);
+			*chain_size = 1;
+			return 	subres;
+		}
+	} else if (isZero_DUZP (b)) {
+		if (a->lt) {
+			return NULL;
+		} else {
+			subres = (DUZP_t**) malloc (sizeof(DUZP_t*));
+			subres[0] = makeConstPolynomial_DUZP (1, 1l);
+			*chain_size = 1;
+			return 	subres;
+		}
+	}
+
+	polysize_t min_deg = MIN_spX (a->lt, b->lt);
+	if (k < 0 || k >= min_deg) {
+		subres = (DUZP_t**) malloc (sizeof(DUZP_t*));
+		subres[0] = deepCopyPolynomial_DUZP (b);
+		subres[1] = deepCopyPolynomial_DUZP (a);
+		*chain_size = 2;
+		return subres;
+	}
+
+	mpz_t bound;
+	mpz_init(bound);
+
+	// polysize_t min_deg = MIN_spX (a->lt, b->lt):
+	DUZP_t** subres_work = (DUZP_t**) malloc (2 * sizeof(DUZP_t*));
+	for (int i = 0; i < 2; i++) {
+		subres_work[i] = makePolynomial_DUZP (k+10);
+		for (int j = 0; j < k+10; j++) {
+			mpz_init (subres_work[i]->coefs[j]);
+		}
+	}
+	DUZP_t** subres_work_prev = (DUZP_t**) malloc (2* sizeof (DUZP_t*));
+	for (int i = 0; i < 2; i++) {
+		subres_work_prev[i] = makePolynomial_DUZP (k+10);
+		for (int j = 0; j < k+10; j++) {
+			mpz_init (subres_work_prev[i]->coefs[j]);
+		}
+	}
+
+	// fprintf (stderr, "create subres_work\n"); //TEST
+	mpz_t res_work_prev, res1_work_prev;
+	mpz_inits (res_work_prev, res1_work_prev, NULL);
+
+	mpz_t m; // product of primes
+	mpz_init_set_ui (m, 1l);
+	mpz_t halfm, newm;
+	mpz_inits (halfm, newm, NULL);
+	mpz_t g, s, t, mpz_pr; // bezout coefs and (cast) prime
+	// fprintf (stderr, "start first init set...\n"); // TEST
+	mpz_inits (g, s, t, mpz_pr, NULL);
+	// fprintf (stderr, "finish first init set...\n"); // TEST
+
+	int primeIdx = 0;
+	Prime_ptr Pptr[1];
+	
+	mpz_t tc;
+	mpz_t *tmp_coef;
+	duspoly_t* modA = makePolynomial_spX (a->lt + 1);
+	duspoly_t* modB = makePolynomial_spX (b->lt + 1);
+	duspolysA_t* modSubres= NULL;
+	unsigned long coef_out = 0;
+	polysize_t mod_chain_size = 0, 
+			mod_chain_size_prev = 0,
+			max_allocs, td;
+	int isNULL = 0;
+
+	int infoIdx = 0,
+		infoAlloc = 25, 
+		isInfoNull = 0;
+	specAQR_spX_t ** uspecInfo = NULL;
+	if (*info_size < 1 || uspecInfoArray == NULL) {
+		uspecInfo = (specAQR_spX_t**) malloc (infoAlloc * sizeof(specAQR_spX_t*));
+		for (int i = 0; i < infoAlloc; ++i) {
+			uspecInfo[i] = (specAQR_spX_t *) malloc (sizeof(specAQR_spX_t));
+		}
+		isInfoNull = 1;
+	} else {
+		infoAlloc = *info_size;
+		uspecInfo = (*uspecInfoArray)->uspecArray; 
+	}
+
+	// fprintf (stderr, "start testing primes...\n"); //TEST
+	for (; primeIdx < n_prime64_ptr; ++primeIdx) {
+		// fprintf(stderr, "primeIdx = %d\n", primeIdx);
+		*Pptr = prime64_ptr[primeIdx];
+
+		mpz_init(tc);
+		mpz_mod_ui(tc, a->coefs[a->lt],  (unsigned long) Pptr->prime);
+		if(!smallprimefield_convert_in(mpz_get_si (tc), Pptr)) {
+			mpz_clear(tc);
+			continue;
+		}
+		mpz_mod_ui(tc, b->coefs[b->lt],  (unsigned long) Pptr->prime);
+		if(!smallprimefield_convert_in(mpz_get_si (tc), Pptr)) {
+			mpz_clear(tc);
+			continue;
+		}
+		mpz_clear(tc);
+
+		// if good prime:
+		// convert modular images
+		convertToPrimeField_DUZP_inp (a, Pptr, &modA);
+		convertToPrimeField_DUZP_inp (b, Pptr, &modB);
+		// call subresultant mod this prime
+
+		if (isInfoNull) {
+			// fprintf(stderr, "Initialize A, Q, R for primeIdx = %d\n", primeIdx);
+			uspecInfo[infoIdx]->A = createSpecA_spX (modA->alloc);
+			// cerr << "A: size := " << A->size << "  alloc := " << A->alloc << endl;
+			uspecInfo[infoIdx]->Q = createSpecQ_spX (modA->alloc);
+			// cerr << "Q: size := " << Q->size << "  alloc := " << Q->alloc << endl;
+			uspecInfo[infoIdx]->R = createSpecR_spX (modA->alloc);
+			// cerr << "R: size := " << R->size << "  alloc := " << R->alloc << endl;
+		}
+		// fprintf(stderr, "primeIdx = %d, infoIdx = %d, isInfoNull = %d\n", primeIdx, infoIdx, isInfoNull);
+		// hgcdSubResultantInFormA_spX (modA, modB, k, &modSubres, &mod_chain_size, Pptr);
+		// fprintf(stderr, "[old] modSubres->size = %d mod_chain_size = %d\n", modSubres->size, mod_chain_size);
+		// fprintf(stderr, "[old] modSubres->poly[0] = ");
+		// printPolynomial_spX (modSubres->polys[0], Pptr);
+		// fprintf(stderr, "[old] modSubres->poly[1] = ");
+		// printPolynomial_spX (modSubres->polys[1], Pptr);
+		// freePolysA_spX (modSubres); modSubres = NULL;
+		regularGCDSpecSRC_spX (modA, modB, k, &modSubres, degs, results_mode, 
+						uspecInfo[infoIdx]->A, uspecInfo[infoIdx]->Q, uspecInfo[infoIdx]->R, Pptr);
+		// fprintf(stderr, "[new] modSubres->size = %d\n", modSubres->size);
+		// fprintf(stderr, "[new] modSubres->poly[0] = ");
+		// printPolynomial_spX (modSubres->polys[0], Pptr);
+		// fprintf(stderr, "[new] modSubres->poly[1] = ");
+		// printPolynomial_spX (modSubres->polys[1], Pptr);
+		// fprintf(stderr, "regularGCDSpecSRC_spX... DONE  size=%d\n", modSubres->size);
+		mod_chain_size = modSubres->size;
+		infoIdx++;		
+
+		if (infoIdx == infoAlloc) {
+			// fprintf(stderr, "reallocate specInfo... \n");
+			infoAlloc += 25; 
+			specAQR_spX_t ** tmpSpecInfo = (specAQR_spX_t **) malloc (infoAlloc * sizeof(specAQR_spX_t *));
+			for (int i = 0; i < infoIdx; ++i) {
+				tmpSpecInfo[i] = uspecInfo[i];
+			}
+			for (int i = infoIdx; i < infoAlloc; ++i) {
+				tmpSpecInfo[i] = (specAQR_spX_t*) malloc (sizeof(specAQR_spX_t));
+			}
+			free(uspecInfo);
+			uspecInfo = tmpSpecInfo;
+		}
+
+		// fprintf (stderr, "In modularSubresultantAtDeg_DUZP: subresultant called for pr_idx=%d (mod_chain_size = %ld)\n", primeIdx, mod_chain_size); //TEST
+		// for (int kk = 0; kk < 2; kk++) { // TEST
+		// 	fprintf (stderr, "modularSubresultantAtDeg_DUZP: modsubres[%d]=", kk);
+		// 	printPolynomialOutForm_spX (modSubres->polys[kk], Pptr);
+		// } // TEST
+
+		if (mod_chain_size_prev && mod_chain_size_prev != mod_chain_size) {
+			// bad prime
+			fprintf (stderr, "bad prime (mod_chain_size is different: %ld != %ld): %lld\n", mod_chain_size, mod_chain_size_prev, (&prime64_ptr[primeIdx])->prime);
+			exit(1);
+			// TODO: return 0;
+		} else if (!mod_chain_size_prev) {
+			mod_chain_size_prev = mod_chain_size;
+		}
+
+		max_allocs = -1;
+		for(int i = 0; i < 2; i++) {
+			if(modSubres->polys[mod_chain_size-1-i] != NULL &&
+			subres_work[i]->alloc < modSubres->polys[mod_chain_size-1-i]->alloc &&
+			max_allocs < modSubres->polys[mod_chain_size-1-i]->alloc) {
+				max_allocs = modSubres->polys[mod_chain_size-1-i]->alloc;
+			}
+		}
+		if (max_allocs != -1) {
+			// TODO: not a good implementation! this case rarely happens though..
+			// fprintf (stderr, "max_allocs = %ld\n", max_allocs);
+			for (int i = 0; i < 2; i++) {
+				// fprintf (stderr, "subres_work[%d]->alloc = %ld\n", i, subres_work[i]->alloc);
+				tmp_coef = (mpz_t*) malloc (max_allocs * sizeof(mpz_t));
+				for (int j = 0; j < subres_work[i]->alloc; j++) {
+					mpz_init(tmp_coef[j]);
+					mpz_set(tmp_coef[j], subres_work[i]->coefs[j]);
+					mpz_clear(subres_work[i]->coefs[j]);
+				}
+				for (int j = subres_work[i]->alloc; j < max_allocs; j++) {
+					mpz_init (tmp_coef[j]);
+				}
+				free(subres_work[i]->coefs);
+				subres_work[i]->coefs = tmp_coef;
+				tmp_coef = (mpz_t*) malloc (max_allocs * sizeof(mpz_t));
+				for (int j = 0; j < subres_work_prev[i]->alloc; j++) {
+					mpz_init(tmp_coef[j]);
+					mpz_set(tmp_coef[j], subres_work_prev[i]->coefs[j]);
+					mpz_clear(subres_work_prev[i]->coefs[j]);
+				}
+				for (int j = subres_work_prev[i]->alloc; j < max_allocs; j++) {
+					mpz_init (tmp_coef[j]);
+				}
+				free(subres_work_prev[i]->coefs);
+				subres_work_prev[i]->coefs = tmp_coef;
+				subres_work[i]->alloc = max_allocs;
+				subres_work_prev[i]->alloc = max_allocs;
+			}
+		}
+
+		mpz_set_si(mpz_pr, Pptr->prime);
+		mpz_gcdext(g, s, t, mpz_pr, m);
+
+		mpz_mul(newm, m, mpz_pr);
+		mpz_sub_ui(halfm, newm, 1ul);
+		mpz_fdiv_q_2exp(halfm, halfm, 1ul);
+
+		for (int kk = 0; kk < 2; kk++) {
+			for (int i = 0; i <= subres_work[kk]->lt; i++) {
+				mpz_set (subres_work_prev[kk]->coefs[i], subres_work[kk]->coefs[i]);
+			}
+		}
+
+		for (int kk = 0; kk < mod_chain_size; kk++) {
+			if (isZero_spX (modSubres->polys[kk])) {
+				continue;
+			}
+			polysize_t lt = modSubres->polys[kk]->lt;
+			polysize_t kk_idx = mod_chain_size-1-kk;
+			subres_work[kk_idx]->lt = lt; // update lt
+			for (int i = 0; i <= lt; ++i) {
+				coef_out = (unsigned long) smallprimefield_convert_out (modSubres->polys[kk]->elems[i], Pptr);
+				// gmp_fprintf (stderr, "subres_work[%d]->coefs[%d] = %Zd\t coef_out = %lu\n", kk_idx, i, subres_work[kk_idx]->coefs[i], coef_out); // TEST
+				mpz_sub_ui (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], coef_out);
+				mpz_mul (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], s);
+				mpz_mul (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], mpz_pr);
+				mpz_add_ui (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], coef_out);
+				mpz_mod (subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], newm);
+
+				if (mpz_cmp (subres_work[kk_idx]->coefs[i], halfm) > 0) {
+					mpz_sub(subres_work[kk_idx]->coefs[i], subres_work[kk_idx]->coefs[i], newm);
+				}
+			}
+		}
+
+		freePolysA_spX (modSubres);
+		modSubres=NULL;
+
+		int EqualityTest = 1;
+		for (int kk = 0; kk < 2; kk++) {
+			for (int i = 0; i <= subres_work[kk]->lt; i++) {
+				if (mpz_cmp(subres_work[kk]->coefs[i], subres_work_prev[kk]->coefs[i])) {
+					EqualityTest = 0;
+					break;
+				}
+			}
+			if (!EqualityTest) {
+				break;
+			}
+		}
+
+		if (EqualityTest) {
+
+			if (*info_size < 0 || uspecInfoArray == NULL) {
+				for (int i = 0; i < infoIdx; ++i) {
+					freeSpecA_spX (uspecInfo[i]->A);
+					freeSpecQ_spX (uspecInfo[i]->Q);
+					freeSpecR_spX (uspecInfo[i]->R);
+				}
+				free(uspecInfo);
+			} else if (*info_size < infoIdx) {
+				if (*uspecInfoArray == NULL) {
+					(*uspecInfoArray) = (specAQRArray_spX_t *) malloc (sizeof(specAQRArray_spX_t));
+				}
+				(*uspecInfoArray)->uspecArray = uspecInfo;
+				(*uspecInfoArray)->size = infoIdx;
+				(*info_size) = infoIdx;
+			}
+
+			if (!subres_work[0]->lt && !mpz_sgn (subres_work[0]->coefs[0])) {
+				freePolynomial_DUZP (subres_work[0]);
+				subres_work[0] = NULL;
+			}
+			if (!subres_work[1]->lt && !mpz_sgn (subres_work[1]->coefs[0])) {
+				freePolynomial_DUZP (subres_work[1]);
+				subres_work[1] = NULL;
+			}
+
+			freePolynomial_spX (&modA);
+			freePolynomial_spX (&modB);
+			mpz_clears (bound, m, halfm, newm, g, s, t, mpz_pr, res_work_prev, res1_work_prev, NULL);
+			*chain_size = 2;
+			td = degs[0]; degs[0] = degs[1]; degs[1] = td;
+			return subres_work;
+		}
+
+		mpz_set (m, newm);
+	}
+
+	freePolynomial_spX (&modA);
+	freePolynomial_spX (&modB);
+	mpz_clears (bound, m, halfm, newm, g, s, t, mpz_pr, res_work_prev, res1_work_prev, NULL);
+	*chain_size = 2;
+	td = degs[0]; degs[0] = degs[1]; degs[1] = td;
+	// all primes failed!! TODO:...
+	// fprintf (stderr, "all primes failed\n"); // TEST
+	return subres_work;
+}
+
+
 
 duspolysA_t* _transposePolysA_and_ConvertOut_spX (duspolysA_t* aa, polysize_t max_deg)
 {
@@ -3252,9 +3717,9 @@ duspolysA_t* _transposePolysA_and_ConvertOut_spX (duspolysA_t* aa, polysize_t ma
     polysize_t t;
     // aa_T : Mat(max_deg+1, size)
     duspolysA_t* aa_T = makePolysAwithMaxAlloc_spX (max_deg+1, size);
-	Prime_ptr Pptr[1]; 
+	Prime_ptr Pptr[1];
     for (int j=0; j<=max_deg; j++) { // traverse monomials
-        for (int i=0; i<size; i++) { // traverse polynomials 
+        for (int i=0; i<size; i++) { // traverse polynomials
 			if (aa->polys[i] != NULL && aa->polys[i]->lt >= j) {
 				// TODO: check the correctness:
 				aa_T->polys[j]->elems[i] = smallprimefield_convert_out (aa->polys[i]->elems[j], &prime64_ptr[i]);
@@ -3280,303 +3745,4 @@ duspolysA_t* _transposePolysA_and_ConvertOut_spX (duspolysA_t* aa, polysize_t ma
     }
 
     return aa_T;
-}
-
-
-// /**
-//  * Subresultant Chian Modular a prime 
-//  * 
-//  * @param g a bivariate polynomial (DBZP) 
-//  * @param gpd 2Dim partial degrees of polynomial g  
-//  * @param f a bivariate polynomial (DBZP) s.t. deg(g, x) > deg(f, x)
-//  * @param fpd 2Dim partial degrees of polynomial f
-//  * @param subres returned subresultant chain modular pr 
-//  * @param Pptr small prime pointer
-//  */
-// void subresultantModPr_DBZP (mpz_t* g, polysize_t* gpd, mpz_t* f, polysize_t* fpd, DBZP_t* subres, const Prime_ptr* Pptr)
-// {
-// 	// corner cases
-
-// 	// set-up:
-// 	// n2, n3 are total degrees of g, f
-// 	int n, n2=0, n3=0;
-// 	n=gpd[0]+1; // #polys + 1
-// 	for (polysize_t i = 0; i <= gpd[1]; i++) {
-// 		for (polysize_t j = 0; j <= gpd[0]; ++j) {
-// 			if (g[n*i+j] != 0 && (i+j) > n3) {
-// 				n2 = i+j;
-// 			}
-// 		}
-// 	}
-// 	n=fpd[0]+1; // #polys + 1
-// 	for (polysize_t i = 0; i <= fpd[1]; i++) {
-// 		for (polysize_t j = 0; j <= fpd[0]; ++j) {
-// 			if (f[n*i+j] != 0 && (i+j) > n3) {
-// 				n3 = i+j;
-// 			}
-// 		}
-// 	}
-// 	n2 = n2*n3 + 1; // double-check! 
-// 	n = fpd[1]*gpd[0] + fpd[0]*gpd[1] + 1; // size of the resultant based on the Sylv Matrix
-// 	if (n2 < n) { 
-// 		n = n2;
-// 	}
-// 	if (n < 2) {
-// 		n = 2;
-// 	}
-
-// 	n2 = (fpd[1] > 2) ? fpd[1] : 2; // number of subresultants to be computed 
-// 	int as = gpd[1] + 1, bs = fpd[1] + 1; // degree in x of f(t,x) and g(t,x) mod (t-t0)
-// 	elem_t* a = (elem_t*) calloc (as*n, sizeof(elem_t));
-// 	elem_t* b = (elem_t*) calloc (bs*n, sizeof(elem_t));
-// 	elem_t* t = (elem_t*) calloc (n, sizeof(elem_t)); // evaluation points
-
-// 	duspolysA_t** S = (duspolysA_t**) malloc (n*sizeof(duspolysA_t*)); // copies of subres over pr 
-// 	// TODO: can implement better...
-// 	for (polysize_t i = 0; i < n; i++) {
-// 		S[i] = makePolysA_spX (n2);
-// 	}
-
-// 	mpz_t m, e;
-// 	mpz_init_set_si (m, Pptr->prime);
-// 	// evaluate t and compute subres of main variable (x)
-// 	// TODO: cilk_for, cilk_grainsize optimization needed!
-// 	for (polysize_t k = 0; k < n; k++) {
-// 		// work on evaluation point l*n + k + 1
-// 		t[k] = k+1;
-// 		polysize_t ad=0, bd=0, l=0;
-// 		polysize_t at=gpd[0]+1, bt=fpd[0]+1;
-// 		while (ad < gpd[1] || bd < fpd[1]) {
-// 			t[k] = smallprimefield_add (t[k], smallprimefield_mul (l, n, Pptr), Pptr);
-// 			// a: 
-// 			for (polysize_t i = 0; i <= gpd[1]; i++) {
-// 				mpz_init_set_si (e, smallprimefield_convert_out (g[at*i+gpd[0]], Pptr));
-// 				for (polysize_t j = gpd[0]-1; j > -1; --j) {
-// 					mpz_mul_si (e, e, smallprimefield_convert_out (t[k], Pptr)); // e *= t[k]
-// 					mpz_add_ui (e, e, smallprimefield_convert_out (g[at*i+j], Pptr)); // e += g[at*i+j]
-// 				}
-// 				mpz_mod (e, e, m); // e = e mod m(pr)
-// 				a[k*as+i] = smallprimefield_convert_in (mpz_get_si (e) , Pptr); 
-// 				if (a[k*as+i]) { ad = i; } // uppdate a->size
-// 				mpz_clear (e);
-// 			}
-// 			// b: 
-// 			for (polysize_t i = 0; i <= fpd[1]; i++) {
-// 				mpz_init_set_si (e, smallprimefield_convert_out (f[bt*i+fpd[0]], Pptr));
-// 				for (polysize_t j = fpd[0]-1; j > -1; --j) {
-// 					mpz_mul_si (e, e, smallprimefield_convert_out (t[k], Pptr)); // e *= t[k]
-// 					mpz_add_ui (e, e, smallprimefield_convert_out (f[bt*i+j], Pptr)); // e += f[bt*i+j]
-// 				}
-// 				mpz_mod (e, e, m); // e = e mod m(pr)
-// 				b[k*bs+i] = smallprimefield_convert_in (mpz_get_si (e) , Pptr); 
-// 				if (b[k*bs+i]) { bd = i; } // uppdate b->size
-// 				mpz_clear (e);
-// 			}
-// 			l++;
-// 		}
-// 		// Do sylvSubres to compute S[k] over Z_pr[y]
-// 		duspoly_t* a_dusp = makePolynomial_spX (ad+1);
-// 		duspoly_t* b_dusp = makePolynomial_spX (bd+1);
-// 		a_dusp->elems = a[k*as];
-// 		b_dusp->elems = b[k*as];
-// 		a_dusp->lt = ad;
-// 		b_dusp->lt = bd;
-// 		int sz = 0;
-// 		sylvSubResultantInFormA_spX (a_dusp, b_dusp, &S[k], &sz, Pptr);
-// 		if (a_dusp != NULL) { a_dusp->lt = 0; free (a_dusp); }
-// 		if (b_dusp != NULL) { b_dusp->lt = 0; free (b_dusp); }
-// 	}
-
-// 	// Final Step
-// 	// lagrange interpolation (with a 2D distributed-data-type)
-// 	polysize_t k = gpd[0] + fpd[0];
-// 	biSubresPr_t* s = makeBiSubresultantInForm_spX (n2);
-// 	for (polysize_t i = 0; i < n2; i++) { // set-up returned-interpolated-subresultant-chain
-// 		s->deg[i][0] = n-i*k-1;
-// 		s->deg[i][1] = i;
-// 		s->size[i] = (s->deg[i][0]+1)*(s->deg[i][1]+1);
-// 		s->coefs[i] = (elem_t*) calloc (s->size[i], sizeof(elem_t));
-// 	}
-// 	_interpolatePartialSubResInForm_spXY (S, &s, t, n, k, Pptr);
-
-// 	free (a);
-// 	free (b);
-// 	free (t);
-// 	for (polysize_t i = 0; i < n; i++) {
-// 		freePolysA_spX (S[i]);
-// 	}
-// 	free (S);
-// 	*subres = convertFromBiSubRes_DUZP_inp (s);
-// 	return;
-// }
-
-biSubresZ_t* modularSetBiSubresultant_DBZP (mpz_t* g, polysize_t* gpd, mpz_t* f, polysize_t* fpd, mpz_t m, int startIdx, int primeSz)
-{
-	// first modular subres
-	Prime_ptr  Pptr[1];
-	*Pptr = prime64_ptr[startIdx];
-	biSubresPr_t* S = NULL;
-	mpz_t tc; 
-	mpz_init (tc);
-	// Convert g to Z_p[0]
-	polysize_t g_tdeg = (gpd[0]+1)*(gpd[1]+1);
-	elem_t* gg = (elem_t*) malloc (g_tdeg*sizeof(elem_t));
-	for (polysize_t i = 0; i < g_tdeg; i++) {
-		mpz_mod_ui (tc, g[i], (unsigned long) Pptr->prime);
-		gg[i] = smallprimefield_convert_in (mpz_get_si (tc), Pptr);
-	}
-	// Convert f to Z_p[0]
-	polysize_t f_tdeg = (fpd[0]+1)*(fpd[1]+1);
-	elem_t* ff = (elem_t*) malloc (f_tdeg*sizeof(elem_t));
-	for (polysize_t i = 0; i < f_tdeg; i++) {
-		mpz_mod_ui (tc, f[i], (unsigned long) Pptr->prime);
-		ff[i] = smallprimefield_convert_in (mpz_get_si (tc), Pptr);
-	}
-	mpz_clear (tc);
-
-	biSylvSubResultantInForm_spX (gg, gpd, ff, fpd, &S, Pptr);
-	if (!S->n) {
-		free (gg);
-		free (ff); 
-		return NULL;
-	} 
-
-	biSubresZ_t* a = makeBiSubresultant_DBZP (S->n);
-	mpz_t halfm;
-	mpz_init_set_si (halfm, (Pptr->prime-1)>>1);
-	// construct a w.r.t pr[0]
-	for (polysize_t j = 0; j < S->n; j++) {
-		a->deg[j][0] = S->deg[j][0];
-		a->deg[j][1] = S->deg[j][1];
-		a->size[j]   = S->size[j];
-		a->coefs[j] = (mpz_t*) malloc (a->size[j]*sizeof(mpz_t));
-		for (polysize_t l = 0; l < a->size[j]; l++) {
-			mpz_init_set_si (a->coefs[j][l], smallprimefield_convert_out (S->coefs[j][l], Pptr));
-			if (mpz_cmp (a->coefs[j][l], halfm) > 0) {
-				mpz_sub_ui (a->coefs[j][l], a->coefs[j][l], (unsigned long) Pptr->prime);
-			}
-		}
-	}
-	mpz_set_si (m, Pptr->prime);
-	freeBiSubresultantInForm_spX (S); S=NULL;
-
-	for (int i = 1; i < primeSz; i++) {
-		// next modular subres 
-		*Pptr =  prime64_ptr[startIdx+i];
-		mpz_init (tc);
-		// Convert g to Z_p[i]
-		for (polysize_t idx = 0; idx < g_tdeg; idx++) {
-			mpz_mod_ui (tc, g[idx], (unsigned long) Pptr->prime);
-			gg[idx] = smallprimefield_convert_in (mpz_get_si (tc), Pptr);
-		}
-		// Convert f to Z_p[i]
-		for (polysize_t idx = 0; idx < f_tdeg; idx++) {
-			mpz_mod_ui (tc, f[idx], (unsigned long) Pptr->prime);
-			ff[idx] = smallprimefield_convert_in (mpz_get_si (tc), Pptr);
-		}
-
-		biSylvSubResultantInForm_spX (gg, gpd, ff, fpd, &S, Pptr);
-		mpz_t t, x, e, o;
-		mpz_inits (t, e, o);
-		mpz_init_set_si (x, Pptr->prime);
-		mpz_gcdext (t, e, o, x, m);
-		mpz_mul (t, m, x);
-		mpz_fdiv_q_2exp (halfm, t, 1ul);
-		// CRT
-		for (polysize_t j = 0; j < a->n; j++) {
-			for (polysize_t l = 0; l < a->size[j]; l++) {
-				mpz_ui_sub (tc, smallprimefield_convert_out (S->coefs[j][l], Pptr), a->coefs[j][l]);
-				mpz_mul (tc, tc, o);
-				mpz_mod (tc, tc, x);
-				mpz_mul (tc, tc, m);
-				mpz_add (a->coefs[j][l], a->coefs[j][l], tc);
-				if (mpz_cmp (a->coefs[j][l], halfm) > 0) {
-					mpz_sub (a->coefs[j][l], a->coefs[j][l], t);
-				}
-			}
-		}
-		mpz_set (m, t);
-		mpz_clears (t, x, e, o, tc, NULL);
-		freeBiSubresultantInForm_spX (S); S=NULL;
-	}
-
-	return a;
-}
-
-biSubresZ_t* modularBiSubresultant_DBZP (mpz_t* g, polysize_t* gpd, mpz_t* f, polysize_t* fpd)
-{
-	int primeIdx=0, k=1;
-	Prime_ptr Pptr[1] = {prime64_ptr[primeIdx]}; // TODO: check bad-prime?
-
-	//  the first biSubResultant call
-	mpz_t m;
-	mpz_init (m);
-	biSubresZ_t* s = modularSetBiSubresultant_DBZP (g, gpd , f, fpd, m, primeIdx, k);	
-
-	biSubresZ_t* a = makeBiSubresultant_DBZP (s->n);
-	// construct a w.r.t pr[0]
-	for (polysize_t j = 0; j < s->n; j++) {
-		a->deg[j][0] = s->deg[j][0];
-		a->deg[j][1] = s->deg[j][1];
-		a->size[j]   = s->size[j];
-		a->coefs[j] = (mpz_t*) malloc (a->size[j]*sizeof(mpz_t));
-		for (polysize_t l = 0; l < a->size[j]; l++) {
-			mpz_init (a->coefs[j][l]);
-		}
-	}
-	
-	while (1) { // check stability at the end!
-		primeIdx += k;
-		mpz_t x, e, o, t, halft;
-		mpz_inits (x, e, o, t, halft, NULL);
-
-		biSubresZ_t* h = modularSetBiSubresultant_DBZP (g, gpd, f, gpd, x, primeIdx, k);
-		mpz_gcdext (t, e, o, x, m);
-
-		mpz_mul (t, x, m);
-		mpz_tdiv_q_2exp (halft, t, 1); // double-check!
-		// CRT 
-		for (polysize_t i = 0; i < a->n; i++) {
-			for (polysize_t j = 0; j < a->size[i]; j++) {
-				mpz_sub (a->coefs[i][j], h->coefs[i][j], s->coefs[i][j]);
-				mpz_mul (a->coefs[i][j], a->coefs[i][j], o);
-				mpz_mod (a->coefs[i][j], a->coefs[i][j], x);
-				mpz_mul (a->coefs[i][j], a->coefs[i][j], m);
-				mpz_add (a->coefs[i][j], a->coefs[i][j], s->coefs[i][j]);
-				if (mpz_cmp(a->coefs[i][j], halft) > 0) {
-					mpz_sub (a->coefs[i][j], a->coefs[i][j], t);
-				} 
-			}
-		}
-		
-		// Check if it's stable or not (s == a):
-		int isDone = 0;
-		if (s->n == a->n) {
-			int isStable = 1;
-			for (polysize_t j = 0; j < a->n; j++) {
-				if (a->size[j] == s->size[j]) {
-					for (polysize_t l = 0; l < a->size[j]; l++) {
-						if (mpz_cmp (a->coefs[j][l], s->coefs[j][l])) { isStable = 0; break; }
-					}
-				} else { isStable = 0; break; }
-				if (!isStable) { break; }
-			}
-			if (isStable) { isDone = 1; }
-		}
-
-		mpz_clears (x, e, o, halft, NULL);
-		freeBiSubresultant_DBZP (h); h=NULL;
-		if (isDone) {
-			mpz_clear (t);
-			break;
-		}
-
-		freeBiSubresultant_DBZP (s); s=NULL;
-		s = deepCopyBiSubresultant_DBZP (a);
-		mpz_set (m, t);
-	}
-
-	mpz_clear (m);
-	freeBiSubresultant_DBZP (a);
-	return s;
 }

@@ -7,18 +7,19 @@
 #include <fstream>
 #include <ios>
 
+
 std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
     str.erase(0, str.find_first_not_of(chars));
     return str;
 }
- 
+
 std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
     str.erase(str.find_last_not_of(chars) + 1);
     return str;
 }
- 
+
 std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 {
     return ltrim(rtrim(str, chars), chars);
@@ -27,7 +28,7 @@ std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ")
 void printVariableList(std::vector<Symbol> vars) {
 	if (vars.size() == 0) {
 		std::cout << "[ ]";
-		return; 
+		return;
 	}
 
 	std::cout << "[" << vars[0];
@@ -52,10 +53,17 @@ void printPolyList(std::vector<SparseMultivariateRationalPolynomial> polys) {
 int main(int argc, char** argv) {
 
 	if (argc < 2) {
+#if defined(WITH_MAPLE) && WITH_MAPLE
 		std::cerr << "USAGE: BPAS_Solver <system_file> <Lazard_or_Kalkbrener> <Level_or_Bubble> <MapleValidate>" << std::endl;
-		std::cerr << "       Lazard_or_Kalkbrener: 1 for Lazard, 0 for Kalkbrener (default)" << std::endl;
-		std::cerr << "       Level_or_Bubble: 1 level-wise solving, 0 for bubble (default)" << std::endl;
-		std::cerr << "       MapleValidate: 1 for validation against maple, 0 (default) no validation" << std::endl;
+#else
+		std::cerr << "USAGE: BPAS_Solver <system_file> <Lazard_or_Kalkbrener> <Level_or_Bubble>" << std::endl;
+#endif
+		std::cerr << "       system_file: the name of the file containing the system to solve" << std::endl;
+		std::cerr << "       Lazard_or_Kalkbrener (optional): 1 for Lazard, 0 for Kalkbrener (default)" << std::endl;
+		std::cerr << "       Level_or_Bubble (optional): 1 level-wise solving, 0 for bubble (default)" << std::endl;
+#if defined(WITH_MAPLE) && WITH_MAPLE
+		std::cerr << "       MapleValidate (optional): 1 for validation against maple, 0 (default) no validation" << std::endl;
+#endif
 		return 1;
 	}
 
@@ -68,13 +76,15 @@ int main(int argc, char** argv) {
 		levelwise = atoi(argv[3]);
 	}
 	bool mapleValidate = 0;
+#if defined(WITH_MAPLE) && WITH_MAPLE
 	if (argc > 4 && atoi(argv[4])) {
 		mapleValidate = atoi(argv[4]);
 	}
+#endif
 
 	std::string fname = std::string(argv[1]);
 	std::ifstream sysFile;
-	sysFile.open(fname); 
+	sysFile.open(fname);
 
 	if (!sysFile.is_open() || !sysFile.good()) {
 		std::cerr << "Failed to open the file: " << fname << std::endl;
@@ -84,7 +94,7 @@ int main(int argc, char** argv) {
 	std::string varsString;
 	while (std::getline(sysFile, varsString)) {
 		if (varsString.length() > 0 && varsString.find("#") == std::string::npos) {
-			break; 
+			break;
 		}
 	}
 
@@ -98,9 +108,9 @@ int main(int argc, char** argv) {
 		trim(polyString);
 		polyStrings.push_back(polyString);
 	}
-	
+
 	sysFile.close();
-	
+
 	if (polyStrings.size() == 0) {
 		std::cerr << "ERROR: No polynomials supplied." << std::endl;
 		return 1;
@@ -164,7 +174,7 @@ int main(int argc, char** argv) {
 	printVariableList(inputVars);
 	std::cout << std::endl;
 	std::cout << "Result:" << std::endl;
-	std::cout << "["; 
+	std::cout << "[";
 	for (size_t k=0; k<results.size(); ++k) {
 		std::cout << results[k];
 		if (k!=results.size()-1) {
@@ -174,35 +184,36 @@ int main(int argc, char** argv) {
 	std::cout << "]" << std::endl;
 	std::cerr << "Triangularize Time: " << time << std::endl;
 
+#if defined(WITH_MAPLE) && WITH_MAPLE
 	if (mapleValidate) {
+        ExpressionTree FTree;
+        FTree.fromVector<SMQP>(inputPolys);
+        ExpressionTree rcTree = rc.convertToExpressionTree();
+        ExpressionTree RTree;
+        RTree.fromVector<Symbol>(inputVars);
+        ExpressionTree resultTrees;
+        resultTrees.fromVector<RegularChain<RN,SMQP>>(results);
 
-            ExpressionTree FTree;
-            FTree.fromVector<SMQP>(inputPolys);
-            ExpressionTree rcTree = rc.convertToExpressionTree();
-            ExpressionTree RTree;
-            RTree.fromVector<Symbol>(inputVars);
-            ExpressionTree resultTrees;
-            resultTrees.fromVector<RegularChain<RN,SMQP>>(results);
-            
-            std::vector<std::string> inputs;
-            inputs.push_back(FTree.toMapleString() + ":");
-            inputs.push_back(rcTree.toMapleString() + ":");
-            inputs.push_back(RTree.toMapleString() + ":");
-            inputs.push_back(resultTrees.toMapleString() + ":");
-            
-            MapleInterfaceStream& mis = MapleInterfaceStream::instance();
-            bool passed = mis.TriangularizeValidation(Lazard, inputs);
-            
-			std::cerr << "BPAS Triangularize Time: " << time << std::endl;
+        std::vector<std::string> inputs;
+        inputs.push_back(FTree.toMapleString() + ":");
+        inputs.push_back(rcTree.toMapleString() + ":");
+        inputs.push_back(RTree.toMapleString() + ":");
+        inputs.push_back(resultTrees.toMapleString() + ":");
 
-            if (passed) {
-                std::cerr << "\t\t\t\t\t\t\t PASSED\n";
-            } else {
-                std::cerr << "\t\t\t\t\t\t\t FAILED\n";
-                exit(1);
-            }
+        MapleInterfaceStream& mis = MapleInterfaceStream::instance();
+        bool passed = mis.TriangularizeValidation(Lazard, inputs);
 
-        }	    
+		std::cerr << "BPAS Triangularize Time: " << time << std::endl;
+
+        if (passed) {
+            std::cerr << "\t\t\t\t\t\t\t PASSED\n";
+        } else {
+            std::cerr << "\t\t\t\t\t\t\t FAILED\n";
+            exit(1);
+        }
+	}
+#endif
+
     return 0;
 }
 /* This file is part of the BPAS library http://www.bpaslib.org

@@ -1,4 +1,7 @@
+
+#include <gmpxx.h>
 #include "ModularPolynomial/DUSP_FFT_Support.h"
+
 
 
 void fastMulPolynomialInForm_FFT_spX (duspoly_t* a, duspoly_t* b, duspoly_t** c, Prime_ptr* Pptr)
@@ -96,7 +99,7 @@ void fastMulPolynomialInForm_FFT_spX (duspoly_t* a, duspoly_t* b, duspoly_t** c,
     EX_MontP_Init_OPT2_AS_GENE (pPtr, Pptr->prime); // 
     sfixn R=1L<<(pPtr->Rpow); 
     R=R%pPtr->P;
-    int H = 1024, j = 0;
+    int H = FFT_H_SIZE, j = 0;
 
     sfixn *SB1, *Omega, *OmegaInv, *pwm_fg;
     Omega = (sfixn*) calloc (n2<<1, sizeof (sfixn));
@@ -131,7 +134,7 @@ void plainExponentiatePolynomialInForm_FFT_spX (duspoly_t* a, polysize_t n, dusp
 {
     if (n == 0) {
         elem_t one = smallprimefield_convert_in (1, Pptr);
-        *an = constPolynomialInForm_spX (one, Pptr);
+        *an = constPolynomial_spX (one, Pptr);
         return;
     } else if (n == 1) {
         *an = deepCopyPolynomial_spX (a);
@@ -245,7 +248,7 @@ void fastPSInversionInForm_FFT_spX (duspoly_t* a, duspoly_t** ai, polysize_t lgd
     sfixn R=1L<<(pPtr->Rpow); 
     R=R%pPtr->P;
 
-    int H = 1024; 
+    int H = FFT_H_SIZE; 
     
     sfixn* SB1;
     sfixn* Omega;
@@ -278,7 +281,8 @@ void fastPSInversionInForm_FFT_spX (duspoly_t* a, duspoly_t** ai, polysize_t lgd
     	invn = inverseMod (pow, pPtr->P);
     	invn = MulMod (R, invn, pPtr->P);
     	invn <<= pPtr->Base_Rpow;
-        
+        // fprintf(stderr, "[1] invn = %lld\n", invn);
+
     	PBPAS::RootsTable2 (pow2, i+1, Omega, OmegaInv, pPtr);
     	Omega += pow2;     
     	OmegaInv += pow2;
@@ -313,7 +317,6 @@ void fastPSInversionInForm_FFT_spX (duspoly_t* a, duspoly_t** ai, polysize_t lgd
     	// //FURERPBPAS1::InvDFT_eff_p1(K,e,Ap,W,SB1);
     	
     	h = (sfixn*) calloc (pow, sizeof (sfixn)); 
-    	
     	
     	for (j = 0; j < pow1; ++j) {
     	    h[j] = pwm_fg[j + pow1];
@@ -393,7 +396,7 @@ void fastDivPolynomialInForm_wPSInv_FFT_spX (duspoly_t* a, duspoly_t* b, duspoly
     // a/a = 1
     if (isEqual_spX (a, b)) {
     	*r = NULL;
-    	*q = constPolynomial_spX (1, Pptr);
+    	*q = constPolynomialInForm_spX (1, Pptr);
     	return;
     }
     
@@ -401,21 +404,21 @@ void fastDivPolynomialInForm_wPSInv_FFT_spX (duspoly_t* a, duspoly_t* b, duspoly
     polysize_t deg_b = degPolynomial_spX (b);
     
     // deg(a) < deg(b) => a = 0*b + a
-    if (deg_a < deg_b) {
-    	*r = deepCopyPolynomial_spX (a);
-    	*q = NULL;
-    	return;
-    }
+    // if (deg_a < deg_b) {
+    // 	*r = deepCopyPolynomial_spX (a);
+    // 	*q = NULL;
+    // 	return;
+    // }
 
-    if (deg_a < PLAINDIV_CROSSOVER || deg_b < PLAINDIV_CROSSOVER) {
-        plainDivPolynomialsInForm_spX (a, b, r, q, Pptr);
-        return;
-    }
+    // if (deg_a < PLAINDIV_CROSSOVER || deg_b < PLAINDIV_CROSSOVER) {
+    //     plainDivPolynomialsInForm_spX (a, b, r, q, Pptr);
+    //     return;
+    // }
 
-    if (deg_a < 1024  && deg_b < 1024 && deg_a - deg_b < 11 ) {
-        plainDivPolynomialsInForm_spX (a, b, r, q, Pptr);
-        return;
-    }
+    // if (deg_a < 1024  && deg_b < 1024 && deg_a - deg_b < 11 ) {
+    //     plainDivPolynomialsInForm_spX (a, b, r, q, Pptr);
+    //     return;
+    // }
 
 
     duspoly_t* ar = NULL;
@@ -425,7 +428,9 @@ void fastDivPolynomialInForm_wPSInv_FFT_spX (duspoly_t* a, duspoly_t* b, duspoly
     duspoly_t* rr = NULL;
 
     polysize_t ldeg = logceiling (deg_a - deg_b + 1); // ceil (Log2_spX (deg_a - deg_b + 1));
-	
+	// fprintf(stderr, "[1] ldeg = %ld\n", ldeg);
+
+
     reversePolynomial_spX (a, &ar, deg_a, Pptr);
     reversePolynomial_spX (b, &br, deg_b, Pptr);
     
@@ -647,8 +652,8 @@ void YapHalfGCDMatrixInForm_wPSInv_FFT_spX (duspoly_t* a, duspoly_t* b, dusmat4_
     	dusmat4_t* TM = (dusmat4_t*) malloc (sizeof (dusmat4_t));
     	dusmat4_t* MM = NULL;
     	TM->polys[0] = NULL;
-    	TM->polys[1] = constPolynomial_spX (1, Pptr);
-    	TM->polys[2] = constPolynomial_spX (1, Pptr);
+    	TM->polys[1] = constPolynomialInForm_spX (1, Pptr);
+    	TM->polys[2] = constPolynomialInForm_spX (1, Pptr);
     	TM->polys[3] = q;
 
     	/* fprintf (stderr, "     TM = \n");  // TEST */
@@ -695,8 +700,8 @@ void YapHalfGCDMatrixInForm_wPSInv_FFT_spX (duspoly_t* a, duspoly_t* b, dusmat4_
     
     dusmat4_t* Q = (dusmat4_t*) malloc (sizeof (dusmat4_t));
     Q->polys[0] = NULL;
-    Q->polys[1] = constPolynomial_spX (1, Pptr);
-    Q->polys[2] = constPolynomialInForm_spX (lc, Pptr);
+    Q->polys[1] = constPolynomialInForm_spX (1, Pptr);
+    Q->polys[2] = constPolynomial_spX (lc, Pptr);
     Q->polys[3] = tq;
     
     /* fprintf (stderr, "     Q = \n");  // TEST */
@@ -804,8 +809,8 @@ void GCDMatrixInForm_wHGCD_FFT_spX (duspoly_t* a, duspoly_t* b, dusmat4_t** M, P
 	freePolynomial_spX (&b0);
 	
 	Q->polys[0] = NULL;
-	Q->polys[1] = constPolynomial_spX (1, Pptr);
-	Q->polys[2] = constPolynomial_spX (1, Pptr);
+	Q->polys[1] = constPolynomialInForm_spX (1, Pptr);
+	Q->polys[2] = constPolynomialInForm_spX (1, Pptr);
 	Q->polys[3] = q; // q = -q
 
 	/* fprintf (stderr, "Q = \n"); // TEST */
@@ -832,8 +837,8 @@ void GCDMatrixInForm_wHGCD_FFT_spX (duspoly_t* a, duspoly_t* b, dusmat4_t** M, P
     freePolynomial_spX (&q);
     
     Q->polys[0] = NULL;
-    Q->polys[1] = constPolynomial_spX (1, Pptr);
-    Q->polys[2] = constPolynomialInForm_spX (lc, Pptr);
+    Q->polys[1] = constPolynomialInForm_spX (1, Pptr);
+    Q->polys[2] = constPolynomial_spX (lc, Pptr);
     Q->polys[3] = lcq;
 
     /* fprintf (stderr, "Q with lcq = \n"); // TEST */

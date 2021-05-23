@@ -8,6 +8,11 @@ int main(int argc, char** argv) {
 		testDeg = atoi(argv[1]);
 	}
 
+//	test22(10);
+
+
+
+//	return 0;
 
 	test1(testDeg);
 	// test2(testDeg); //tests for invalid input on purpose and fails
@@ -31,6 +36,10 @@ int main(int argc, char** argv) {
 	test20(testDeg);
 	test21(testDeg);
 	test22(testDeg);
+	test23(testDeg);
+	test24(testDeg);
+
+
 	return 0;
 
 }

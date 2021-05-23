@@ -26,12 +26,6 @@ void test6();
 
 void test7();
 
-/**
- * Note that multiplication process truncates the result up to the min degree of ancestors
- * in the following the truncation degree is 3. Thus the array of polys does not contain terms
- * of degree at least 4. But when we call homogPart_PS and ask for terms of degree 5 and look at
- * polys again we can see that this time the array polys has been updated and contains terms of degree 5
- */
 void test8();
 
 void test9();

@@ -68,7 +68,7 @@ set(default_build_type "Release")
 # if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
 #   set(default_build_type "Debug")
 # endif()
- 
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
@@ -129,11 +129,11 @@ if(COMPILER_SUPPORTS_MARCH_NATIVE)
 endif()
 
 if(COMPILER_SUPPORTS_MARCH_X86)
-    if (COMPILER_SUPPORTS_MARCH_NATIVE) 
+    if (COMPILER_SUPPORTS_MARCH_NATIVE)
         option(BPAS_OPTIMIZE_FOR_X86 "Build with -march=x86-64" OFF)
 		if (BPAS_OPTIMIZE_FOR_NATIVE)
    			set(BPAS_OPTIMIZE_FOR_X86 OFF CACHE BOOL "Build with -march=x86-64" FORCE)
-		endif()	
+		endif()
 	else()
         option(BPAS_OPTIMIZE_FOR_X86 "Build with -march=x86-64" ON)
     endif()
@@ -144,7 +144,7 @@ if(NOT COMPILER_SUPPORTS_MARCH_X86 AND NOT COMPILER_SUPPORTS_MARCH_NATIVE)
 endif()
 
 
-if(BPAS_OPTIMIZE_FOR_NATIVE) 
+if(BPAS_OPTIMIZE_FOR_NATIVE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 elseif(BPAS_OPTIMIZE_FOR_X86)
@@ -152,17 +152,17 @@ elseif(BPAS_OPTIMIZE_FOR_X86)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=x86-64")
 endif()
 
-# Note: Compiler flags are called in this order: "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_{BUILD_TYPE}}" 
+# Note: Compiler flags are called in this order: "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_{BUILD_TYPE}}"
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -fcilkplus -DLINUXINTEL64")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fcilkplus -DLINUXINTEL64")
 
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -fomit-frame-pointer -DNDEBUG=1")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2 -g -Wall -Wno-unused-function -Werror='return-type'")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -pg -Wall -Wno-unused-function -Werror='return-type'")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -pg -Wall -Wno-unused-function -Werror='return-type' -Werror='discard-qualifiers' -Werror='implicit'")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -fomit-frame-pointer -DNDEBUG=1")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2 -g -Wall -Wno-unused-function -Wno-unused-variable -Werror='return-type'")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -pg -Wall -Wno-unused-function -Wno-unused-variable -Werror='return-type' -Werror='discarded-qualifiers' -Werror='implicit'")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -pg -Wall -Wno-unused-function -Wno-unused-variable -Werror='return-type'")
 
 
 
@@ -231,7 +231,7 @@ if ( "${MPSOLVE_LIBRARIES}" STREQUAL "" OR "${MPSOLVE_INCLUDES}" STREQUAL "")
     unset( MPSOLVE_LIBRARIES CACHE )
     unset( MPSOLVE_INCLUDES CACHE )
     find_package( MPSOLVE 2.2 REQUIRED )
-    #So actually we need version 3.0+, but the mps.h wasn't updated to say version 3.0 
+    #So actually we need version 3.0+, but the mps.h wasn't updated to say version 3.0
     #until 3.1.5....
 else()
     message( STATUS "User set MPSOLVE_LIBRARIES. To change, edit MPSOLVE_LIBRARIES using ccmake (set to empty to enable search)." )
@@ -297,7 +297,7 @@ endif()
 
 
 
-option(BPAS_WITH_NTL "Build with NTL" OFF)
+option(BPAS_WITH_NTL "Build with NTL" ON)
 if(BPAS_WITH_NTL)
 # ----------------------------------------
 # locate NTL libraries
@@ -327,7 +327,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWITH_NTL=1")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWITH_NTL=1")
 endif()
 
-option(BPAS_WITH_MAPLE "Build with Maple" ON)
+option(BPAS_WITH_MAPLE "Build with Maple" OFF)
 if(BPAS_WITH_MAPLE)
     include(${CMAKE_SOURCE_DIR}/cmake/BPAS_MapleInterface.cmake)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWITH_MAPLE=1")
@@ -335,10 +335,31 @@ if(BPAS_WITH_MAPLE)
     message(WARNING "When linking to BPAS when built with Maple it is required to set your LD_LIBRARY_PATH and MAPLE environment variables to point to your Maple installation.")
 endif()
 
-option(BPAS_BUILD_SERIAL "Build without parallelism or cilk" OFF)
+option(BPAS_BUILD_SERIAL "Build without parallelism or cilk; will implicitly force OFF any parallel options" OFF)
 if(BPAS_BUILD_SERIAL)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSERIAL=1")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSERIAL=1")
+endif()
+
+option(BPAS_BUILD_PARALLEL_TASKSCHED "Build with TaskScheduler being parallelized" ON)
+if (BPAS_BUILD_PARALLEL_TASKSCHED)
+    #Let BPAS_BUILD_SERIAL decide whether or not to have it on
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTASK_SCHED_PARALLEL=0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTASK_SCHED_PARALLEL=0")
+endif()
+
+option(BPAS_BUILD_PARALLEL_SRC "Build with parallel Subresultant Chain" ON)
+if(BPAS_BUILD_PARALLEL_SRC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPARALLEL_SUBRES=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPARALLEL_SUBRES=1")
+endif()
+
+option(BPAS_BUILD_DUCOS_SRC "Build with utilizing cache-friendly Ducos Subresultant Chain only" OFF)
+if(BPAS_BUILD_DUCOS_SRC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDUCOS_SUBRES_MODE=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDUCOS_SUBRES_MODE=1")
+    message(WARNING "When BPAS_BUILD_DUCOS_SRC=ON, BPAS will not use fast and efficient Modular Subresultant Chain routines.")
 endif()
 
 option(BPAS_BUILD_PROFILING "Build with profiling" OFF)
@@ -384,6 +405,12 @@ if(BPAS_BUILD_RC_DEBUG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DREGULARCHAIN_DEBUG=1")
 endif()
 
+option(BPAS_BUILD_SRC_DEBUG "Build with Subresultant Chain debugging" OFF)
+if(BPAS_BUILD_SRC_DEBUG)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPRINT_WHICH_SUBRES=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPRINT_WHICH_SUBRES=1")
+endif()
+
 option(BPAS_BUILD_RC_DEBUG_RRC "Build with RegularChain debugging of remove redundant components" OFF)
 if(BPAS_BUILD_RC_DEBUG_RRC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DREGULARCHAIN_DEBUGII=1")
@@ -397,11 +424,31 @@ if(BPAS_BUILD_RC_GENERATORS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRC_WITH_GENERATORS=1")
 endif()
 
+option(BPAS_BUILD_RC_RRC_CILK "Build with RegularChain Removal of Redundant Components done by cilk; internally forces BPAS_BUILD_RC_RRC_PARALLEL ON" OFF)
+if(BPAS_BUILD_RC_RRC_CILK)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRC_RRC_BY_CILK=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRC_RRC_BY_CILK=1")
+endif()
+
+option(BPAS_BUILD_RC_RRC_PARALLEL "Build with RegularChain Removal of Redundant Components parallelized" ON)
+if(BPAS_BUILD_RC_RRC_PARALLEL)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DRC_RRC_PARALLEL=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRC_RRC_PARALLEL=1")
+endif()
+
 option(BPAS_BUILD_FACTORING_DEBUG "Build with factoring debugging" OFF)
-if (BPAS_BUILD_FACTORING_DEBUG) 
+if (BPAS_BUILD_FACTORING_DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSMZP_FACTORING_DEBUG=1")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSMZP_FACTORING_DEBUG=1")
 endif()
+
+option(BPAS_POWERSERIES_PARA_TIMING "Build with debug timing output for parallel powerseries" OFF)
+mark_as_advanced(BPAS_POWERSERIES_PARA_TIMING)
+if (BPAS_POWERSERIES_PARA_TIMING) 
+	set(CMAKE_C_FLAG "${CMAKE_C_FLAGS} -DPS_PARALLEL_TIME=1")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPS_PARALLEL_TIME=1")
+endif()
+
 
 #-----------------------------------------
 # Finally set cache compile flags
@@ -427,15 +474,15 @@ target_link_libraries( ${BPAS_LIB_TARGET} ${EXTERNAL_LIBS} )
 # ----------------------------------------
 
 # --------------------------------------
-# Global 
+# Global
 include( ${CMAKE_SOURCE_DIR}/cmake/BPAS_Src.cmake/ )
 
 # --------------------------------------
-# BLADInterface 
+# BLADInterface
 include( ${CMAKE_SOURCE_DIR}/cmake/BPAS_BLADInterface.cmake/ )
 
 # --------------------------------------
-# FFT 
+# FFT
 include( ${CMAKE_SOURCE_DIR}/cmake/BPAS_FFT.cmake/ )
 
 # --------------------------------------
@@ -532,7 +579,7 @@ if(BPAS_WITH_POLYHEDRA)
 endif()
 
 
-#file(GLOB_RECURSE all_c_files ${CMAKE_SOURCE_DIR}/src/*/*.c) 
+#file(GLOB_RECURSE all_c_files ${CMAKE_SOURCE_DIR}/src/*/*.c)
 #set_source_files_properties(${all_c_files} PROPERTIES LANGUAGE CXX)
 
 

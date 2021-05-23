@@ -2,6 +2,8 @@
 #ifndef _EXP_PACKING_DEF_VALS_
 #define _EXP_PACKING_DEF_VALS_
 
+#define MAX_NVAR_PACKED 32
+
 
 //defines for nvar=1
 #define EXP_1_V1 0xffffffffffffffff

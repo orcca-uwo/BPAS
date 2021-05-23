@@ -251,7 +251,7 @@ def writeSmallFFTR(code,power,num):
 
 #----------------------OTHERWISE CLASSICAL unrolling---------------------
 	for i in range(2,num+1):
-		for k in range(0,(2**num)/(2**i)):
+		for k in range(0,int((2**num)/(2**i))):
 			for l in range(2**(i-1),2**(i)):
 				t = l-2**(i-1)
 				code.write("\tfor(int j=%i*next+k;j<%i*next+k;j+=8){\n"%(k*2**i+t,k*2**i+t+1))
@@ -306,10 +306,10 @@ def generate_small_fft(code,num,log):
 		code.write("\t*u%i = u;\n\t*u%i = t;\n"%(2*k,2*k+1))
 	for i in range(2,num+1):
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**num)/(2**i)):
+			for k in range(0,int((2**num)/(2**i))):
 				code.write("\t*u%i = MontMulModSpe_OPT3_AS_GENE_INLINE(*u%i,MY_ROOT%i);\n"%(((2**i)*k+l),(k*2**i+l),(l-2**(i-1))*root))
 		for l in range(0,2**(i-1)):
-			for k in range(0,(2**num)/(2**i)):
+			for k in range(0,int((2**num)/(2**i))):
 				code.write("\tu = AddModSpe(*u%i,*u%i);\n"%(k*2**i+l,k*2**i+l+2**(i-1)))
 				code.write("\tt = SubModSpe(*u%i,*u%i);\n"%(k*2**i+l,k*2**i+l+2**(i-1)))
 				code.write("\t*u%i = u;\n\t*u%i = t;\n"%(k*2**i+l,k*2**i+l+2**(i-1)))
@@ -352,7 +352,7 @@ def generate_dft_iterative(size,pow,code,name=""):
 		tab = tab+",%i"%Array[k]
 	tab = tab+"}"
 	code.write(("\tunsigned long my_array[%i]="%(2*pow))+tab+";\n")
-	
+
 	while m>=2*pow:
 		jump = size/m
 		roots = roots * 2*pow
@@ -795,7 +795,7 @@ def generate_dft_iterative(size,pow,code,name=""):
 			m = 2*pow
 		code.write("\tsmall_butterflies%i(A,next,0);\n"%(logof(m)%l))
 	code.write("}\n")
-			
+
 def extended_gcd(a,b):
 	r = a
 	u = 1
@@ -843,7 +843,7 @@ def writeSpecialMontMul(code,c,Npow,Rpow,num):
 #---------------3RD MULTIPLICATION-------------------------------------
 	code.write("\t\"add %%rax,%%rsi\\n\\t\"\n")
 	code.write("\t\"adc $0,%%rdi\\n\\t\"\n")
-	code.write("\t\"shr $%i"%(64-Rpow) +",%%rax\\n\\t\"\n") 
+	code.write("\t\"shr $%i"%(64-Rpow) +",%%rax\\n\\t\"\n")
 	code.write("\t\"imulq $%i"%c +",%%rax\\n\\t\"\n")
 	code.write("\t\"rolq $%i"%lpow+",%%rax\\n\\t\"\n")
 	code.write("\t\"movq %%rax,%%rdx\\n\\t\"\n")
@@ -863,7 +863,7 @@ def writeSpecialMontMul(code,c,Npow,Rpow,num):
 	code.write("\treturn a;\n")
 	code.write("}\n")
 
-	
+
 
 def generate_everything(p,b,gen,power,H,num):
 	file = "fft_furer%i"%num
@@ -880,11 +880,11 @@ def generate_everything(p,b,gen,power,H,num):
 	x = ((u-y)/(2**Rpow))*p
 	if y>0:
 		y = y-2**Rpow
-		x = x+p	
+		x = x+p
 	R = (2**Rpow) %p
 	R_2 = (2**(2*Rpow))%p
 	base_rpow = 64-Rpow
-	root = pow(gen,((p-1)/(2*power)),p)
+	root = pow(int(gen),int((p-1)/(2*power)),p)
 	header = open("../../../include/FFT/src/"+file+".h","w")
 	header.write("#include \"modpn.h\"\n")
 	header.write("#ifndef FURER_FFTSPE%i\n"%num)
@@ -904,13 +904,15 @@ def generate_everything(p,b,gen,power,H,num):
 	code.write("#include \"../../../include/FFT/src/"+file+".h\"\n")
 	code.write("#include \"../../../include/FFT/src/arraybitreversal.h\"\n")
 	code.write("#include \"../../../include/FFT/src/modpn.h\"\n")
+	code.write("#include <iostream>\n")
+	code.write("#include <string.h>\n")
 	code.write("#define FFT_THRESHOLD %i\n"%(H))
 	code.write("#define FFT_THRESHOLD_LOG %i\n"%(len(bin(H))-3))
 	code.write("#define COMPLETE %iu\n"%(2**64-p))
 	mask = H
 	bound = 2**64
 	while mask < bound:
-		mask = (mask*power*2+H) 
+		mask = (mask*power*2+H)
 	mask = mask% 2**64
 	masks=[(mask<<i)%2**64 for i in range(0,logof(power)+1)]
 
@@ -990,7 +992,7 @@ def generate_everything(p,b,gen,power,H,num):
 				code.write("\t\t\t\tDFT_iter%i(A,W);\n"%tmpH)
 				code.write("\t\t\t\tbreak;\n")
 				tmpH=tmpH<<1
-		
+
 		elif "MONTGOMERYMUL" in line:
 			if c*2**Rpow >=2**64:
 				writeRegularMontMul(code,num)
@@ -1047,7 +1049,7 @@ for line in config:
 	k=k+1
 k=0
 for x in g:
-	b.append(pow(x,(p[k]-1)/(2*power),p[k]))
+	b.append(pow(int(x),int((p[k]-1)/(2*power)),p[k]))
 	k=k+1
 for i in range(0,len(b)):
 	h = logof(H)

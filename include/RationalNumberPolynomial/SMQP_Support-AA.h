@@ -337,6 +337,12 @@ static inline int isZero_AA(const AltArr_t* aa) {
     }
 
     int ret = mpq_sgn(aa->elems[0].coef) == 0;
+    // if (ret) {
+    //  //If the leading coefficient is zero, it might indicate a failure
+    //  //to be in canonical form. 0*x^0 MIGHT be considered 0, but
+    //  // 0*x^d, for any d, definitely indicates a problem somewhere.
+    // 	free((int*)-1);
+    // }
     if (aa->unpacked) {
     	ret = ret && isZeroExponentVector_unpk(aa->elems[0].degs, aa->nvar);
     } else {
@@ -404,6 +410,9 @@ static inline degree_t partialDegreeTerm_AA(const AltArr_t* aa, int idx, int k) 
  * Set the partial degree of one variable in one term in the polynomial aa.
  * The term at index idx should already exist for the partial degree to be set.
  *
+ * Note that this might cause the resulting polynomial to *not* be in
+ * canonical form. Sorting may be required.
+ *
  * aa: the poly which partial degree is to be set.
  * idx: the index of the term whose partial degree is to be set.
  * k: the index of the variable whose partial degree is to be set.
@@ -456,6 +465,13 @@ static inline degree_t totalDegreeTerm_AA(const AltArr_t* aa, int idx) {
  * Print a packed exponent vector, degs, using the symbols, syms, to the file pointer fp.
  */
 void printDegs_AA(FILE* fp, degrees_t degs, const char** syms, int nvar, const degrees_t* masks, const int* sizes);
+
+/**
+ * Print a packed exponent vector, degs, using the symbols, syms, to the file pointer fp.
+ * Only prints variables with positive degree.
+ */
+void printPositiveDegs_AA(FILE* fp, degrees_t degs, const char** syms, int nvar, const degrees_t* masks, const int* sizes);
+
 
 /**
  * Print the poly, aa, to the file pointer fp.
@@ -825,6 +841,10 @@ void condensePolyomial_AA(AltArr_t* aa);
  */
 void negatePolynomial_AA(AltArr_t* a);
 
+/**
+ * Perform an exact division, c/a, where the quotient
+ * is returned in res_a.
+ */
 void exactDividePolynomials_AA (AltArr_t* c, AltArr_t* b, AltArr_t** res_a, register int nvar);
 
 /**
@@ -836,6 +856,12 @@ void multiplyByRational_AA_inp(AltArr_t* aa, const mpq_t z);
  * Divide through a polynomial by a single rational number.
  */
 void divideByRational_AA_inp(AltArr_t* aa, const mpq_t z);
+
+/**
+ * Multiply a polynomial by a single packed monomial, degs.
+ * The result must also fit in a packed format.
+ */
+void multiplyByMonomial_AA_inp(AltArr_t* aa, degrees_t degs);
 
 /**
  * Evaluate a polynomial represented as an alternating array.
@@ -922,6 +948,65 @@ AltArr_t* maxPolynomials_AA (AltArr_t* a, AltArr_t* b);
  * Note: Is is done INPLACE w.r.t. the first input, a.
  */
 AltArr_t* maxPolynomials_AA_inp (AltArr_t* a, AltArr_t* b);
+
+/**
+ * Get maximum absolute coefficient in a. Inifinity norm.
+ */
+static inline void infinityNorm_AA(const AltArr_t* a, mpq_t c) {
+	if (a == NULL || a->size == 0) {
+		mpz_set_ui(mpq_numref(c), 0ul);
+		mpz_set_ui(mpq_denref(c), 1ul);
+		return;
+	}
+	int size = a->size;
+	AAElem_t* elems = a->elems;
+	mpq_abs(c, elems[0].coef);
+	mpq_t tmp;
+	mpq_init(tmp);
+	for (int i = 1; i < size; ++i) {
+		mpq_abs(tmp, elems[i].coef);
+		if (mpq_cmp(c, tmp) < 0) {
+			mpq_swap(c, tmp);
+		}
+	}
+	mpq_clear(tmp);
+}
+
+static inline size_t maxCoefBits_AA(const AltArr_t* a) {
+	if (a == NULL || a->size == 0) {
+		return 1ul;
+	}
+	int size = a->size;
+	AAElem_t* elems = a->elems;
+	size_t max = mpz_sizeinbase(mpq_numref(elems[0].coef),2);
+	max += mpz_sizeinbase(mpq_denref(elems[0].coef),2);
+	size_t tmp;
+	for (int i = 1; i < size; ++i) {
+		tmp = mpz_sizeinbase(mpq_numref(elems[i].coef), 2);
+		tmp += mpz_sizeinbase(mpq_denref(elems[i].coef), 2);
+		if (tmp > max) {
+			max = tmp;
+		}
+	}
+	return max;
+}
+
+static inline size_t totalCoefBits_AA(const AltArr_t* a) {
+	if (a == NULL || a->size == 0) {
+		return 1ul;
+	}
+	int size = a->size;
+	AAElem_t* elems = a->elems;
+	size_t max = mpz_sizeinbase(mpq_numref(elems[0].coef),2);
+	max += mpz_sizeinbase(mpq_denref(elems[0].coef),2);
+	size_t tmp;
+	for (int i = 1; i < size; ++i) {
+		max += mpz_sizeinbase(mpq_numref(elems[i].coef), 2);
+		max += mpz_sizeinbase(mpq_denref(elems[i].coef), 2);
+	}
+	return max;
+}
+
 
 /*****************
  * SMQP Addition

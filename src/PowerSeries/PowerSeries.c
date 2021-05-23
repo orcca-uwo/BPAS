@@ -2,6 +2,10 @@
 #include "PowerSeries/PowerSeries.h"
 #include "PowerSeries/UnivariatePolynomialOverPowerSeries.h"
 
+#if PARALLEL_POWER_SERIES
+#include "Utils/Parallel/ExecutorThreadPool.hpp"
+#endif
+
 /**
  * Create a power series struct with some default allocation size.
  * @param alloc: the size of the array of polys to allocate.
@@ -33,6 +37,31 @@ PowerSeries_t* allocatePowerSeries_PS(int alloc)  {
     ps->paramType3 = PLAIN_DATA;
 
     return ps;
+}
+
+void resizePowerSeries_PS(PowerSeries_t* f, int newAlloc) {
+    if (f == NULL) {
+        return;
+    }
+
+    if (newAlloc < f->deg) {
+        int deg = f->deg;
+        for (int i = newAlloc + 1; i <= deg; ++i) {
+            freePolynomial_AA(f->polys[i]);
+        }
+        f->polys = realloc(f->polys, newAlloc*sizeof(Poly_ptr));
+    }
+
+    if (newAlloc > f->alloc) {
+        f->polys = realloc(f->polys, newAlloc*sizeof(Poly_ptr));
+    }
+
+    if (f->polys == NULL) {
+        fprintf(stderr, "BPAS Error: Could not allocate memory in resizePowerSeries_PS.\n");
+        exit(1);
+    }
+
+    f->alloc = newAlloc;
 }
 
 
@@ -102,7 +131,7 @@ PowerSeries_t* zeroPowerSeries_PS() {
     zero->deg = -1;
     zero->polys[0] = NULL;
     zero->genOrder = -1;
-
+    zero->nvar = -1;
     return zero;
 }
 
@@ -115,6 +144,7 @@ PowerSeries_t* onePowerSeries_PS(int nvar) {
     PowerSeries_t* One = allocatePowerSeries_PS(1);
     One->deg = 0;
     One->polys[0] = makeConstIntPolynomial_AA(1,nvar,1, 1);
+    One->nvar = nvar;
     One->genOrder = -1;
 
     return One;
@@ -131,6 +161,7 @@ PowerSeries_t* constPowerSeries_PS(const mpq_t coef, int nvar) {
     PowerSeries_t* constant = allocatePowerSeries_PS(1);
     constant->deg = 0;
     constant->polys[0] = makeConstPolynomial_AA(1,nvar,coef);
+    constant->nvar = nvar;
     constant->genOrder = -1;
 
     return constant;
@@ -143,30 +174,26 @@ PowerSeries_t* constPowerSeries_PS(const mpq_t coef, int nvar) {
  * compute the homogeneous part of a geometric series
  */
 Poly_ptr homogPart_geo_series_PS(int d, long long nvar) {
-   int partialDegs[nvar];
-   for (int i = 0; i <= nvar-1; ++i) {
+    int partialDegs[nvar];
+    for (int i = 0; i < nvar; ++i) {
         partialDegs[i] = 0;
     }
-   Poly_ptr monomial = makeConstIntPolynomial_AA(1,nvar, 1, 1);
+    Poly_ptr monomial = makeConstIntPolynomial_AA(1,nvar, 1, 1);
 
-   Poly_ptr sum = NULL;
-   for (int i = 0; i <= nvar-1; ++i) {
-       partialDegs[i] = 1;
-       setDegrees_AA_inp(monomial, 0, partialDegs, nvar);
-       partialDegs[i] = 0;
-       sum = addPolynomials_AA_inp(sum, monomial, nvar);
-   }
+    Poly_ptr sum = NULL;
+    for (int i = 0; i < nvar; ++i) {
+        partialDegs[i] = 1;
+        setDegrees_AA_inp(monomial, 0, partialDegs, nvar);
+        partialDegs[i] = 0;
+        sum = addPolynomials_AA_inp(sum, monomial, nvar);
+    }
 
+    Poly_ptr ret = exponentiatePoly_AA(sum, d, nvar);
 
-   Poly_ptr ret = makeConstIntPolynomial_AA(1, nvar, 1, 1);
-   for (int j = 1; j <= d; ++j) {
-       ret = multiplyPolynomials_AA_inp(ret,sum ,nvar);
-   }
+    freePolynomial_AA(monomial);
+    freePolynomial_AA(sum);
 
-   freePolynomial_AA(monomial);
-   freePolynomial_AA(sum);
-
-   return ret;
+    return ret;
 }
 
 
@@ -187,12 +214,73 @@ Poly_ptr homogPartVoid_geo_series_PS(int d, void* nvar) {
 PowerSeries_t* geometricSeries_PS(long long nvar) {
     PowerSeries_t* geoSeries = allocatePowerSeries_PS(1);
     geoSeries->deg = 0;
+    geoSeries->nvar = nvar;
     geoSeries->polys[0] = makeConstIntPolynomial_AA(1, nvar, 1, 1);
     geoSeries->genOrder = 1;
     geoSeries->genParam1 = (void*) nvar;
     geoSeries->paramType1 = PLAIN_DATA;
     geoSeries->gen.unaryGen = &(homogPartVoid_geo_series_PS);
     return geoSeries;
+}
+
+
+/**
+ * d : the degree
+ * nvar : the number of variables
+ * compute the homogeneous part of the sum of all monomials
+ */
+Poly_ptr homogPart_sumAll_series_PS(int d, long long nvar) {
+    int partialDegs[nvar];
+    for (int i = 0; i < nvar; ++i) {
+        partialDegs[i] = 0;
+    }
+    Poly_ptr monomial = makeConstIntPolynomial_AA(1,nvar, 1, 1);
+
+    Poly_ptr sum = NULL;
+    for (int i = 0; i < nvar; ++i) {
+        partialDegs[i] = 1;
+        setDegrees_AA_inp(monomial, 0, partialDegs, nvar);
+        partialDegs[i] = 0;
+        sum = addPolynomials_AA_inp(sum, monomial, nvar);
+    }
+
+    Poly_ptr ret = exponentiatePoly_AA(sum, d, nvar);
+    for (int i = 0; i < ret->size; ++i) {
+        mpz_set_ui(mpq_numref(ret->elems[i].coef), 1ul);
+        mpz_set_ui(mpq_denref(ret->elems[i].coef), 1ul);
+    }
+
+    freePolynomial_AA(monomial);
+    freePolynomial_AA(sum);
+
+    return ret;
+}
+
+
+/**
+ * d : the degree
+ * nvar : the number of variables
+ */
+Poly_ptr homogPartVoid_sumAll_series_PS(int d, void* nvar) {
+    return homogPart_geo_series_PS(d, (long long) nvar);
+}
+
+
+/**
+ * Create the geometric series of nvar number of variables as a power series.
+ * @param nvar : the number of variables
+ * @return the geometric series a power series.
+ */
+PowerSeries_t* sumOfAllMonomials_PS(long long nvar) {
+    PowerSeries_t* sumSeries = allocatePowerSeries_PS(1);
+    sumSeries->deg = 0;
+    sumSeries->nvar = nvar;
+    sumSeries->polys[0] = makeConstIntPolynomial_AA(1, nvar, 1, 1);
+    sumSeries->genOrder = 1;
+    sumSeries->genParam1 = (void*) nvar;
+    sumSeries->paramType1 = PLAIN_DATA;
+    sumSeries->gen.unaryGen = &(homogPartVoid_sumAll_series_PS);
+    return sumSeries;
 }
 
 
@@ -270,30 +358,23 @@ Poly_ptr homogPart_PS(int d, PowerSeries_t* f) {
             }
         }
         for (int i = f->deg+1; i <= d; ++i ) {
-
             switch (f->genOrder) {
                 case -1 : {
-
                     return NULL;
                 }
                 case 0: {
-
                     f->polys[i] = (*f->gen.nullaryGen)(i);
                     break;
                 }
                 case 1: {
-
                     f->polys[i] = (*f->gen.unaryGen)(i, f->genParam1);
                     break;
                 }
                 case 2: {
-
                     f->polys[i] = (*f->gen.binaryGen)(i, f->genParam1, f->genParam2);
-
                     break;
                 }
                 case 3: {
-
                     f->polys[i] = (*f->gen.tertiaryGen)(i, f->genParam1, f->genParam2, f->genParam3);
                     break;
                 }
@@ -377,6 +458,7 @@ Poly_ptr truncatePolynomial_PS(const Poly_ptr p, int d) {
         if (totalDegree_AA(term) <= d) {
             polytrunc = addPolynomials_AA_inp(polytrunc, term, p->nvar);
         }
+        freePolynomial_AA(term);
     }
     return polytrunc;
 }
@@ -388,8 +470,12 @@ Poly_ptr truncatePolynomial_PS(const Poly_ptr p, int d) {
  * @return the power series encoding the input polynomial.
  */
 PowerSeries_t* convertPolyToPowerSeries_PS(const Poly_ptr p) {
+    if (isZero_AA(p)) {
+        return zeroPowerSeries_PS();
+    }
     degree_t totalDeg = totalDegree_AA(p);
     PowerSeries_t* ps = allocatePowerSeries_PS(0);
+    ps->nvar = p == NULL ? 0 : p->nvar;
     ps->deg = totalDeg;
     ps->polys = convertPolyToArrayOfHomogeneous_PS(p);
     ps->alloc = totalDeg +1;
@@ -433,6 +519,8 @@ Poly_ptr homogPart_sum_PS(int d,  PowerSeries_t* f,  PowerSeries_t* g) {
     Poly_ptr righthomog = homogPart_PS(d, g);
     // fprintf(stderr, "got right homog\n");
     Poly_ptr result = addPolynomials_AA(lefthomog, righthomog, lefthomog == NULL ? 0 : lefthomog->nvar);
+
+
 #if defined(BPAS_POWERSERIES_DEBUG) && BPAS_POWERSERIES_DEBUG
     fprintf(stderr, "Leaving  homogPart_sum_PS: %d with %p, %p\n",d, f, g);
 #endif
@@ -461,23 +549,36 @@ Poly_ptr homogPartVoid_sum_PS(int deg, void* param1, void* param2) {
  * @return a pointer to the resulting power series quotient.
  */
 PowerSeries_t* addPowerSeries_PS(PowerSeries_t* f,  PowerSeries_t* g) {
+    if (!isZero_PS(f) && !isZero_PS(g) && f->nvar != g->nvar) {
+        fprintf(stderr, "BPAS Error: f and g must have same number of variables in addPowerSeries_PS\n");
+        exit(1);
+    }
+
 
     int i;
     int mindeg;
-
+    int nvar;
     if (g->deg == -1 && f->deg == -1) {
       //  mindeg = 0;
         return zeroPowerSeries_PS();
     } else if (g->deg == -1) {
         mindeg = f->deg;
+        nvar = f->nvar;
       //  reserve_PS(f); return f;Example 16 in weierstrass crashes
     } else if (f->deg == -1){
         mindeg = g->deg;
+        nvar = g->nvar;
     //  reserve_PS(g); return g; Example 16 in weierstrass crashes
     } else {
-        mindeg = MIN(f->deg, g->deg);
+        //Half-lazily:
+        // mindeg = MIN(f->deg, g->deg);
+        mindeg = 0;
+        nvar = f->nvar;
     }
+
+
     PowerSeries_t* sum = allocatePowerSeries_PS(mindeg+1);
+    sum->nvar = nvar;
     sum->genParam1 = f;
     sum->genParam2 = g;
     sum->paramType1 = POWER_SERIES;
@@ -515,6 +616,8 @@ Poly_ptr homogPart_sub_PS(int d,  PowerSeries_t* f,  PowerSeries_t* g) {
     } else {
          result = subPolynomials_AA(lefthomog, righthomog, lefthomog == NULL ? 0 : lefthomog->nvar);
     }
+
+
     return result;
 }
 
@@ -540,9 +643,15 @@ Poly_ptr homogPartVoid_sub_PS(int deg, void* param1, void* param2) {
  * @return a pointer to the resulting power series quotient.
  */
 PowerSeries_t* subPowerSeries_PS(PowerSeries_t* f,  PowerSeries_t* g) {
+    if (!isZero_PS(f) && !isZero_PS(g) && f->nvar != g->nvar) {
+        fprintf(stderr, "BPAS Error: f and g must have same number of variables in subPowerSeries_PS\n");
+        free((int*)-1);
+        exit(1);
+    }
 
     int i;
     int mindeg;
+    int nvar;
     if (g->deg == -1 && f->deg == -1) {
         return zeroPowerSeries_PS();
     //mindeg = 0;
@@ -550,13 +659,18 @@ PowerSeries_t* subPowerSeries_PS(PowerSeries_t* f,  PowerSeries_t* g) {
         //reserve_PS(f);
         //return f;
         mindeg = f->deg;//negatePowerSeries_PS
+        nvar = f->nvar;
     } else if (f->deg == -1){
         //reserve_PS(g);return negatePowerSeries_PS(g);
         mindeg = g->deg;
+        nvar = g->nvar;
     } else {
-        mindeg = MIN(f->deg, g->deg);
+        // mindeg = MIN(f->deg, g->deg);
+        mindeg = 0;
+        nvar = f->nvar;
     }
     PowerSeries_t* sub = allocatePowerSeries_PS(mindeg+1);
+    sub->nvar = nvar;
     sub->genParam1 = f;
     sub->genParam2 = g;
     sub->paramType1 = POWER_SERIES;
@@ -597,7 +711,7 @@ Poly_ptr homogPart_negate_PS(int d, PowerSeries_t* f)  {
  * @param d: the degree of the homogeneous part to generate.
  * @param param1: the power series to negate.
  */
-Poly_ptr homogPartVoid_negate_ps(int d, void* param1) {
+Poly_ptr homogPartVoid_negate_PS(int d, void* param1) {
     return homogPart_negate_PS(d, (PowerSeries_t*) param1);
 }
 
@@ -609,15 +723,21 @@ Poly_ptr homogPartVoid_negate_ps(int d, void* param1) {
  */
 PowerSeries_t* negatePowerSeries_PS(PowerSeries_t* f) {
 
+    if (isZero_PS(f)) {
+        reserve_PS(f);
+        return f;
+    }
+
     PowerSeries_t* ps = allocatePowerSeries_PS(f->deg+1);
-    ps->deg = f->deg;
+    ps->deg = 0;
+    ps->nvar = f->nvar;
     ps->genOrder = 1;
     ps->genParam1 = f;
     reserve_PS(f);
     ps->paramType1 = POWER_SERIES;
 
-    ps->gen.unaryGen = &(homogPartVoid_negate_ps);
-    for (int i = 0; i <= f->deg; i++){
+    ps->gen.unaryGen = &(homogPartVoid_negate_PS);
+    for (int i = 0; i <= ps->deg; i++){
 
         if (f->polys[i] == NULL) {
             ps->polys[i] = NULL;
@@ -668,6 +788,8 @@ Poly_ptr homogPart_prod_PS(int d,  PowerSeries_t* f,  PowerSeries_t* g) {
         // printPoly_AA(stderr, tmp2, syms, tmp2->nvar);
         // fprintf(stderr, "\n");
         prod = multiplyPolynomials_AA(tmp1, tmp2, tmp1->nvar);
+
+
         sum = addPolynomials_AA_inp(sum, prod, prod->nvar); //prod is guaranteed to not be 0 by above checks.
         freePolynomial_AA(prod);
     }
@@ -699,6 +821,59 @@ Poly_ptr homogPartVoid_prod_PS(int d, void* param1, void* param2) {
     return homogPart_prod_PS(d, (PowerSeries_t*) param1, (PowerSeries_t*) param2);
 }
 
+/**
+ * Given two power series f and g, it returns the product, constructed lazily.
+ * @param f: the multiplier power series
+ * @param g: the multiplicand power series
+ * @return a pointer to the resulting power series product.
+ */
+PowerSeries_t* multiplyPowerSeries_PS( PowerSeries_t* f,  PowerSeries_t* g) {
+    if (!isZero_PS(f) && !isZero_PS(g) && f->nvar != g->nvar) {
+        fprintf(stderr, "BPAS Error: f and g must have same number of variables in multiplyPowerSeries_PS\n");
+        free((int*)-1);
+        exit(1);
+    }
+
+    int i;
+    int mindeg;
+
+
+    if (g->deg == -1 && f->deg == -1) {
+        //mindeg = 0;
+        return zeroPowerSeries_PS();
+    } else if (g->deg == -1) {
+       // mindeg = 0;//f->deg;
+        return zeroPowerSeries_PS();
+    } else if (f->deg == -1){
+       // mindeg = 0;//g->deg;
+        return zeroPowerSeries_PS();
+    } else {
+        // mindeg = MIN(f->deg, g->deg);
+        mindeg = 0;
+    }
+
+    PowerSeries_t* prod = allocatePowerSeries_PS(mindeg+1);
+    prod->nvar = f->nvar;
+    prod->genParam1 = f;
+    prod->genParam2 = g;
+    prod->paramType1 = POWER_SERIES;
+    prod->paramType2 = POWER_SERIES;
+
+    reserve_PS(f);
+    reserve_PS(g);
+    prod->genOrder = 2;
+    prod->gen.binaryGen = &(homogPartVoid_prod_PS);
+    prod->deg = mindeg;
+    for (i = 0; i <= (mindeg); i++){
+        prod->polys[i] = homogPart_prod_PS(i, f, g);
+    }
+
+    return prod;
+}
+
+
+
+#if PARALLEL_POWER_SERIES
 /**
  * Given two power series f and g, it returns the product, constructed lazily.
  * @param f: the multiplier power series
@@ -741,6 +916,16 @@ PowerSeries_t* multiplyPowerSeries_PS( PowerSeries_t* f,  PowerSeries_t* g) {
 
     return prod;
 }
+#endif
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -768,15 +953,10 @@ Poly_ptr homogPart_quo_PS(int deg,  PowerSeries_t* f,  PowerSeries_t* h, PowerSe
 
     if (deg <= 1) {
 
-        Poly_ptr f0 = homogPart_PS(0,f);
-        Poly_ptr q0 = NULL;
-        Poly_ptr r0 = NULL;
-        dividePolynomials_AA(f0, h0, &q0, &r0, f0 == NULL ? 0 : f0->nvar);
-        freePolynomial_AA(r0);
+        Poly_ptr q0 = deepCopyPolynomial_AA(homogPart_PS(0,f));
+        divideByRational_AA_inp(q0, h0->elems->coef);
         if (deg == 0){
-            Poly_ptr ret = deepCopyPolynomial_AA(q0);
-            freePolynomial_AA(q0);
-            return ret;
+            return q0;
         }
 
         Poly_ptr h1 = homogPart_PS(1,h);
@@ -785,14 +965,8 @@ Poly_ptr homogPart_quo_PS(int deg,  PowerSeries_t* f,  PowerSeries_t* h, PowerSe
         freePolynomial_AA(q0);
         multipoly = subPolynomials_AA_inp( multipoly, f1,  f1 == NULL ? 0 : f1->nvar);
         negatePolynomial_AA(multipoly);
-        Poly_ptr q1 = NULL;
-        Poly_ptr r1 = NULL;
-        dividePolynomials_AA(multipoly, h0, &q1, &r1, multipoly == NULL ? 0 : multipoly->nvar);
-        freePolynomial_AA(multipoly);
-        freePolynomial_AA(r1);
-        Poly_ptr homogpoly = homogeneousPart_AA(q1, 1);
-        freePolynomial_AA(q1);
-        return homogpoly;
+        divideByRational_AA_inp(multipoly, h0->elems->coef);
+        return multipoly;
     }
 
     Poly_ptr s = deepCopyPolynomial_AA(homogPart_PS(deg,f));
@@ -801,30 +975,15 @@ Poly_ptr homogPart_quo_PS(int deg,  PowerSeries_t* f,  PowerSeries_t* h, PowerSe
         Poly_ptr homog = homogPart_PS(i,h);
         //Poly_ptr homogquo = homogPart_quo_PS(deg-i, f, h);
 
-    Poly_ptr homogquo = homogPart_PS(deg-i, quo);
+        Poly_ptr homogquo = homogPart_PS(deg-i, quo);
         Poly_ptr p = multiplyPolynomials_AA(homog, homogquo, homog == NULL ? 0 : homog->nvar);
         //freePolynomial_AA(homogquo);
         s = subPolynomials_AA_inp(s, p, s == NULL ? 0 : s->nvar);
         freePolynomial_AA(p);
     }
 
-    Poly_ptr qlast = NULL;
-    Poly_ptr rlast = NULL;
-    if ((s == NULL) || (isConstant_AA(s)) || (isZero_AA(s))) {
-        dividePolynomials_AA(s, h0, &qlast, &rlast, h0->nvar);
-    }
-    else if ((s != NULL) && (s->nvar == 0)) {
-        dividePolynomials_AA(s, h0, &qlast, &rlast, h0->nvar);
-    }
-    else {
-        dividePolynomials_AA(s, h0, &qlast, &rlast, s->nvar);
-    }
-
-    freePolynomial_AA(s);
-    freePolynomial_AA(rlast);
-    gd = homogeneousPart_AA(qlast, deg);
-    freePolynomial_AA(qlast);
-    return gd;
+    divideByRational_AA_inp(s, h0->elems->coef);
+    return s;
 }
 
 
@@ -844,14 +1003,30 @@ Poly_ptr homogPartVoid_quo_PS(int d, void* param1, void* param2, void* param3) {
 
 
 /**
- * Given two power series f and g, it returns the quotient f/g, constructed lazily.
+ * Given two power series f and h, it returns the quotient f/h, constructed lazily.
  * @param f: the dividend power series
- * @param g: the divisor power series
+ * @param h: the divisor power series
  * @return a pointer to the resulting power series quotient.
  */
 PowerSeries_t* dividePowerSeries_PS(PowerSeries_t* f,  PowerSeries_t* h)  {
+    if (!isUnit_PS(h)) {
+        fprintf(stderr, "BPAS Error: divisor is not inverible in dividePowerSeries_PS\n" );
+        exit(1);
+    }
+
+    if (isZero_PS(f)) {
+        reserve_PS(f);
+        return f;
+    }
+
+    if (!isZero_PS(f) && f->nvar != h->nvar) {
+        fprintf(stderr, "BPAS Error: f and h must have same number of variables in dividePowerSeries_PS\n");
+        exit(1);
+    }
+
 
     PowerSeries_t* quo = allocatePowerSeries_PS(1);
+    quo->nvar = f->nvar;
     quo->genParam1 = f;
     quo->genParam2 = h;
     quo->genParam3 = quo;

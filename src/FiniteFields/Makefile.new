@@ -12,14 +12,14 @@ SRC_LIST:=\
 
 #######################################
 INCLUDES = ../../include
-CC  = gcc #-pg -g3
+CC  = gcc -w #-pg -g3
 LIBS= -lgmp -lm -lcilkrts 
 #######################################
 ## -flto -Wl,-flto
 ## -flto needs a plugin in gcc7.4
 COMPILER_OPTIONS=-fpic -fcilkplus \
 								 -DLINUXINTEL64\
-								 -march=x86-64 -Ofast\
+								 -march=native -Ofast\
 								 -I$(INCLUDES)\
 								-DVERIFICATION_ENABLED=0\
 								-DVERBOSE=0\
@@ -42,10 +42,12 @@ compile: $(OBJS)
 #######################################
 %.o: %.c
 	@echo gcc [$<] ...
-	$(COMPILE_ARGS) $< $(LIBS) -c #>/dev/null 2>&1
+	@$(COMPILE_ARGS) $< $(LIBS) -c 
+	@#>/dev/null 2>&1
 
 #######################################
-serial-gmp: COMPILE_ARGS+= -DGMP_SERIAL_ENABLED=1
+serial-gmp: COMPILE_ARGS+= -DGMP_SERIAL_ENABLED=1 
+serial-gmp: COMPILE_ARGS += -DSERIAL=1
 serial-gmp: compile
 
 #######################################
@@ -55,7 +57,7 @@ serial: $(SERIAL_OBJS)
 #######################################
 %.serial: %.c
 	@echo gcc serial [$<] ...
-	@$(COMPILE_ARGS) -DENABLE_CILK=0 $< -c -o $@ #>/dev/null 2>&1
+	@$(COMPILE_ARGS) -DSERIAL=1 -DENABLE_CILK=0 $< -c -o $@ #>/dev/null 2>&1
 	@cp $@ $(@:%.serial=%.o)
 
 

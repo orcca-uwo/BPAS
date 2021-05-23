@@ -13,7 +13,7 @@
 #include "gfpf_types.h"
 #include "gfpf_gmp_tools_decl.h"
 #include "gfpf_gmp_fft_decl.h"
-#include "small_prime_field_fft_decl.h"
+#include "small_prime_field_fft.h"
 #include "cpu_timer.h"
 
 /**************************************/
@@ -74,7 +74,7 @@ static int global_profiling_ongoing = 0;
 inc_profiling_counter (int *counter)
   {
     if (global_profiling_ongoing == 0)
-    *counter++;
+    (*counter)++;
   }
 
  static int n_dft2_called = 0;

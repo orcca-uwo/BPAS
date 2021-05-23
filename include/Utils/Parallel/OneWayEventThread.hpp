@@ -4,7 +4,7 @@
 
 #if defined(SERIAL) && SERIAL
 #define ONEWAY_EVENT_THREAD_PARALLEL 0
-#else 
+#else
 #define ONEWAY_EVENT_THREAD_PARALLEL 1
 #endif
 
@@ -23,30 +23,24 @@
 
 /**
  * The OneWayEventThread class represents a long-running, event-loop based
- * thread for unified access to some sub-module. It supports
+ * thread for processing requests. It supports
  * many requesters and exaclty one responder--the event thread.
  *
- * The design is such that it automatically sets up a 
- * processing thread on creation. 
+ * Once a OneWayEventThread is created, one should call the start() method
+ * to create and start the processing thread. The processing thread
+ * runs continually until this object is destroyed.
  *
- * This class is abstract. One should subclass it and specialize 
- * the processTask method to actually perform the work required
- * to turn the Request object into a Response object. 
- * If no response is required, one simply returns false.
- * See the documentation of the processTask method.
- *
- * The class can easily be used with the intent that
- * the processing thread will be a single point of 
- * access to some sub-system, simply make a singleton
- * of the sub-class 
+ * This class is abstract. One should subclass it and specialize
+ * the processRequest method to actually perform the work required
+ * to turn the Request object into a Response object.
  *
  * The class is templated by the object that it should
- * receive as a request and return as a response. 
- * 
+ * receive as a request.
+ *
  */
-template<class Request> 
+template<class Request>
 class OneWayEventThread {
-	
+
 protected:
 
 #if ONEWAY_EVENT_THREAD_PARALLEL
@@ -54,9 +48,6 @@ protected:
 
 	std::thread m_worker;
 
-#endif
-
-#if ONEWAY_EVENT_THREAD_PARALLEL
 	virtual void eventLoop() {
 		Request reqObj;
 		while (requestQueue.getNextObject(reqObj)) {
@@ -66,17 +57,22 @@ protected:
 
 	}
 
+#else
+	static long uniqueIDCount;
+
+	long myID;
+
 #endif
 
-protected: 
+protected:
 
 	/**
 	 * Clean up the inter-thread communication resources
-	 * and any resources used by the thread. 
-	 * 
+	 * and any resources used by the thread.
+	 *
 	 * Dervived classes should call this super-class method
 	 * after they have cleaned up resources specific to their
-	 * dervied implementation. 
+	 * dervied implementation.
 	 */
 	virtual void threadCleanup() {
 #if ONEWAY_EVENT_THREAD_PARALLEL
@@ -91,40 +87,67 @@ protected:
 
 public:
 
+#if ONEWAY_EVENT_THREAD_PARALLEL
+	typedef std::thread::id id;
+#else
+	typedef long id;
+#endif
+
 	/**
 	 * Create a new event thread. Spins up the
 	 * worker thread and the collector thread.
 	 */
-	OneWayEventThread() 
+	OneWayEventThread()
 #if ONEWAY_EVENT_THREAD_PARALLEL
 	:	requestQueue(),
 		m_worker()
 	{
-		m_worker = std::thread(&OneWayEventThread::eventLoop, this);
+	
 	}
 #else
-	{}
+	{
+		myID = ++uniqueIDCount;
+	}
 #endif
 
 	virtual ~OneWayEventThread() {
 		threadCleanup();
 	}
 
+	void start() {
+#if ONEWAY_EVENT_THREAD_PARALLEL
+		m_worker = std::thread(&OneWayEventThread::eventLoop, this);
+#endif
+	}
+
+
 	/* Event threads are not copyable */
 	OneWayEventThread(const OneWayEventThread& other) = delete;
 	OneWayEventThread& operator=(const OneWayEventThread&) = delete;
 
 	/**
+	 * Get this OneWayEventThread's unique ID.
+	 * @return the unique id
+	 */
+	id get_id() {
+#if ONEWAY_EVENT_THREAD_PARALLEL
+		return m_worker.get_id();
+#else
+		return myID;
+#endif
+	}
+
+	/**
 	 * Implements an asynchronous request send.
 	 *
 	 * reqObj: the Request to send.
-	 */ 
+	 */
 	virtual void sendRequest(const Request& reqObj) {
 #if ONEWAY_EVENT_THREAD_PARALLEL
 		Request sendCopy = reqObj;
 		requestQueue.addResult(sendCopy);
-#else 
-		processRequest(reqObj); 
+#else
+		processRequest(reqObj);
 #endif
 	}
 

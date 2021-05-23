@@ -23,6 +23,24 @@ Upops_t* allocateUnivariatePolynomialOverPowerSeries_UPOPS(int alloc) {
     return upops;
 }
 
+/**
+ * Given a UPOPS, reallocate its
+ * power series coefficients so that they store
+ * at least alloc number of homogeneous parts.
+ *
+ * @param upops: the UPOPS to resize
+ * @param alloc: the new size of each power series coefficient.
+ * @see resizePowerSeries_PS
+ */
+void resizeCoefficients_UPOPS(Upops_t* upops, int alloc) {
+	if (upops == NULL) {
+		return;
+	}
+
+	for (int i = 0; i <= upops->deg; ++i) {
+		resizePowerSeries_PS(upops->data[i], alloc);
+	}
+}
 
 /**
  * upops : a given univariate polynomial over power series

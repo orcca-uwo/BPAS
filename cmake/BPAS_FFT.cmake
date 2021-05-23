@@ -10,6 +10,26 @@ mark_as_advanced(BPAS_FFT_THRESHOLD)
 
 
 add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} generate_fft_iter_gen.py ${BPAS_FFT_THRESHOLD}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/generate_fft_iter_gen.py
+    OUTPUT 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/arraybitreversal_${BPAS_FFT_THRESHOLD}.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/fft_iter_${BPAS_FFT_THRESHOLD}.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FFT/src/arraybitreversal_${BPAS_FFT_THRESHOLD}.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FFT/src/fft_iter_${BPAS_FFT_THRESHOLD}.h
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src"
+    COMMENT "Generating code for general fft."
+)
+add_custom_target(GENERATE_FFT_ITER DEPENDS 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/arraybitreversal_${BPAS_FFT_THRESHOLD}.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/fft_iter_${BPAS_FFT_THRESHOLD}.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FFT/src/arraybitreversal_${BPAS_FFT_THRESHOLD}.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FFT/src/fft_iter_${BPAS_FFT_THRESHOLD}.h
+)
+
+
+
+add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} generate_fft.py ${BPAS_FFT_THRESHOLD}
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/generate_fft.py
     OUTPUT 
@@ -63,7 +83,7 @@ add_custom_command(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FFT/src/tft_tree1.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FFT/src/tft_tree2.h
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src"
-    COMMENT "Generating code for fft furer."
+    COMMENT "Generating code for tft."
 )
 add_custom_target(GENERATE_TFT DEPENDS 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/tft_tree1.cpp
@@ -94,4 +114,7 @@ target_sources(${BPAS_LIB_TARGET} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/tft_tree1.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/tft_tree2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/transpose.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/arraybitreversal_${BPAS_FFT_THRESHOLD}.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/fft_iter_${BPAS_FFT_THRESHOLD}.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FFT/src/fft_iter_main.c
 )

@@ -10,6 +10,13 @@
 #include "IntegerPolynomial/DUZP_Support_Factoring.hpp"
 using namespace DUZP::Factoring;
 
+#include "Utils/Unix_Timer.h"
+
+
+#if PS_PARALLEL_TIME
+float g_shiftTime = 0.f;
+#endif
+
 void evalToZeroAndFactor_UPOPS(Upops_t* f, mpq_t** c, int** k, int* n) {
 	if (f == NULL) {
 		if (n != NULL) {
@@ -170,11 +177,24 @@ Poly_ptr linearCombGen(int d, long long l, mpq_list_t* S, Upops_t*  V) {
 	for (int i = l; i <= k; ++i) {
 		j = i - l;
 		Poly_ptr homog = homogPart_PS(d, V->data[i]);
+		if (isZero_AA(homog)) {
+			continue;
+		}
+
+#if PS_PARALLEL_TIME
+		unsigned long long start;
+		_startTimer(&start);
+#endif
 		AltArr_t* aa = deepCopyPolynomial_AA(homog);
 		multiplyByRational_AA_inp(aa, S->data[i*k1+j]);
+
 		ret = addPolynomials_AA_inp(ret, aa, aa == NULL ? 0 : aa->nvar);
 		freePolynomial_AA(aa);
+#if PS_PARALLEL_TIME
+	_stopTimerAddElapsed(&start, &g_shiftTime);
+#endif
 	}
+
 
 	return ret;
 }
@@ -221,6 +241,7 @@ Upops_t* taylorShift_UPOPS(Upops_t* f, const mpq_t c_r) {
 		W[n]->gen.tertiaryGen = &(linearCombGenVoid);
 		W[n]->polys[0] = linearCombGen(0, n, S, f);
 		W[n]->deg = 0;
+		W[n]->nvar = f->data[f->deg]->nvar;
 	}
 
 	destroyMPQList_PS(S);
@@ -240,42 +261,76 @@ void HenselFactorization_UPOPS(Upops_t* f, Upops_t*** facts_out, int* n) {
 	}
 
 	mpq_t* C = NULL;
-	evalToZeroAndFactor_UPOPS(f, &C, NULL, n);
+	int* k = NULL;
+	evalToZeroAndFactor_UPOPS(f, &C, &k, n);
 
 	int nfacts = *n;
 
-	Upops_t** facts = (Upops_t**) malloc(sizeof(Upops_t*)*nfacts);
+	int i, j;
+
+	// sort by multiplicity first
+	int ki, tmp;
+	mpq_t Ci;
+	mpq_init(Ci);
+    for (i = 0; i < nfacts; ++i) {
+    	ki = k[i];
+    	mpq_set(Ci, C[i]);
+        for (j = i-1; j >= 0 && k[j] > ki; --j) {
+            mpq_swap(C[j+1],C[j]);
+            tmp = k[j+1];
+            k[j+1] = k[j];
+            k[j] = tmp;
+        }
+        mpq_swap(C[j+1], Ci);
+        tmp = k[j+1];
+        k[j+1] = ki;
+        ki = tmp;
+    }
+
+	//sort by coefficients; of factors with same multiplicity,
+	//we want to process ones with lower coefs first.
+    for (i = 0; i < nfacts; ++i) {
+        ki = k[i];
+        mpq_set(Ci, C[i]);
+        for (j = i-1; j >= 0 && k[j] == ki && mpq_cmp(C[j], Ci) > 0; --j) {
+            mpq_swap(C[j+1],C[j]);
+        }
+        mpq_swap(C[j+1], Ci);
+    }
+
+    // mpz_set_ui(mpq_numref(C[4]), 128ul);
+    // mpz_set_ui(mpq_numref(C[3]), 8192ul);
+    // mpz_set_ui(mpq_numref(C[1]), 524288ul);
+    // mpz_set_ui(mpq_numref(C[2]), 128ul);
+    // mpz_set_ui(mpq_numref(C[0]), 2ul);
+
+    // mpz_set_ui(mpq_numref(C[5]), 1000000001ul);
+    // mpz_set_ui(mpq_numref(C[4]), 1000000002ul);
+    // mpz_set_ui(mpq_numref(C[3]), 1000000003ul);
+    // mpz_set_ui(mpq_numref(C[2]), 1000000004ul);
+    // mpz_set_ui(mpq_numref(C[1]), 3ul);
+    // mpz_set_ui(mpq_numref(C[0]), 2ul);
 
 
-	Upops_t* fstar = f;
-	reserve_UPOPS(fstar);
-	Upops_t* g;
-	Upops_t* p;
-	Upops_t* alpha;
+	// for (int i = 0; i < nfacts-1; ++i) {
+	// 	mpq_swap(C[i], C[i+1]);
+	// }
+ //    for (i = 0; i < nfacts-1; ++i) {
+ //        mpq_set(ki, C[i]);
+ //        for (j = i-1; j >= 0 && mpq_cmp(C[j], ki) < 0; --j) {
+ //            mpq_swap(C[j+1],C[j]);
+ //        }
+ //        mpq_swap(C[j+1], ki);
+ //    }
+    mpq_clear(Ci);
 
-	for (int i = 0; i < nfacts; ++i) {
-		g = taylorShift_UPOPS(fstar, C[i]);
-		weierstrassPreparation_UPOPS(g, &p, &alpha);
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(g);
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(fstar);
-
-		mpq_neg(C[i], C[i]);
-		facts[i] = taylorShift_UPOPS(p, C[i]);
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(p);
-
-		if (i+1 < nfacts) {
-			fstar = taylorShift_UPOPS(alpha, C[i]);
-		}
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(alpha);
-	}
-
+	HenselFactorization_UPOPS(f, C, nfacts, facts_out);
 
 	for (int i = 0; i < nfacts; ++i) {
 		mpq_clear(C[i]);
 	}
 	free(C);
 
-	*facts_out = facts;
 }
 #endif
 
@@ -305,22 +360,12 @@ void _FactorizationViaHensel_UPOPS(Upops_t* f, mpq_t* C,  Upops_t** facts, int n
 
 
 
-// /**
-//  * f : the input upop
-//  * C : the given roots
-//  * n : the number of factors
-//  * facts_out : the output
-//  */
-// void HenselFactorization_UPOPS(Upops_t* f, mpq_t* C, int n, Upops_t*** facts_out) {
-//   if(facts_out == NULL) { return; }
-
-//    Upops_t** facts = (Upops_t**) malloc(sizeof(Upops_t*)*n);
-//    _FactorizationViaHensel_UPOPS(f, C, facts, n);
-
-//    *facts_out = facts;
-
-// }
-
+/**
+ * f : the input upop
+ * C : the given roots
+ * n : the number of factors
+ * facts_out : the output
+ */
 void HenselFactorization_UPOPS(Upops_t* f, mpq_t* C, int nfacts, Upops_t*** facts_out) {
 	if(facts_out == NULL) { return; }
 
@@ -328,24 +373,46 @@ void HenselFactorization_UPOPS(Upops_t* f, mpq_t* C, int nfacts, Upops_t*** fact
 
 	Upops_t* fstar = f;
 	reserve_UPOPS(fstar);
+	if (nfacts == 1) {
+		facts[0] = fstar;
+		*facts_out = facts;
+		return;
+	}
+
 	Upops_t* g;
 	Upops_t* p;
 	Upops_t* alpha;
 
-	for (int i = 0; i < nfacts; ++i) {
-		g = taylorShift_UPOPS(fstar, C[i]);
-		weierstrassPreparation_UPOPS(g, &p, &alpha);
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(g);
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(fstar);
+	for (int i = 0; i < nfacts-1; ++i) {
+		if (mpq_sgn(C[i]) == 0) {
+			weierstrassPreparation_UPOPS(fstar, &p, &alpha);
+			destroyUnivariatePolynomialOverPowerSeries_UPOPS(fstar);
 
-		mpq_neg(C[i], C[i]);
-		facts[i] = taylorShift_UPOPS(p, C[i]);
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(p);
+			facts[i] = p;
+			if (i+2 == nfacts) {
+				facts[i+1] = alpha;
+			} else {
+				fstar = alpha;
+			}
 
-		if (i+1 < nfacts) {
-			fstar = taylorShift_UPOPS(alpha, C[i]);
+		} else {
+			g = taylorShift_UPOPS(fstar, C[i]);
+
+			weierstrassPreparation_UPOPS(g, &p, &alpha);
+			destroyUnivariatePolynomialOverPowerSeries_UPOPS(g);
+			destroyUnivariatePolynomialOverPowerSeries_UPOPS(fstar);
+
+			mpq_neg(C[i], C[i]);
+			facts[i] = taylorShift_UPOPS(p, C[i]);
+			destroyUnivariatePolynomialOverPowerSeries_UPOPS(p);
+
+			if (i+2 == nfacts) {
+				facts[i+1] = taylorShift_UPOPS(alpha, C[i]);
+			} else {
+				fstar = taylorShift_UPOPS(alpha, C[i]);
+			}
+			destroyUnivariatePolynomialOverPowerSeries_UPOPS(alpha);
 		}
-		destroyUnivariatePolynomialOverPowerSeries_UPOPS(alpha);
 	}
 
 	*facts_out = facts;

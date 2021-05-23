@@ -1,4 +1,4 @@
-// -*- C++ -*- 
+// -*- C++ -*-
 // basic_routine.cilk
 //@auther Yuzhen Xie
 
@@ -14,6 +14,7 @@
 
 #include "../../../include/FFT/src/include/example_util_gettime.h"
 #include <iostream>
+#include <string.h>
 //#include <reducer_opadd.h>
 
 //sfixn is defined in modpn such that
@@ -47,14 +48,14 @@ namespace PBPAS {
    * @pPtr: the information of the prime number.
    * es[0] and dims[0] are useless;
    * seperated evaluation by FFT
-   * Return value: 
+   * Return value:
    **/
   void fftMultiD_test_1(sfixn * coeffs1, sfixn * coeffs2, sfixn N, sfixn * es, sfixn * dims, MONTP_OPT2_AS_GENE *pPtr){
     register int i;
     sfixn m=0, n=1;
     sfixn *rootsPtr, *tmprootsPtr;
 	sfixn *tmprootsPtr1;
-	
+
 	//std::cout << "entering fftMultiD_test_1" << std::endl;
 
 	//check Frourier prime
@@ -74,7 +75,7 @@ namespace PBPAS {
 	//tmprootsPtrD.35412
 	//mulfft.cilk:570: internal compiler error: verify_stmts failed
 
-    tmprootsPtr1 = rootsPtr;	
+    tmprootsPtr1 = rootsPtr;
 
     for(i=1; i<=N; i++) {//parallel???
       PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es[i], dims[i], tmprootsPtr1, pPtr);
@@ -85,7 +86,7 @@ namespace PBPAS {
 // 	  PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es[j+1], dims[j+1], rootsPtr+j*dims[j], pPtr);
 // 	}
 
-    //make a copy of es and dims for poly2's FFT use in parallel 
+    //make a copy of es and dims for poly2's FFT use in parallel
     sfixn *es_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
     sfixn *dims_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
 
@@ -101,17 +102,17 @@ namespace PBPAS {
 
 #ifdef SERIALFT
 	tmprootsPtr = PBPAS::MultiEvalByFFT(coeffs1, N, n, es, dims, pPtr, rootsPtr);
-	PBPAS::MultiEvalByFFT(coeffs2, N, n, es_cp, dims_cp, pPtr, rootsPtr); 
-#else	
+	PBPAS::MultiEvalByFFT(coeffs2, N, n, es_cp, dims_cp, pPtr, rootsPtr);
+#else
 
     tmprootsPtr = cilk_spawn PBPAS::MultiEvalByFFT(coeffs1, N, n, es, dims, pPtr, rootsPtr);
 
-    PBPAS::MultiEvalByFFT(coeffs2, N, n, es_cp, dims_cp, pPtr, rootsPtr); 
+    PBPAS::MultiEvalByFFT(coeffs2, N, n, es_cp, dims_cp, pPtr, rootsPtr);
 
     cilk_sync;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pareval_time += (end1 - start1) / 1.f;
 #endif
@@ -125,7 +126,7 @@ namespace PBPAS {
     // Pairwise-Mul, result is in coeffs1
     PBPAS::EX_Mont_PairwiseMul_OPT2_AS(n, coeffs1, coeffs2, pPtr->P);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pairwisemul_time += (end1 - start1) / 1.f;
 #endif
@@ -134,7 +135,7 @@ namespace PBPAS {
 	start1 = example_get_time();
 #endif
     PBPAS::InterpolByFFT(coeffs1, N, n, es, dims, pPtr, tmprootsPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  interpol_time += (end1 - start1) / 1.f;
 #endif
@@ -160,16 +161,16 @@ namespace PBPAS {
 	float dft_time = 0.0;
 	long start, end;
 #endif
-	
+
 	tmprootsPtr = rootsPtr;
 
-#ifdef TIMEFN	  
+#ifdef TIMEFN
 	  start = example_get_time();
-#endif	
+#endif
     if(es[1]){ //mulit-DFT evaluation for dimension 1
 //       for(j=0; j<n; j += dims[1]){
-// 		cilk_spawn EX_Mont_DFT_OPT2_AS_GENE_1 ( dims[1], es[1], tmprootsPtr, coeffs1+j, pPtr);      
-//       }  
+// 		cilk_spawn EX_Mont_DFT_OPT2_AS_GENE_1 ( dims[1], es[1], tmprootsPtr, coeffs1+j, pPtr);
+//       }
 // 	  cilk_sync;
 //------------------------------------
 	  d = n/dims[1];
@@ -177,11 +178,11 @@ namespace PBPAS {
 		EX_Mont_DFT_OPT2_AS_GENE_1 ( dims[1], es[1], tmprootsPtr, coeffs1+k*dims[1], pPtr);
 	  }
     }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  dft_time += (end - start) / 1.f;
 #endif
-	
+
     for(i=2; i<=N; i++){
       tmprootsPtr += dims[1];
 
@@ -189,13 +190,13 @@ namespace PBPAS {
 	  start = example_get_time();
 #endif
       PBPAS::multi_mat_transpose (N, n, i, dims, coeffs1);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tran_time += (end - start) / 1.f;
 #endif
 
 
-#ifdef TIMEFN	  
+#ifdef TIMEFN
 	  start = example_get_time();
 #endif
       if( es[i] ){
@@ -209,10 +210,10 @@ namespace PBPAS {
 		  EX_Mont_DFT_OPT2_AS_GENE_1 (dims[i], es[i], tmprootsPtr, coeffs1+k*dims[i], pPtr);
 		}
       }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  dft_time += (end - start) / 1.f;
-#endif	  
+#endif
 
       //multi_mat_transpose didn't change dims accordingly, so we do it here.
       tmp=dims[1];
@@ -222,11 +223,11 @@ namespace PBPAS {
       es[1]=es[i];
       es[i]=tmp;
     }
-#ifdef TIMEFN  	
+#ifdef TIMEFN
     //std::cout << "MultiEvalByFFT Mat Tran took " << tran_time << "
     //ms." << std::endl;
 	std::cout << tran_time << " "<<dft_time << " ";
-#endif	
+#endif
 	//return tmprootsPtr;
 	sfixn *retPtr = tmprootsPtr;
 	return retPtr;
@@ -257,9 +258,9 @@ namespace PBPAS {
 	  d = n/dims[1];
 	  cilk_for(int j=0; j<d; j++){
 		EX_Mont_INVDFT_OPT2_AS_GENE_1( dims[1], es[1], tmprootsPtr, coeffs1+j*dims[1], pPtr);
-	  }		
-    }	
-#ifdef TIMEFN  
+	  }
+    }
+#ifdef TIMEFN
 	  end = example_get_time();
 	  invdft_time += (end - start) / 1.f;
 #endif
@@ -272,7 +273,7 @@ namespace PBPAS {
 #endif
 	  PBPAS::multi_mat_transpose (N, n, i, dims, coeffs1);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tran_time += (end - start) / 1.f;
 #endif
@@ -291,10 +292,10 @@ namespace PBPAS {
 		  EX_Mont_INVDFT_OPT2_AS_GENE_1(dims[i], es[i], tmprootsPtr, coeffs1+j*dims[i], pPtr);
 		}
       }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  invdft_time += (end - start) / 1.f;
-#endif	  
+#endif
       //multi_mat_transpose didn't change dims accordingly, so we do
       //it here.
       tmp=dims[1];
@@ -304,20 +305,20 @@ namespace PBPAS {
       es[1]=es[i];
       es[i]=tmp;
     }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << tran_time << " "<< invdft_time << " ";
     //std::cout << "InterpolByFFT Mat Tran took " << tran_time << " ms." << std::endl;
-#endif	
+#endif
   }
-  
+
   //-------------------------------------
-  //N=2 
+  //N=2
   void MultiplyBy2DTFT_no_transp(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
 	if (N !=2 ) {
 	  std::cout<<"Number of variables is not 2"<<std::endl;
 	  exit(1);
 	}
-	
+
 #ifdef TIMEFN
 	float initkn_time = 0.0;
 	float reckn_time = 0.0;
@@ -328,14 +329,14 @@ namespace PBPAS {
 	start = example_get_time();
 #endif
     KroTFTRep* kPtr = (KroTFTRep *)my_calloc(1, sizeof(KroTFTRep));
-    PBPAS::InitKroTFTRep(kPtr, BUSZS(rep12), N, 2, pPtr);	
+    PBPAS::InitKroTFTRep(kPtr, BUSZS(rep12), N, 2, pPtr);
 
     cilk_spawn PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
 
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 	cilk_sync;
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  initkn_time += (end - start) / 1.f;
 #endif
@@ -345,16 +346,16 @@ namespace PBPAS {
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
 	  PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
 	  PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
 
@@ -374,9 +375,9 @@ namespace PBPAS {
 	}
 
 	for(i=1; i<=N; i++) {//N is usually small
-	  n *= ls[i]; 
-      m += dims[i]; 
-      if(dims[i] > maxdim) maxdim=dims[i]; 
+	  n *= ls[i];
+      m += dims[i];
+      if(dims[i] > maxdim) maxdim=dims[i];
     }
 	rootsPtr=(sfixn *) my_calloc(m, sizeof(sfixn));
     tmprootsPtr1 = rootsPtr;
@@ -385,13 +386,13 @@ namespace PBPAS {
 	  PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es[i], dims[i], tmprootsPtr1, pPtr);
       tmprootsPtr1 += dims[i];
     }
-    //make a copy of es, dims and ls for poly2's TFT evaluation in parallel     
+    //make a copy of es, dims and ls for poly2's TFT evaluation in parallel
 	sfixn *es_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
     sfixn *dims_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
     sfixn *ls_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
-	for(i=1; i<=N; i++) { 
+	for(i=1; i<=N; i++) {
 	  es_cp[i] = es[i];
-	  dims_cp[i] = dims[i]; 
+	  dims_cp[i] = dims[i];
 	  ls_cp[i] = ls[i];
 	}
 
@@ -406,17 +407,17 @@ namespace PBPAS {
     cilk_spawn MultiEvalBy2DTFT_no_transp(coeffs1, n, maxdim, es, dims, ls, pPtr, rootsPtr);
 
 	MultiEvalBy2DTFT_no_transp(coeffs2, n, maxdim, es_cp, dims_cp, ls_cp, pPtr, rootsPtr);
-	
+
 	cilk_sync;
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pareval_time += (end1 - start1) / 1.f;
 #endif
 
     my_free(es_cp);
     my_free(dims_cp);
-	my_free(ls_cp);	
+	my_free(ls_cp);
 
 #ifdef TIMEFN
 	start1 = example_get_time();
@@ -424,17 +425,17 @@ namespace PBPAS {
 	// Pairwise-Mul, result is in coeffs1
     PBPAS::EX_Mont_PairwiseMul_OPT2_AS(n, coeffs1, coeffs2, pPtr->P);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pairwisemul_time += (end1 - start1) / 1.f;
-#endif	
+#endif
 
 #ifdef TIMEFN
 	start1 = example_get_time();
 #endif
-	
+
     PBPAS::InterpolBy2DTFT_no_transp(coeffs1, n, maxdim, es, dims, ls, pPtr, rootsPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  interpol_time += (end1 - start1) / 1.f;
 #endif
@@ -447,7 +448,7 @@ namespace PBPAS {
   }
 
   void InterpolBy2DTFT_no_transp(sfixn *coeffs1, sfixn n, sfixn maxdim, sfixn * es, sfixn * dims, sfixn * ls, MONTP_OPT2_AS_GENE *pPtr, sfixn * rootsPtr) {
-	
+
 	sfixn d;
 	sfixn * tmprootsPtr = rootsPtr;
 
@@ -464,16 +465,16 @@ namespace PBPAS {
 	  }
 	}
 
-	if( es[2] ){	
+	if( es[2] ){
 		d = n/ls[2];
 		tmprootsPtr += dims[1];
 		PBPAS::inv_TDFT_dim2_no_transp(d, ls[2], tmprootsPtr, maxdim, coeffs1, pPtr);
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  invtft_time += (end - start) / 1.f;
 	  std::cout << invtft_time << " ";
-#endif		
+#endif
 
   }
 
@@ -500,7 +501,7 @@ namespace PBPAS {
   //================================================================
   //N=2
   void MultiEvalBy2DTFT_no_transp(sfixn * coeffs1, sfixn n, sfixn maxdim, sfixn * es, sfixn * dims, sfixn * ls, MONTP_OPT2_AS_GENE *pPtr, sfixn * rootsPtr) {
-	
+
 	//register int i;
     //sfixn tmp;
 	sfixn * tmprootsPtr;
@@ -513,7 +514,7 @@ namespace PBPAS {
 	long start, end;
 #endif
 
-#ifdef TIMEFN	  
+#ifdef TIMEFN
 	  start = example_get_time();
 #endif
 
@@ -529,17 +530,17 @@ namespace PBPAS {
 	  d = n/ls[2]; //size of dim-1
 	  PBPAS::TDFT_dim2_no_transp(d, ls[2], tmprootsPtr, maxdim, coeffs1, pPtr);
 	}
-	
-#ifdef TIMEFN  
+
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tft_time += (end - start) / 1.f;
 	  std::cout << tft_time << " ";
-#endif	
+#endif
 
   }
-  
+
   //================================================================
-  //d = ls[1]  
+  //d = ls[1]
   void TDFT_dim2_no_transp(sfixn d, sfixn ls2, sfixn * tmprootsPtr, sfixn maxdim, sfixn * coeffs1, MONTP_OPT2_AS_GENE *pPtr) {
 	cilk_for(int i=0; i<d; i++){
 	  sfixn * tmpVec = (sfixn *)my_calloc(maxdim, sizeof(sfixn));
@@ -557,7 +558,7 @@ namespace PBPAS {
   }
 
   //================================================================
-  // Parallel Multi-dimensional TFT by seperated evaluation 
+  // Parallel Multi-dimensional TFT by seperated evaluation
   //================================================================
   /**
    * tftMultiD_test_1:
@@ -567,11 +568,11 @@ namespace PBPAS {
    * @es: 2^es[i] = dims [i] for i = 1..n.
    * @dims: the FFT sizes on each dimension, dims[i] is the FFT on dimensional i, i=1..N.
    * @pPtr: the information of the prime number.
-   * 
+   *
    *Notes: each TDFT uses a temp vector of size maxdim;
    *       each INVTDFT uses a temp vector of size maxdim
    *
-   * Return value: 
+   * Return value:
    **/
   void tftMultiD_test_1(sfixn * coeffs1, sfixn * coeffs2, sfixn N, sfixn * es, sfixn * dims, sfixn * ls,  MONTP_OPT2_AS_GENE * pPtr){
 	register int i;
@@ -586,9 +587,9 @@ namespace PBPAS {
 	}
 
 	for(i=1; i<=N; i++) {//N is usually small
-	  n *= ls[i]; 
-      m += dims[i]; 
-      if(dims[i] > maxdim) maxdim=dims[i]; 
+	  n *= ls[i];
+      m += dims[i];
+      if(dims[i] > maxdim) maxdim=dims[i];
     }
 
 	rootsPtr=(sfixn *) my_calloc(m, sizeof(sfixn));
@@ -598,25 +599,25 @@ namespace PBPAS {
 	  PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es[i], dims[i], tmprootsPtr1, pPtr);
       tmprootsPtr1 += dims[i];
     }
-	//----------------------------	
+	//----------------------------
 	// 	cilk_for(int j=0; j<N; j++) { //free(): invalid next size (fast)
 	// 	  PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es[j+1], dims[j+1], rootsPtr+j*dims[j], pPtr);
 	// 	}
-    
-    //make a copy of es, dims and ls for poly2's TFT evaluation in parallel     
+
+    //make a copy of es, dims and ls for poly2's TFT evaluation in parallel
 	sfixn *es_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
     sfixn *dims_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
     sfixn *ls_cp = (sfixn *) my_calloc(N+1, sizeof(sfixn));
-	for(i=1; i<=N; i++) { 
+	for(i=1; i<=N; i++) {
 	  es_cp[i] = es[i];
-	  dims_cp[i] = dims[i]; 
+	  dims_cp[i] = dims[i];
 	  ls_cp[i] = ls[i];
 	}
 	//----------------------------
 // 	cilk_for(int j=1; j<=N; j++) { //N is usually small
-// 	  es_cp[j] = es[j]; 
-// 	  dims_cp[j] = dims[j]; 
-// 	  ls_cp[j] = ls[j]; 
+// 	  es_cp[j] = es[j];
+// 	  dims_cp[j] = dims[j];
+// 	  ls_cp[j] = ls[j];
 // 	}
 
 	//std::cout <<"before MultiEvalByTFT" << std::endl;
@@ -636,12 +637,12 @@ namespace PBPAS {
 	//parallel run two
     tmprootsPtr = cilk_spawn MultiEvalByTFT(coeffs1, N, n, maxdim, es, dims, ls, pPtr, rootsPtr);
 
-	MultiEvalByTFT(coeffs2, N, n, maxdim, es_cp, dims_cp, ls_cp, pPtr, rootsPtr);	
+	MultiEvalByTFT(coeffs2, N, n, maxdim, es_cp, dims_cp, ls_cp, pPtr, rootsPtr);
 	cilk_sync;
 
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pareval_time += (end1 - start1) / 1.f;
 #endif
@@ -658,7 +659,7 @@ namespace PBPAS {
 	// Pairwise-Mul, result is in coeffs1
     PBPAS::EX_Mont_PairwiseMul_OPT2_AS(n, coeffs1, coeffs2, pPtr->P);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pairwisemul_time += (end1 - start1) / 1.f;
 #endif
@@ -667,9 +668,9 @@ namespace PBPAS {
 #ifdef TIMEFN
 	start1 = example_get_time();
 #endif
-	//is tmprootsPtr1 pointing to the last dimension??? 
+	//is tmprootsPtr1 pointing to the last dimension???
     PBPAS::InterpolByTFT(coeffs1, N, n, maxdim, es, dims, ls, pPtr, tmprootsPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  interpol_time += (end1 - start1) / 1.f;
 #endif
@@ -695,7 +696,7 @@ namespace PBPAS {
 	//std::cout <<"enter MultiEvalByTFT" << std::endl;
 	//for(int j = 0; j < n; j++) std::cout<< coeffs1[j]<<", ";
 	//std::cout<<"----end of initial data----" <<std::endl;
-	
+
 #ifdef TIMEFN
 	float tran_time = 0.0;
 	float tft_time = 0.0;
@@ -704,7 +705,7 @@ namespace PBPAS {
 
 	tmprootsPtr = rootsPtr;
 
-#ifdef TIMEFN	  
+#ifdef TIMEFN
 	  start = example_get_time();
 #endif
 	if( es[1] ) { //mulit-DFT evaluation for dimension 1
@@ -718,11 +719,11 @@ namespace PBPAS {
 		PBPAS::EX_Mont_TDFT_OPT2_AS_GENE_1_par(ls[1], tmprootsPtr, maxdim, coeffs1+j*ls[1], pPtr);
 	  }
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tft_time += (end - start) / 1.f;
 #endif
-		
+
 	//std::cout <<"after ls[1]" << std::endl;
 
 	for(i=2; i<=N; i++){
@@ -731,7 +732,7 @@ namespace PBPAS {
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif	
+#endif
 
 	  //std::cout<<"----in data----" <<std::endl;
 	  //for (int j = 1; j <= N; j++) {
@@ -741,21 +742,21 @@ namespace PBPAS {
 
 	  //for(int j = 0; j < n; j++) std::cout<< coeffs1[j]<<", ";
 	  //std::cout<<"----end of in data----" <<std::endl;
-	  
+
 	  //------------------------------
       PBPAS::multi_mat_transpose (N, n, i, ls, coeffs1);
-	  
+
 	  //for(int j = 0; j < n; j++) std::cout<< coeffs1[j]<<", ";
 	  //std::cout<<"----end of out data----" <<std::endl;
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tran_time += (end - start) / 1.f;
 #endif
-	  
+
 	  //std::cout <<"after multi_mat_transpose" << std::endl;
 
-#ifdef TIMEFN	  
+#ifdef TIMEFN
 	  start = example_get_time();
 #endif
 	  if( es[i] ){ //each TDFT uses a temp vector of size maxdim
@@ -764,7 +765,7 @@ namespace PBPAS {
 		  PBPAS::EX_Mont_TDFT_OPT2_AS_GENE_1_par(ls[i], tmprootsPtr, maxdim, coeffs1+j*ls[i], pPtr);
 		}
 	  }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tft_time += (end - start) / 1.f;
 #endif
@@ -783,7 +784,7 @@ namespace PBPAS {
       ls[1]=ls[i];
       ls[i]=tmp;
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << tran_time << " "<<tft_time << " ";
     //std::cout << "MultiEvalByTFTSer Mat Tran took " << tran_time << " ms." << std::endl;
 #endif
@@ -814,14 +815,14 @@ namespace PBPAS {
 	//for parallel run
 	sfixn * tmpVec = (sfixn *)my_calloc(maxdim, sizeof(sfixn));
 
-	PBPAS::copyVec_0_to_d(lsi-1, tmpVec, coeffs1j); 
+	PBPAS::copyVec_0_to_d(lsi-1, tmpVec, coeffs1j);
 	EX_Mont_INVTDFT_OPT2_AS_GENE_1( lsi, tmprootsPtr, tmpVec, pPtr);
 	PBPAS::copyVec_0_to_d(lsi-1, coeffs1j, tmpVec);
-	
+
 	my_free(tmpVec);
   }
 
-  
+
   /**---------------------------------------------------
    *InterpolByTFT: inverse DFT
    **/
@@ -844,7 +845,7 @@ namespace PBPAS {
 		PBPAS::EX_Mont_INVTDFT_OPT2_AS_GENE_1_par(coeffs1+j*ls[1],  maxdim, ls[1], tmprootsPtr, pPtr);
 	  }
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  invtft_time += (end - start) / 1.f;
 #endif
@@ -856,10 +857,10 @@ namespace PBPAS {
 #ifdef TIMEFN
 	  start = example_get_time();
 #endif
-	  
+
 	  PBPAS::multi_mat_transpose (N, n, i, ls, coeffs1);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tran_time += (end - start) / 1.f;
 #endif
@@ -867,17 +868,17 @@ namespace PBPAS {
 #ifdef TIMEFN
 	  start = example_get_time();
 #endif
-	  if( es[i] ){	
+	  if( es[i] ){
 		d = n/ls[i];
 		cilk_for(int j=0; j<d; j++){//each INVTDFT uses a temp vector of size maxdim
 		  PBPAS::EX_Mont_INVTDFT_OPT2_AS_GENE_1_par(coeffs1+j*ls[i],  maxdim, ls[i], tmprootsPtr, pPtr);
 		}
 	  }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  invtft_time += (end - start) / 1.f;
 #endif
-	  // multi_mat_transpose didn't change dims accordingly, 
+	  // multi_mat_transpose didn't change dims accordingly,
       // so we need to do this here.
       tmp=dims[1];
       dims[1]=dims[i];
@@ -891,7 +892,7 @@ namespace PBPAS {
       ls[1]=ls[i];
       ls[i]=tmp;
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << tran_time << " "<< invtft_time << " ";
     //std::cout << "InterpolByTFT Mat Tran took " << tran_time << " ms." << std::endl;
 #endif
@@ -915,32 +916,32 @@ namespace PBPAS {
 
 	PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  initkn_time += (end - start) / 1.f;
 #endif
-      
+
     //----------------------------------------------
     PBPAS::fftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), N, ES(kPtr), DIMS(kPtr), pPtr);
-	
+
 	//result is in DATSI(kPtr, 0)
 	//my_free(DATSI(kPtr, 1));
-			
+
 	//delayed allocation
 	//DAT(rep12)=(sfixn * )my_calloc( SIZ(rep12),sizeof(sfixn) );
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif				
+#endif
     PBPAS::fromtofftRepMultiD(N, CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
     //void freeKroFFTRep(KroFFTRep * x);
     PBPAS::freeKroFFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
   }
@@ -965,7 +966,7 @@ namespace PBPAS {
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  initkn_time += (end - start) / 1.f;
 #endif
@@ -977,11 +978,11 @@ namespace PBPAS {
 	  deg1 = deg1-1;
 
 	  std::cout<<deg1<<" ";
-	  
+
 	  sfixn * ES_1D = (sfixn * )my_calloc(2, sizeof(sfixn));
 	  sfixn * DIMS_1D=(sfixn * )my_calloc(2, sizeof(sfixn));
 	  sfixn * LS_1D=(sfixn *)my_calloc(2, sizeof(sfixn));
-	  
+
 	  ES_1D[1] = logceiling(deg1+1);
 	  DIMS_1D[1] = 1 << ES_1D[1];
 	  LS_1D[1] = deg1+1;
@@ -997,16 +998,16 @@ namespace PBPAS {
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
     PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
     PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
   }
@@ -1016,10 +1017,10 @@ namespace PBPAS {
   //-------------------------------------
   void MultiplyByKroneckerFFT(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
     sfixn kdg1=0, kdg2=0;
-    
+
     KroFFTRep * kPtr = (KroFFTRep *)my_calloc(1, sizeof(KroFFTRep));
     PBPAS::InitKroFFTRep(kPtr, BUSZS(rep12), N, 2, pPtr);
-    
+
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 
@@ -1039,14 +1040,14 @@ namespace PBPAS {
 
 	//result is in DATSI(kPtr, 0)
 	//my_free(DATSI(kPtr, 1));
-			
+
 	//delayed allocation
 	//DAT(rep12)=(sfixn * )my_calloc( SIZ(rep12),sizeof(sfixn) );
-				
+
 
     PBPAS::fromtofftRepMultiD(N, CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
     //void freeKroFFTRep(KroFFTRep * x);
-    PBPAS::freeKroFFTRep(kPtr);    
+    PBPAS::freeKroFFTRep(kPtr);
   }
 
  /**
@@ -1056,16 +1057,16 @@ namespace PBPAS {
  * @degRes: degree of result
  * @rootsPtr: powers of the primitive n-th root of unity
  * @degA: (Input and Output) degree of A
- * @APtr: coefficient vector of A 
+ * @APtr: coefficient vector of A
  * @degB: degree of B
  * @BPtr: coefficient vector of B
  * @pPtr: prime number structure
- * 
+ *
  * FFT-based multiplication of A by B. In place: result in A.
  * note: for Kronecker.
- * 
+ *
  * Return value: the product of two polynomials.
- **/   
+ **/
   void EX_KN_Mont_FFTMul_OPT2_AS_GENE_1(sfixn n, sfixn e, sfixn degRes, sfixn * rootsPtr, sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, MONTP_OPT2_AS_GENE * pPtr){
     //register int i;
     sfixn l_AB, e1, n1, sA, sB;
@@ -1073,24 +1074,24 @@ namespace PBPAS {
     l_AB = degRes + 1; // compute l_AB for FFT(A,B).
     e1 = logceiling(l_AB);
 	checkFrourierPrime(e1, pPtr);
-	
+
     n1 = 1L << e1;
-    
+
     // force this FFT use the n from parameter if n<n1.
     if ( (n<n1) || (degRes==0) ) { n1=n; e1=e;}
 
 	sA = degA+1;
 	sB =degB+1;
     cilk_for(int i=sA; i<n1; i++) APtr[i]=0;
-    cilk_for(int i=sB; i<n1; i++) BPtr[i]=0;  
-    
+    cilk_for(int i=sB; i<n1; i++) BPtr[i]=0;
+
     cilk_spawn EX_Mont_DFT_OPT2_AS_GENE_1( n1, e1, rootsPtr, APtr, pPtr);
     EX_Mont_DFT_OPT2_AS_GENE_1( n1, e1, rootsPtr, BPtr, pPtr);
     cilk_sync;
-    
+
     PBPAS::EX_Mont_PairwiseMul_OPT2_AS_R(n1, APtr, BPtr, pPtr);
-    
-    EX_Mont_INVDFT_OPT2_AS_GENE_R_1(n1, e1, rootsPtr, APtr, pPtr);    
+
+    EX_Mont_INVDFT_OPT2_AS_GENE_R_1(n1, e1, rootsPtr, APtr, pPtr);
   }
 
   //-------------------------------------
@@ -1098,13 +1099,13 @@ namespace PBPAS {
   //deg1=d1; deg2=d2+(d2+1)*d3+(d2+(d2+1)*d3+1)*d4;
   //deg2=d2 + (d2+1)*d3 + (d2+1)*(d3+1)*d4;
   void MultiplyByTFT_3D2(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
-	
+
 #ifdef TIMEFN
 	float initkn_time = 0.0;
 	float reckn_time = 0.0;
 	long start, end;
 #endif
-	
+
 #ifdef TIMEFN
 	start = example_get_time();
 #endif
@@ -1113,7 +1114,7 @@ namespace PBPAS {
 
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	end = example_get_time();
 	initkn_time += (end - start) / 1.f;
 #endif
@@ -1124,34 +1125,34 @@ namespace PBPAS {
 	sfixn * ES_2D = (sfixn * )my_calloc(3, sizeof(sfixn));
 	sfixn * DIMS_2D=(sfixn * )my_calloc(3, sizeof(sfixn));
 	sfixn * LS_2D=(sfixn *)my_calloc(3, sizeof(sfixn));
-	
+
 	ES_2D[1] = logceiling(deg1+1);
 	ES_2D[2] = logceiling(deg2+1);
 	DIMS_2D[1] = 1 << ES_2D[1];
 	DIMS_2D[2] = 1 << ES_2D[2];
 	LS_2D[1] = deg1+1;
 	LS_2D[2] = deg2+1;
-	
+
 	//---------------------------
 	PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), 2, ES_2D, DIMS_2D, LS_2D, pPtr);
 	//PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), N, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
-	
+
 	my_free(ES_2D);
 	my_free(DIMS_2D);
 	my_free(LS_2D);
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
     PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
     PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
   }
@@ -1167,7 +1168,7 @@ namespace PBPAS {
 	float reckn_time = 0.0;
 	long start, end;
 #endif
-	
+
 #ifdef TIMEFN
 	start = example_get_time();
 #endif
@@ -1176,7 +1177,7 @@ namespace PBPAS {
 
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	end = example_get_time();
 	initkn_time += (end - start) / 1.f;
 #endif
@@ -1187,34 +1188,34 @@ namespace PBPAS {
 	sfixn * ES_2D = (sfixn * )my_calloc(3, sizeof(sfixn));
 	sfixn * DIMS_2D=(sfixn * )my_calloc(3, sizeof(sfixn));
 	sfixn * LS_2D=(sfixn *)my_calloc(3, sizeof(sfixn));
-	
+
 	ES_2D[1] = logceiling(deg1+1);
 	ES_2D[2] = logceiling(deg2+1);
 	DIMS_2D[1] = 1 << ES_2D[1];
 	DIMS_2D[2] = 1 << ES_2D[2];
 	LS_2D[1] = deg1+1;
 	LS_2D[2] = deg2+1;
-	
+
 	//---------------------------
 	PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), 2, ES_2D, DIMS_2D, LS_2D, pPtr);
 	//PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), N, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
-	
+
 	my_free(ES_2D);
 	my_free(DIMS_2D);
 	my_free(LS_2D);
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
     PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
     PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
   }
@@ -1230,7 +1231,7 @@ namespace PBPAS {
 	float reckn_time = 0.0;
 	long start, end;
 #endif
-	
+
 #ifdef TIMEFN
 	start = example_get_time();
 #endif
@@ -1239,13 +1240,13 @@ namespace PBPAS {
 
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	end = example_get_time();
 	initkn_time += (end - start) / 1.f;
 #endif
 
 	sfixn * factm = (sfixn * )my_calloc(3, sizeof(sfixn));
-	PBPAS::ReductionToBalancedBivar(N, LS(kPtr), factm); 
+	PBPAS::ReductionToBalancedBivar(N, LS(kPtr), factm);
 
 	sfixn deg1 = 0;
 	sfixn deg2 = 0;
@@ -1256,7 +1257,7 @@ namespace PBPAS {
 	}else{
 	  if (factm[0] == 1) {
 		deg1 = factm[1]-1;
-		
+
 		deg2 = factm[2]-1;
 		if (N>1) {
 		  sfixn ls = factm[2];
@@ -1277,7 +1278,7 @@ namespace PBPAS {
 		  }
 		  ls *= factm[1];
 		  deg1 += ls*(factm[1]-1);
-		  
+
 		  deg2 = factm[2]-1;
 		  my_free(factm);
 		}else{
@@ -1289,7 +1290,7 @@ namespace PBPAS {
 		  }
 		  ls *= factm[1];
 		  deg1 += ls*(factm[1]-1);
-		  
+
 		  deg2 = factm[2]-1;
 		  ls = factm[2];
 		  deg2 += ls*BUSZSI(rep12, factm[0]+1);
@@ -1300,24 +1301,24 @@ namespace PBPAS {
 		  my_free(factm);
 		}
 	  }
-	  
+
 	  std::cout<<deg1<<" "<<deg2<<std::endl;
 
 	  sfixn * ES_2D = (sfixn * )my_calloc(3, sizeof(sfixn));
 	  sfixn * DIMS_2D=(sfixn * )my_calloc(3, sizeof(sfixn));
 	  sfixn * LS_2D=(sfixn *)my_calloc(3, sizeof(sfixn));
-	  
+
 	  ES_2D[1] = logceiling(deg1+1);
 	  ES_2D[2] = logceiling(deg2+1);
 	  DIMS_2D[1] = 1 << ES_2D[1];
 	  DIMS_2D[2] = 1 << ES_2D[2];
 	  LS_2D[1] = deg1+1;
 	  LS_2D[2] = deg2+1;
-	  
+
 	  //---------------------------
 	  PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), 2, ES_2D, DIMS_2D, LS_2D, pPtr);
 	  //PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), N, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
-	  
+
 	  my_free(ES_2D);
 	  my_free(DIMS_2D);
 	  my_free(LS_2D);
@@ -1325,16 +1326,16 @@ namespace PBPAS {
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
     PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
     PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
   }
@@ -1342,8 +1343,8 @@ namespace PBPAS {
   /*
     c = a*b mod p
   */
-  void AdaptiveBivarMul(sfixn *c, int *dc, 
-			sfixn *a, int *da, 
+  void AdaptiveBivarMul(sfixn *c, int *dc,
+			sfixn *a, int *da,
 			sfixn *b, int *db,
 			sfixn p)
   {//---------------------------------------------
@@ -1352,7 +1353,7 @@ namespace PBPAS {
     int es1 = logceiling(ls1);
     int ls2 = dc[1]+1;
     int es2 = logceiling(ls2);
-    
+
   }
 
   //-------------------------------------
@@ -1361,20 +1362,20 @@ namespace PBPAS {
   // no copy to init KN construct, and saved TFT in dimension-1
   // avoid TFT work on zero vectors for the evaluation of 1st variable
   // for 1D, copy directly from rep1 to a vector of size dims1 for TFT and
-  // put result to rep12, then for dimension-2 TFT 
+  // put result to rep12, then for dimension-2 TFT
   void MultiplyByTFT_RBBnoE_saveOnDim1(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
 
 	if (N==2) {
 	  bivarMultiplyBy2DTFT(2, rep12, rep1, rep2, pPtr);
 	} else {
-	   
+
 	  sfixn * ls = (sfixn * )my_calloc(N+1,sizeof(sfixn));
 	  for(int j=1; j<=N; j++){
 		ls[j] = BUSZS(rep12)[j] +1;
 	  }
 	  sfixn t = PBPAS::noExtensionBalancedBivar(N, ls);
 	  sfixn ls1 = 1;
-	  sfixn ls2 = 1;	  
+	  sfixn ls2 = 1;
 
 	  for (int i=1; i<=t; i++) {
 		ls1 *= ls[i];
@@ -1385,7 +1386,7 @@ namespace PBPAS {
 	  }
 
 	  //std::cout<<ls1-1<<" "<<ls2-1<<" ";
-	  
+
 	  sfixn es1 = logceiling(ls1);
 	  sfixn es2 = logceiling(ls2);
 
@@ -1395,16 +1396,16 @@ namespace PBPAS {
 	  sfixn dim1 = 1<<es1;
 	  sfixn dim2 = 1<<es2;
 	  //sfixn n = ls1*ls2;
-	  
+
 	  sfixn *rootsPtr=(sfixn *) my_calloc(dim1+dim2, sizeof(sfixn));
 	  //--------------------------------------
 	  cilk_spawn PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es1, dim1, rootsPtr, pPtr);
 	  PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es2, dim2, rootsPtr+dim1, pPtr);
 	  cilk_sync;
 
-	  cilk_spawn 
+	  cilk_spawn
 		PBPAS::MultiEvalByTFT_RBBnoE_saveOnDim1(N, t, DAT(rep12), CUM(rep12), ls1, ls2, dim1, dim2, DAT(rep1), BUSZS(rep1), CUM(rep1), rootsPtr, pPtr);
-	  
+
 	  //for the 2nd tft transform in the evaluation of rep2
 	  sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));
 	  PBPAS::MultiEvalByTFT_RBBnoE_saveOnDim1(N, t, tftData2, CUM(rep12), ls1, ls2, dim1, dim2, DAT(rep2), BUSZS(rep2), CUM(rep2), rootsPtr, pPtr);
@@ -1415,7 +1416,7 @@ namespace PBPAS {
 	  PBPAS::EX_Mont_PairwiseMul_OPT2_AS_R(SIZ(rep12), DAT(rep12), tftData2, pPtr);
 	  my_free(tftData2);
 
-	  //now data is in ls2xls1 
+	  //now data is in ls2xls1
 	  PBPAS::bivarInterpolBy2DTFT(DAT(rep12), dim1, dim2, ls1, ls2, rootsPtr, pPtr);
 	}
   }
@@ -1429,16 +1430,16 @@ namespace PBPAS {
   //ccum: accumulated size in a given poly coeffs
   //dgs: partial degree vector of coeffs
   void MultiEvalByTFT_RBBnoE_saveOnDim1(sfixn N, sfixn t, sfixn *resCoeffs, sfixn *rccum, sfixn ls1, sfixn ls2, sfixn dim1, sfixn dim2, sfixn *coeffs, sfixn *dgs, sfixn *ccum, sfixn *rootsPtr, MONTP_OPT2_AS_GENE *pPtr){
-	
+
 	if (ls1) {
 	  evalDim1(N, t, resCoeffs, rccum, ls1, dim1, coeffs, dgs, ccum, rootsPtr, pPtr);
 	}
-	
+
 	if (ls2) {
 
 	  if ( ls1==ls2 )
 		PBPAS::sqtranspose(resCoeffs, ls2, 0, ls1, 0, 1, ls1);
-	  else{	
+	  else{
 		sfixn n = ls1*ls2;
 		sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
 		PBPAS::transpose(resCoeffs, ls1, B, ls2, 0, ls2, 0, ls1);
@@ -1449,7 +1450,7 @@ namespace PBPAS {
 
 	  sfixn * tmprootsPtr=rootsPtr+dim1;
 	  size_t s = ls2*sizeof(sfixn);
-	  
+
 	  //#pragma cilk_grainsize = 1;
 	  cilk_for(int j=0; j<ls1; j++){
 		sfixn * tmpVec = (sfixn *)my_calloc(dim2, sizeof(sfixn));
@@ -1457,7 +1458,7 @@ namespace PBPAS {
 		memcpy(tmpVec, pos, s);
 		EX_Mont_TDFT_OPT2_AS_GENE_1( ls2, tmprootsPtr, tmpVec, pPtr);
 		memcpy(pos, tmpVec, s);
-		
+
 		my_free(tmpVec);
 	  }
 	  //now resCoeffs' layout is ls2 x ls1
@@ -1471,13 +1472,13 @@ namespace PBPAS {
 	  sfixn * tmpVec = (sfixn *)my_calloc(dim1, sizeof(sfixn));
 
 	  //move the data to the right slots according to the degree
-	  //pattern of the result 
+	  //pattern of the result
 	  fromtofftRep(N, rccum, tmpVec, ccum, dgs, coeffs);
 
 	  EX_Mont_TDFT_OPT2_AS_GENE_1( ls1, rootsPtr, tmpVec, pPtr);
 	  memcpy(resCoeffs, tmpVec, ls1*sizeof(sfixn));
 	  my_free(tmpVec);
-	  
+
 	}else{
 	  //#pragma cilk_grainsize = 1;
 	  cilk_for(int i=0; i<=d; i++){
@@ -1507,13 +1508,13 @@ namespace PBPAS {
 // 		std::cout<< DAT(rep2)[i] <<", ";
 // 	  }
 // 	  std::cout<< "---end of rep2---"<<std::endl;
- 
+
 #ifdef TIMEFN
 	float initkn_time = 0.0;
 	float reckn_time = 0.0;
 	long start, end;
 #endif
-	
+
 #ifdef TIMEFN
 	start = example_get_time();
 #endif
@@ -1523,16 +1524,16 @@ namespace PBPAS {
     cilk_spawn PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 	cilk_sync;
-	
-#ifdef TIMEFN  
+
+#ifdef TIMEFN
 	end = example_get_time();
 	initkn_time += (end - start) / 1.f;
 #endif
 
-	  sfixn t = PBPAS::noExtensionBalancedBivar(N, LS(kPtr)); 
+	  sfixn t = PBPAS::noExtensionBalancedBivar(N, LS(kPtr));
 
 	  sfixn ls1 = 1;
-	  sfixn ls2 = 1;	  
+	  sfixn ls2 = 1;
 
 	  for (int i=1; i<=t; i++) {
 		ls1 *= LSI(kPtr, i);
@@ -1547,35 +1548,35 @@ namespace PBPAS {
 	  sfixn * ES_2D = (sfixn * )my_calloc(3, sizeof(sfixn));
 	  sfixn * DIMS_2D=(sfixn * )my_calloc(3, sizeof(sfixn));
 	  sfixn * LS_2D=(sfixn *)my_calloc(3, sizeof(sfixn));
-	  
+
 	  ES_2D[1] = logceiling(ls1);
 	  ES_2D[2] = logceiling(ls2);
 	  DIMS_2D[1] = 1 << ES_2D[1];
 	  DIMS_2D[2] = 1 << ES_2D[2];
 	  LS_2D[1] = ls1;
 	  LS_2D[2] = ls2;
-	  
+
 	  //---------------------------
 	  //2 dimensional
 	  PBPAS::tftMultiD_test_1_2DTran(DATSI(kPtr, 0), DATSI(kPtr, 1), 2, ES_2D, DIMS_2D, LS_2D, pPtr);
 	  //PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), N, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
-	  
+
 	  my_free(ES_2D);
 	  my_free(DIMS_2D);
 	  my_free(LS_2D);
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
     PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
     PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
 
@@ -1614,7 +1615,7 @@ namespace PBPAS {
 	sfixn deg1d_2 = BUSZSI(rep2, 1);
 		for (int i=2; i<=N; i++) {
 	  deg1d_2 += CUMI(kPtr1, i)*BUSZSI(rep2, i);
-	}	  
+	}
 
 		std::cout<<deg1d_1<<" "<<deg1d_2<<std::endl;
 
@@ -1627,7 +1628,7 @@ namespace PBPAS {
 	  PBPAS::from1Vto2VTFTRep(b, deg1d_2, DATSI(kPtr1, 1), CUMI(kPtr, 2), DATSI(kPtr, 1));
 	  PBPAS::freeKroTFTRep(kPtr1);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  initkn_time += (end - start) / 1.f;
 #endif
@@ -1635,7 +1636,7 @@ namespace PBPAS {
 	  //---------------------------
 	  // 2 variables
 	  PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), 2, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
-	  
+
 #ifdef TIMEFN
 	  start = example_get_time();
 #endif
@@ -1643,15 +1644,15 @@ namespace PBPAS {
 	  PBPAS::from2VTFTRepto1V(b, LSI(kPtr, 1), LSI(kPtr, 2), DATSI(kPtr, 0), SIZ(rep12), DAT(rep12), pPtr);
 
 	  //std::cout<<"done from1Vto2VtoTFTRep"<<std::endl;
-	  
+
 	  PBPAS::freeKroTFTRep(kPtr);
 	  //std::cout<<"done freeKroTFTRep"<<std::endl;
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
 
@@ -1685,7 +1686,7 @@ namespace PBPAS {
 	sfixn dims1 = 1<<es1;
 	sfixn dims2 = 1<<es2;
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  initkn_time += (end - start) / 1.f;
 #endif
@@ -1705,7 +1706,7 @@ namespace PBPAS {
 	  sfixn * tftData2=(sfixn * )my_calloc(siz, sizeof(sfixn));
 
 	  cilk_spawn PBPAS::V1to2VEvalBy2DTFT(tftData1, dims1, dims2, ls1, ls2, DAT(rep1), BUSZSI(rep1, 1), b, rootsPtr, pPtr);
-	  
+
 	  PBPAS::V1to2VEvalBy2DTFT(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZSI(rep2, 1), b, rootsPtr, pPtr);
 	  cilk_sync;
 
@@ -1715,7 +1716,7 @@ namespace PBPAS {
 
 	  //input DATSI(kPtr,0) in ls2 x ls1 layout
 	  PBPAS::bivarInterpolBy2DTFT(tftData1, dims1, dims2, ls1, ls2, rootsPtr, pPtr);
-	  
+
 #ifdef TIMEFN
 	  start = example_get_time();
 #endif
@@ -1723,13 +1724,13 @@ namespace PBPAS {
 	  PBPAS::from2VTFTRepto1V(b, ls1, ls2, tftData1, SIZ(rep12), DAT(rep12), pPtr);
 
 	  my_free(tftData1);
-	  
-#ifdef TIMEFN  
+
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
 
@@ -1773,7 +1774,7 @@ namespace PBPAS {
 
 	if ( ls1==ls2 )
 	  PBPAS::sqtranspose(resCoeffs, ls2, 0, ls1, 0, 1, ls1);
-	else{	
+	else{
 	  sfixn n = ls1*ls2;
 	  sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
 	  PBPAS::transpose(resCoeffs, ls1, B, ls2, 0, ls2, 0, ls1);
@@ -1781,7 +1782,7 @@ namespace PBPAS {
 	  //cilk_for(int j = 0; j < n; j++) resCoeffs[j] = B[j];
 	  my_free(B);
 	}
-	
+
 	sfixn * tmprootsPtr=rootsPtr+dims1;
 	s = ls2*sizeof(sfixn);
 
@@ -1791,19 +1792,19 @@ namespace PBPAS {
 	  memcpy(tmpVec, resCoeffs+j*ls2, s);
 	  EX_Mont_TDFT_OPT2_AS_GENE_1( ls2, tmprootsPtr, tmpVec, pPtr);
 	  memcpy(resCoeffs+j*ls2, tmpVec, s);
-	  
+
 	  my_free(tmpVec);
 	}
 	//std::cout<<"end of eval"<<std::endl;
 	//now resCoeffs' layout is ls2 x ls1
-	
+
   }
 
   //----------------
   //contract d1,...dn to 2 vars
   //d1 is split into 2 parts
   void MultiplyByTFT_1Vto2V_multiV_2V(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr) {
-	
+
 #ifdef TIMEFN
 	float initkn_time = 0.0;
 	float reckn_time = 0.0;
@@ -1826,7 +1827,7 @@ namespace PBPAS {
 	  }
 	  sfixn q1rep1 = (BUSZSI(rep1, 1) - BUSZSI(rep1, 1) % b)/b;
   	  sfixn q1rep2 = (BUSZSI(rep2, 1) - BUSZSI(rep2, 1) % b)/b;
-	  
+
 	  KroTFTRep* kPtr = (KroTFTRep *)my_calloc(1, sizeof(KroTFTRep));
  	  PBPAS::InitKroTFTRep_1V2V_multi(kPtr, b, sigma, q1rep1, q1rep2);
 
@@ -1841,9 +1842,9 @@ namespace PBPAS {
 
  	  //extend 1V to 2V and store data for TFT
  	  //PBPAS::fromMulti_1Vto2VTFTRep_1(N, b, q1rep1, BUSZS(rep1), DAT(rep1), sigma, q1rep1+q1rep2+1, DATSI(kPtr, 0));
-	  //PBPAS::fromMulti_1Vto2VTFTRep_1(N, b, q1rep2, BUSZS(rep2), DAT(rep2), sigma, q1rep1+q1rep2+1, DATSI(kPtr, 1));	  
+	  //PBPAS::fromMulti_1Vto2VTFTRep_1(N, b, q1rep2, BUSZS(rep2), DAT(rep2), sigma, q1rep1+q1rep2+1, DATSI(kPtr, 1));
 
-  #ifdef TIMEFN  
+  #ifdef TIMEFN
   	  end = example_get_time();
  	  initkn_time += (end - start) / 1.f;
   #endif
@@ -1852,22 +1853,22 @@ namespace PBPAS {
   	  // 2 variables
   	  PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), 2, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
   	  //=====================================
-	  
+
 	  //size of DATSI(kPtr, 0) can be larger (twice) than size of DAT(rep12)
 	  PBPAS::from2VTFTReptoMultiV(b, sigma, q1rep1+q1rep2+1, DATSI(kPtr, 0), BUSZSI(rep1,1)+BUSZSI(rep2,1)+1, DAT(rep12), pPtr);
 
  	  PBPAS::freeKroTFTRep(kPtr);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
-	  
 
-#ifdef TIMEFN  
+
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
-#endif	  
-	  
+#endif
+
   }
 
   //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -1876,18 +1877,18 @@ namespace PBPAS {
   //do not use KroTFTRep
   //make use of rep12 for the evaluation of the first poly
   //save from not doing tft on zeros in 1D-tft on the first variable
-  //use size of dims[i] for copy out tft in dimension i 
+  //use size of dims[i] for copy out tft in dimension i
   //use Matteo's 2D matrix transposition for multi-D matrix transposition
   void MultiplyByTFT_2DTran_noKroRep(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
 
 	sfixn * es = (sfixn * )my_calloc(N+1,sizeof(sfixn));
 	sfixn * dims = (sfixn * )my_calloc(N+1,sizeof(sfixn));
 	sfixn * ls = (sfixn * )my_calloc(N+1,sizeof(sfixn));
-	
+
 	for(int j=1; j<=N; j++){
 	  ls[j] = BUSZS(rep12)[j] +1;
       es[j] = logceiling( ls[j] );
-      dims[j] = 1<< es[j];      
+      dims[j] = 1<< es[j];
 	}
 	//check Frourier prime
 	for(int i=1; i<=N; i++) {
@@ -1896,7 +1897,7 @@ namespace PBPAS {
 
 	sfixn m=0;
 	for(int i=1; i<=N; i++) {//N is usually small
-      m += dims[i]; 
+      m += dims[i];
     }
 	sfixn * rootsPtr=(sfixn *) my_calloc(m, sizeof(sfixn));
     sfixn * tmprootsPtr1 = rootsPtr;
@@ -1908,7 +1909,7 @@ namespace PBPAS {
 #ifdef TIMEFN
 	//------------------------------------
 	//run two evaluations in serial to measure the performance of 2D-TFT
-	long start = example_get_time();	
+	long start = example_get_time();
 	PBPAS::MultiEvalByTFT_2DTran_saveOn1stVar(DAT(rep12), N, SIZ(rep12), dims, ls, CUM(rep12), DAT(rep1), SIZ(rep1), BUSZS(rep1), CUM(rep1), rootsPtr, pPtr);
 	long end = example_get_time();
 	float oneEvaltime = (end - start) / 1.f;
@@ -1919,7 +1920,7 @@ namespace PBPAS {
 	sfixn * tmprootsPtr;
 	tmprootsPtr = PBPAS::MultiEvalByTFT_2DTran_saveOn1stVar(tftData2, N, SIZ(rep12), dims, ls, CUM(rep12), DAT(rep2), SIZ(rep2), BUSZS(rep2), CUM(rep2), rootsPtr, pPtr);
 
-#else	
+#else
 	//evaluation-----------------------------
 	cilk_spawn
 	PBPAS::MultiEvalByTFT_2DTran_saveOn1stVar(DAT(rep12), N, SIZ(rep12), dims, ls, CUM(rep12), DAT(rep1), SIZ(rep1), BUSZS(rep1), CUM(rep1), rootsPtr, pPtr);
@@ -1930,7 +1931,7 @@ namespace PBPAS {
 	tmprootsPtr = PBPAS::MultiEvalByTFT_2DTran_saveOn1stVar(tftData2, N, SIZ(rep12), dims, ls, CUM(rep12), DAT(rep2), SIZ(rep2), BUSZS(rep2), CUM(rep2), rootsPtr, pPtr);
 
 	cilk_sync;
-#endif	
+#endif
 	//pairwise mul----------------------------
 	PBPAS::EX_Mont_PairwiseMul_OPT2_AS(SIZ(rep12), DAT(rep12), tftData2, pPtr->P);
 
@@ -1944,7 +1945,7 @@ float interpol_time = 0.0;
 
 	PBPAS::InterpolByTFT_2DTran(DAT(rep12), N, SIZ(rep12), dims, ls, pPtr, tmprootsPtr);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  interpol_time += (end1 - start1) / 1.f;
 	  std::cout << interpol_time << " " ;
@@ -1994,12 +1995,12 @@ float interpol_time = 0.0;
 
 	  //------------------------------
       PBPAS::multi_mat_transpose_2DTran_eval (N, n, i, ls, resCoeffs);
-	  
+
 // 	  for(int j = 0; j < n; j++) std::cout<< resCoeffs[j]<<", ";
-// 	  std::cout<<"----end of out data----" <<std::endl;	  
+// 	  std::cout<<"----end of out data----" <<std::endl;
 
 	  //point to the start position of ith dim's roots in rootsPtr
-      tmprootsPtr += dims[i-1]; 
+      tmprootsPtr += dims[i-1];
 	  if( ls[i] ){ //each TDFT uses a temp vector of size dims[i]
 		sfixn d = n/ls[i];
 		//size is small so grainsize relys on cilk_for
@@ -2014,7 +2015,7 @@ float interpol_time = 0.0;
 	sfixn *tmpPtr = tmprootsPtr;
 	return tmpPtr;
   }
- 
+
   //------------------------------------
   //evaluate 1st var for the number of non-zero slots.
   //rccum: accumulated size in the product res
@@ -2058,12 +2059,12 @@ float interpol_time = 0.0;
 //     cilk_spawn PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
 //     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 // 	cilk_sync;
-	
+
 	cilk_spawn PBPAS::fromtofftRep(N,  CUM(kPtr), DAT(rep12), CUM(rep1), BUSZS(rep1), DAT(rep1));
 	PBPAS::fromtofftRep(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 	cilk_sync;
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  initkn_time += (end - start) / 1.f;
 #endif
@@ -2073,27 +2074,27 @@ float interpol_time = 0.0;
 
 	//result is in DATSI(kPtr, 0)
 	//my_free(DATSI(kPtr, 1));
-			
+
 	//delayed allocation
 	//DAT(rep12)=(sfixn * )my_calloc( SIZ(rep12),sizeof(sfixn) );
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
 	  //PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
     PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
   }
   //================================================================
-  // Parallel Multi-dimensional TFT by seperated evaluation 
+  // Parallel Multi-dimensional TFT by seperated evaluation
   //================================================================
   /**
    * tftMultiD_test_1:
@@ -2103,11 +2104,11 @@ float interpol_time = 0.0;
    * @es: 2^es[i] = dims [i] for i = 1..n.
    * @dims: the FFT sizes on each dimension, dims[i] is the FFT on dimensional i, i=1..N.
    * @pPtr: the information of the prime number.
-   * 
+   *
    *Notes: each TDFT uses a temp vector of size maxdim;
    *       each INVTDFT uses a temp vector of size maxdim
    *
-   * Return value: 
+   * Return value:
    * do not use maxdim
    **/
   void tftMultiD_test_1_2DTran(sfixn * coeffs1, sfixn * coeffs2, sfixn N, sfixn * es, sfixn * dims, sfixn * ls,  MONTP_OPT2_AS_GENE * pPtr){
@@ -2123,8 +2124,8 @@ float interpol_time = 0.0;
 	}
 
 	for(i=1; i<=N; i++) {//N is usually small
-	  n *= ls[i]; 
-      m += dims[i]; 
+	  n *= ls[i];
+      m += dims[i];
     }
 
 	sfixn * rootsPtr=(sfixn *) my_calloc(m, sizeof(sfixn));
@@ -2152,7 +2153,7 @@ float interpol_time = 0.0;
 	//parallel run two
 //     cilk_spawn MultiEvalByTFT_2DTran(coeffs1, N, n, dims, ls, pPtr, rootsPtr);
 
-// 	tmprootsPtr = MultiEvalByTFT_2DTran(coeffs2, N, n, dims, ls, pPtr, rootsPtr);	
+// 	tmprootsPtr = MultiEvalByTFT_2DTran(coeffs2, N, n, dims, ls, pPtr, rootsPtr);
 // 	cilk_sync;
 
 	tmprootsPtr = MultiEvalByTFT_2DTran(coeffs1, N, n, dims, ls, pPtr, rootsPtr);
@@ -2160,7 +2161,7 @@ float interpol_time = 0.0;
 
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pareval_time += (end1 - start1) / 1.f;
 #endif
@@ -2173,7 +2174,7 @@ float interpol_time = 0.0;
 	// Pairwise-Mul, result is in coeffs1
     PBPAS::EX_Mont_PairwiseMul_OPT2_AS(n, coeffs1, coeffs2, pPtr->P);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  pairwisemul_time += (end1 - start1) / 1.f;
 #endif
@@ -2182,9 +2183,9 @@ float interpol_time = 0.0;
 #ifdef TIMEFN
 	start1 = example_get_time();
 #endif
-	//is tmprootsPtr1 pointing to the last dimension??? 
+	//is tmprootsPtr1 pointing to the last dimension???
     PBPAS::InterpolByTFT_2DTran(coeffs1, N, n, dims, ls, pPtr, tmprootsPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end1 = example_get_time();
 	  interpol_time += (end1 - start1) / 1.f;
 #endif
@@ -2216,30 +2217,30 @@ float interpol_time = 0.0;
 
 	sfixn * tmprootsPtr = rootsPtr;
 
-#ifdef TIMEFN	  
+#ifdef TIMEFN
 	  start = example_get_time();
 #endif
-	if( ls[1] ) { 
+	if( ls[1] ) {
 	  d = n/ls[1];
 	  cilk_for(int j=0; j<d; j++){
 		PBPAS::EX_Mont_TDFT_OPT2_AS_GENE_1_par(ls[1], tmprootsPtr, dims[1], coeffs1+j*ls[1], pPtr);
 	  }
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tft_time += (end - start) / 1.f;
 #endif
-		
+
 	//std::cout <<"after ls[1]" << std::endl;
 
 	for(int i=2; i<=N; i++){
-	  
+
 	  //point to the start position of ith dim's roots in rootsPtr
-      tmprootsPtr += dims[i-1]; 
+      tmprootsPtr += dims[i-1];
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif	
+#endif
 
 // 	  std::cout<<"----in data----" <<std::endl;
 // 	  for (int j = 1; j <= N; j++) {
@@ -2249,21 +2250,21 @@ float interpol_time = 0.0;
 
 // 	  for(int j = 0; j < n; j++) std::cout<< coeffs1[j]<<", ";
 // 	  std::cout<<"----end of in data----" <<std::endl;
-	  
+
 	  //------------------------------
       PBPAS::multi_mat_transpose_2DTran_eval (N, n, i, ls, coeffs1);
-	  
+
 // 	  for(int j = 0; j < n; j++) std::cout<< coeffs1[j]<<", ";
 // 	  std::cout<<"----end of out data----" <<std::endl;
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tran_time += (end - start) / 1.f;
 #endif
-	  
+
 	  //std::cout <<"after multi_mat_transpose" << std::endl;
 
-#ifdef TIMEFN	  
+#ifdef TIMEFN
 	  start = example_get_time();
 #endif
 	  if( ls[i] ){ //each TDFT uses a temp vector of size dims[i]
@@ -2273,13 +2274,13 @@ float interpol_time = 0.0;
 		  PBPAS::EX_Mont_TDFT_OPT2_AS_GENE_1_par(ls[i], tmprootsPtr, dims[i], coeffs1+j*ls[i], pPtr);
 		}
 	  }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tft_time += (end - start) / 1.f;
 #endif
 
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << tran_time << " "<<tft_time << " ";
     //std::cout << "MultiEvalByTFT Mat Tran took " << tran_time << " ms." << std::endl;
 #endif
@@ -2290,7 +2291,7 @@ float interpol_time = 0.0;
 	sfixn *tmpPtr = tmprootsPtr;
 	return tmpPtr;
   }
-  
+
   /**---------------------------------------------------
    *InterpolByTFT: inverse DFT
    *input data is in the order of x_N, x_{N-1}, ..., x_1
@@ -2315,7 +2316,7 @@ float interpol_time = 0.0;
 		PBPAS::EX_Mont_INVTDFT_OPT2_AS_GENE_1_par(coeffs1+j*ls[N], dims[N], ls[N], tmprootsPtr, pPtr);
 	  }
 	}
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  invtft_time += (end - start) / 1.f;
 #endif
@@ -2327,10 +2328,10 @@ float interpol_time = 0.0;
 #ifdef TIMEFN
 	  start = example_get_time();
 #endif
-	  
+
 	  PBPAS::multi_mat_transpose_2DTran_interp (N, n, i, ls, coeffs1);
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  tran_time += (end - start) / 1.f;
 #endif
@@ -2338,23 +2339,23 @@ float interpol_time = 0.0;
 #ifdef TIMEFN
 	  start = example_get_time();
 #endif
-	  if( ls[i] ){	
+	  if( ls[i] ){
 		d = n/ls[i];
 		//size is small so grainsize relys on cilk_for
 		cilk_for(int j=0; j<d; j++){//each INVTDFT uses a temp vector of size maxdim
 		  PBPAS::EX_Mont_INVTDFT_OPT2_AS_GENE_1_par(coeffs1+j*ls[i], dims[i], ls[i], tmprootsPtr, pPtr);
 		}
 	  }
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  invtft_time += (end - start) / 1.f;
 #endif
 
 	}
-	// multi_mat_transpose_2DTran_interp does not change 
-	// the order of dims and ls 
+	// multi_mat_transpose_2DTran_interp does not change
+	// the order of dims and ls
 	// now data is for the order of x_1, x_2, ... x_N
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << tran_time << " "<< invtft_time << " ";
     //std::cout << "InterpolByTFT Mat Tran took " << tran_time << " ms." << std::endl;
 #endif
@@ -2381,12 +2382,12 @@ float interpol_time = 0.0;
 //     cilk_spawn PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(rep1), BUSZS(rep1), DAT(rep1));
 //     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 // 	cilk_sync;
-	
+
 	cilk_spawn PBPAS::fromtofftRep(N,  CUM(kPtr), DAT(rep12), CUM(rep1), BUSZS(rep1), DAT(rep1));
 	PBPAS::fromtofftRep(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(rep2), BUSZS(rep2), DAT(rep2));
 	cilk_sync;
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  initkn_time += (end - start) / 1.f;
 #endif
@@ -2396,22 +2397,22 @@ float interpol_time = 0.0;
 
 	//result is in DATSI(kPtr, 0)
 	//my_free(DATSI(kPtr, 1));
-			
+
 	//delayed allocation
 	//DAT(rep12)=(sfixn * )my_calloc( SIZ(rep12),sizeof(sfixn) );
 
 #ifdef TIMEFN
 	  start = example_get_time();
-#endif					
+#endif
 	  //PBPAS::fromtofftRepMultiD(N,  CUM(rep12), DAT(rep12), CUM(kPtr), BUSZS(rep12), DATSI(kPtr, 0));
-    
+
     PBPAS::freeKroTFTRep(kPtr);
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	  end = example_get_time();
 	  reckn_time += (end - start) / 1.f;
 #endif
 
-#ifdef TIMEFN  
+#ifdef TIMEFN
 	std::cout << initkn_time << " "<< reckn_time << " ";
 #endif
   }
@@ -2423,7 +2424,7 @@ float interpol_time = 0.0;
   // no copy to init KN construct, and saved TFT in dimension-1
   // avoid TFT work on zero vectors for the evaluation of 1st variable
   // for 1D, copy directly from rep1 to a vector of size dims1 for TFT and
-  // put result to rep12, then for dimension-2 TFT 
+  // put result to rep12, then for dimension-2 TFT
   // saved 30% w.r.t original 2D-TFT
   void bivarMultiplyBy2DTFT_for_spawn(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
 	sfixn ls1 = BUSZSI(rep12, 1)+1;
@@ -2453,25 +2454,25 @@ float interpol_time = 0.0;
 #ifdef TIMEFN
 		//------------------------------------
 	//run two evaluations in serial to measure the performance of 2D-TFT
-	long start = example_get_time();	
-	PBPAS::bivarEvalBy2DTFT_for_spawn(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1), rootsPtr, pPtr);  
+	long start = example_get_time();
+	PBPAS::bivarEvalBy2DTFT_for_spawn(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1), rootsPtr, pPtr);
 	long end = example_get_time();
 	float oneEvaltime = (end - start) / 1.f;
 	std::cout<< oneEvaltime << " ";
-	
-	//for the 2nd tft transform in the evaluation of rep2
-	sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));
-	
-	PBPAS::bivarEvalBy2DTFT_for_spawn(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2), rootsPtr, pPtr); 
-	//----------------------------------------------
-#else
-	//------------------------------------
-	cilk_spawn PBPAS::bivarEvalBy2DTFT_for_spawn(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1), rootsPtr, pPtr);  
 
 	//for the 2nd tft transform in the evaluation of rep2
 	sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));
-	
-	PBPAS::bivarEvalBy2DTFT_for_spawn(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2), rootsPtr, pPtr); 
+
+	PBPAS::bivarEvalBy2DTFT_for_spawn(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2), rootsPtr, pPtr);
+	//----------------------------------------------
+#else
+	//------------------------------------
+	cilk_spawn PBPAS::bivarEvalBy2DTFT_for_spawn(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1), rootsPtr, pPtr);
+
+	//for the 2nd tft transform in the evaluation of rep2
+	sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));
+
+	PBPAS::bivarEvalBy2DTFT_for_spawn(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2), rootsPtr, pPtr);
 	cilk_sync;
 	//----------------------------------------------
 #endif
@@ -2483,7 +2484,7 @@ float interpol_time = 0.0;
 #ifdef TIMEFN
 	long start1 = example_get_time();
 #endif
-	//now data is in ls2xls1 
+	//now data is in ls2xls1
 	PBPAS::bivarInterpolBy2DTFT_for_spawn(DAT(rep12), dims1, dims2, ls1, ls2, rootsPtr, pPtr);
 #ifdef TIMEFN
 	long end1 = example_get_time();
@@ -2504,7 +2505,7 @@ float interpol_time = 0.0;
 
 	if ( ls1==ls2 )
 	  PBPAS::sqtranspose(resCoeffs, ls1, 0, ls2, 0, 1, ls2);
-	else{	
+	else{
 	  sfixn n = ls1*ls2;
 	  sfixn *B = (sfixn * ) my_calloc(ls1*ls2, sizeof(sfixn));
 	  PBPAS::transpose(resCoeffs, ls2, B, ls1, 0, ls1, 0, ls2);
@@ -2514,7 +2515,7 @@ float interpol_time = 0.0;
 	  cilk_for(int j = 0; j < n; j++) resCoeffs[j] = B[j];
 #endif
 	  my_free(B);
-	}	
+	}
 
 	s = ls1*sizeof(sfixn);
 
@@ -2527,7 +2528,7 @@ float interpol_time = 0.0;
   //--------------------------------------------
   //bivariate, ls1 and ls2 are not 0
   void bivarEvalBy2DTFT_for_spawn(sfixn * resCoeffs, sfixn dims1, sfixn dims2, sfixn ls1, sfixn ls2, sfixn * coeffs, sfixn * pdegs, sfixn *rootsPtr, MONTP_OPT2_AS_GENE *pPtr){
-	
+
 	sfixn s1 = pdegs[1]+1;
 	size_t s = s1*sizeof(sfixn);
 	size_t res = ls1*sizeof(sfixn);
@@ -2539,10 +2540,10 @@ float interpol_time = 0.0;
 	  cilk_spawn PBPAS::copyDataOutTFT(coeffs+j*s1, resCoeffs+j*ls1, dims1, s, res, ls1, rootsPtr, pPtr);
 	}
 	//cilk_sync;
-	
+
 	if ( ls1==ls2 )
 	  PBPAS::sqtranspose(resCoeffs, ls2, 0, ls1, 0, 1, ls1);
-	else{	
+	else{
 	  sfixn n = ls1*ls2;
 	  sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
 	  PBPAS::transpose(resCoeffs, ls1, B, ls2, 0, ls2, 0, ls1);
@@ -2570,7 +2571,7 @@ float interpol_time = 0.0;
   // no copy to init KN construct, and saved TFT in dimension-1
   // avoid TFT work on zero vectors for the evaluation of 1st variable
   // for 1D, copy directly from rep1 to a maximum vector for TFT and
-  // put result to rep12, then for dimension-2 TFT 
+  // put result to rep12, then for dimension-2 TFT
   // saved 30% w.r.t original 2D-TFT
   void bivarMultiplyBy2DTFT_spawn(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
 	sfixn ls1 = BUSZSI(rep12, 1)+1;
@@ -2598,12 +2599,12 @@ float interpol_time = 0.0;
 	//--------------------------------------
 
 	//------------------------------------
-	cilk_spawn PBPAS::bivarEvalBy2DTFT_spawn(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1), rootsPtr, pPtr);  
+	cilk_spawn PBPAS::bivarEvalBy2DTFT_spawn(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1), rootsPtr, pPtr);
 
 	//for the 2nd tft transform in the evaluation of rep2
 	sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));
-	
-	PBPAS::bivarEvalBy2DTFT_spawn(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2), rootsPtr, pPtr); 
+
+	PBPAS::bivarEvalBy2DTFT_spawn(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2), rootsPtr, pPtr);
 	cilk_sync;
 	//----------------------------------------------
 
@@ -2611,9 +2612,9 @@ float interpol_time = 0.0;
 
 	my_free(tftData2);
 
-	//now data is in ls2xls1 
+	//now data is in ls2xls1
 	PBPAS::bivarInterpolBy2DTFT_spawn(DAT(rep12), dims1, dims2, ls1, ls2, rootsPtr, pPtr);
-	
+
   }
 
   //--------------------------------------------
@@ -2628,7 +2629,7 @@ float interpol_time = 0.0;
 
 	if ( ls1==ls2 )
 	  PBPAS::sqtranspose(resCoeffs, ls1, 0, ls2, 0, 1, ls2);
-	else{	
+	else{
 	  sfixn n = ls1*ls2;
 	  sfixn *B = (sfixn * ) my_calloc(ls1*ls2, sizeof(sfixn));
 	  PBPAS::transpose(resCoeffs, ls2, B, ls1, 0, ls1, 0, ls2);
@@ -2638,7 +2639,7 @@ float interpol_time = 0.0;
 	  cilk_for(int j = 0; j < n; j++) resCoeffs[j] = B[j];
 #endif
 	  my_free(B);
-	}	
+	}
 
 	s = ls1*sizeof(sfixn);
 
@@ -2659,7 +2660,7 @@ float interpol_time = 0.0;
   //--------------------------------------------
   //bivariate, ls1 and ls2 are not 0
   void bivarEvalBy2DTFT_spawn(sfixn * resCoeffs, sfixn dims1, sfixn dims2, sfixn ls1, sfixn ls2, sfixn * coeffs, sfixn * pdegs, sfixn *rootsPtr, MONTP_OPT2_AS_GENE *pPtr){
-	
+
 	sfixn s1 = pdegs[1]+1;
 	size_t s = s1*sizeof(sfixn);
 	size_t res = ls1*sizeof(sfixn);
@@ -2671,10 +2672,10 @@ float interpol_time = 0.0;
 	  cilk_spawn PBPAS::copyDataOutTFT(coeffs+j*s1, resCoeffs+j*ls1, dims1, s, res, ls1, rootsPtr, pPtr);
 	}
 	cilk_sync;
-	
+
 	if ( ls1==ls2 )
 	  PBPAS::sqtranspose(resCoeffs, ls2, 0, ls1, 0, 1, ls1);
-	else{	
+	else{
 	  sfixn n = ls1*ls2;
 	  sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
 	  PBPAS::transpose(resCoeffs, ls1, B, ls2, 0, ls2, 0, ls1);
@@ -2710,7 +2711,7 @@ float interpol_time = 0.0;
   // no copy to init KN construct, and saved TFT in dimension-1
   // avoid TFT work on zero vectors for the evaluation of 1st variable
   // for 1D, copy directly from rep1 to a maximum vector for TFT and
-  // put result to rep12, then for dimension-2 TFT 
+  // put result to rep12, then for dimension-2 TFT
   // saved 30% w.r.t original 2D-TFT
   void bivarMultiplyBy2DTFT(sfixn N, preFFTRep *rep12, preFFTRep * rep1, preFFTRep * rep2,  MONTP_OPT2_AS_GENE *pPtr){
 	sfixn ls1 = BUSZSI(rep12, 1)+1;
@@ -2733,10 +2734,10 @@ float interpol_time = 0.0;
 
 	sfixn *rootsPtr=(sfixn *) my_calloc(dims1+dims2, sizeof(sfixn));
 	//--------------------------------------
-	cilk_spawn PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es1, dims1, rootsPtr, pPtr);	
+	cilk_spawn PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es1, dims1, rootsPtr, pPtr);
 	PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es2, dims2, rootsPtr+dims1, pPtr);
 	cilk_sync;
-	
+
 	//std::cout<<"bivarMultiplyBy2DTFT pPtr->P = "<<pPtr->P<<std::endl;
 
 	//std::cout<<"powers of root in X direction -------"<<std::endl;
@@ -2752,28 +2753,28 @@ float interpol_time = 0.0;
 	//------------------------------------
 	//run two evaluations in serial to measure the performance of 2D-TFT
 	long start = example_get_time();
-	PBPAS::bivarEvalBy2DTFT(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1)[1], BUSZS(rep1)[2], rootsPtr, pPtr);  
+	PBPAS::bivarEvalBy2DTFT(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1)[1], BUSZS(rep1)[2], rootsPtr, pPtr);
 	long end = example_get_time();
 	float oneEvaltime = (end - start) / 1.f;
 	std::cout<< oneEvaltime << " ";
 
 	//for the 2nd tft transform in the evaluation of rep2
 	sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));
-	
-	PBPAS::bivarEvalBy2DTFT(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2)[1], BUSZS(rep2)[2], rootsPtr, pPtr); 
+
+	PBPAS::bivarEvalBy2DTFT(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2)[1], BUSZS(rep2)[2], rootsPtr, pPtr);
 
 	//----------------------------------------------
-#else	
+#else
 
-	cilk_spawn 
+	cilk_spawn
 	  PBPAS::bivarEvalBy2DTFT(DAT(rep12), dims1, dims2, ls1, ls2, DAT(rep1), BUSZS(rep1)[1], BUSZS(rep1)[2], rootsPtr, pPtr);
 
 	//for the 2nd tft transform in the evaluation of rep2
-	sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));	    
-	PBPAS::bivarEvalBy2DTFT(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2)[1], BUSZS(rep2)[2], rootsPtr, pPtr); 
-	
+	sfixn * tftData2 = (sfixn * )my_calloc(SIZ(rep12), sizeof(sfixn));
+	PBPAS::bivarEvalBy2DTFT(tftData2, dims1, dims2, ls1, ls2, DAT(rep2), BUSZS(rep2)[1], BUSZS(rep2)[2], rootsPtr, pPtr);
+
 	cilk_sync;
-	
+
 	//----------------------------------------------
 #endif
 
@@ -2785,11 +2786,11 @@ float interpol_time = 0.0;
 #ifdef TIMEFN
 	long start1 = example_get_time();
 #endif
-	//now data is in ls2xls1 
+	//now data is in ls2xls1
 	PBPAS::bivarInterpolBy2DTFT(DAT(rep12), dims1, dims2, ls1, ls2, rootsPtr, pPtr);
 
 	my_free(rootsPtr);
-#ifdef TIMEFN	
+#ifdef TIMEFN
 	long end1 = example_get_time();
 	float interp1 = (end1 - start1) / 1.;
 	std::cout<< interp1 << " ";
@@ -2810,16 +2811,16 @@ float interpol_time = 0.0;
 	  memcpy(tmpVec, pos, s);
 	  EX_Mont_INVTDFT_OPT2_AS_GENE_1( ls2, tmprootsPtr, tmpVec, pPtr);
 	  memcpy(pos, tmpVec, s);
-	  
+
 	  my_free(tmpVec);
 	}
 
 	if ( ls1==ls2 )
 	  PBPAS::sqtranspose(resCoeffs, ls1, 0, ls2, 0, 1, ls2);
-	else{	
+	else{
 	  sfixn n = ls1*ls2;
 	  sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
-	  PBPAS::transpose(resCoeffs, ls2, B, ls1, 0, ls1, 0, ls2);	  
+	  PBPAS::transpose(resCoeffs, ls2, B, ls1, 0, ls1, 0, ls2);
 	  memcpy(resCoeffs, B, n*sizeof(sfixn));
 	  my_free(B);
 	}
@@ -2833,7 +2834,7 @@ float interpol_time = 0.0;
 	  memcpy(tmpVec, pos, s);
 	  EX_Mont_INVTDFT_OPT2_AS_GENE_1( ls1, rootsPtr, tmpVec, pPtr);
 	  memcpy(pos, tmpVec, s);
-	  
+
 	  my_free(tmpVec);
 	}
   }
@@ -2841,38 +2842,38 @@ float interpol_time = 0.0;
   //--------------------------------------------
   //bivariate, ls1 and ls2 are greater than 0
   void  bivarEvalBy2DTFT(sfixn * resCoeffs, sfixn dims1, sfixn dims2, sfixn ls1, sfixn ls2, sfixn * coeffs, sfixn pd1, sfixn pd2, sfixn *rootsPtr, MONTP_OPT2_AS_GENE *pPtr){
-  
+
     sfixn s1 = pd1+1;
     size_t s = s1*sizeof(sfixn);
     size_t res = ls1*sizeof(sfixn);
-   
+
     //#pragma cilk_grainsize = 1;
     cilk_for(sfixn j=0; j<=pd2; j++){
       //evaluate 1st var for the num of pd1+1 coefficients
       //do not use ls2. saving from not fft on padding zeros
       //for parallel run
 
-      sfixn* tmpVec = (sfixn *)my_calloc(dims1, sizeof(sfixn));     	  
+      sfixn* tmpVec = (sfixn *)my_calloc(dims1, sizeof(sfixn));
       memcpy(tmpVec, coeffs+j*s1, s);
       EX_Mont_TDFT_OPT2_AS_GENE_1(ls1, rootsPtr, tmpVec, pPtr);
 
-      memcpy(resCoeffs+j*ls1, tmpVec, res); 
+      memcpy(resCoeffs+j*ls1, tmpVec, res);
       my_free(tmpVec);
     }
-    
+
     if ( ls1==ls2 )
       PBPAS::sqtranspose(resCoeffs, ls2, 0, ls1, 0, 1, ls1);
-    else{	
+    else{
       sfixn n = ls1*ls2;
       sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
       PBPAS::transpose(resCoeffs, ls1, B, ls2, 0, ls2, 0, ls1);
       memcpy(resCoeffs, B, n*sizeof(sfixn));
       my_free(B);
     }
-      
+
       sfixn * tmprootsPtr=rootsPtr+dims1;
       s = ls2*sizeof(sfixn);
-      
+
       //#pragma cilk_grainsize = 1;
       cilk_for(int j=0; j<ls1; j++){
 	sfixn * tmpVec = (sfixn *)my_calloc(dims2, sizeof(sfixn));
@@ -2881,7 +2882,7 @@ float interpol_time = 0.0;
 	EX_Mont_TDFT_OPT2_AS_GENE_1(ls2, tmprootsPtr, tmpVec, pPtr);
 
 	memcpy(pos, tmpVec, s);
-	
+
 	my_free(tmpVec);
       }
       //now resCoeffs' layout is ls2 x ls1
@@ -2894,7 +2895,7 @@ float interpol_time = 0.0;
   //================================================================
   void plainMultiDMul(sfixn N, sfixn * ccum, sfixn * res, sfixn * ccum1, sfixn * dgs1, sfixn * ccum2, sfixn * dgs2, sfixn * coeffs1, sfixn * coeffs2, MONTP_OPT2_AS_GENE * pPtr){
 	int d;
-	
+
 	sfixn p=pPtr->P, R=(1L<<pPtr->Rpow)%p, SFT=pPtr->Base_Rpow;
 
 	d=shrinkDeg(dgs1[N], coeffs1, ccum1[N]);
@@ -2903,7 +2904,7 @@ float interpol_time = 0.0;
 	for(int i=0; i<=d; i++){//race with inline MontMulMod_OPT2_AS_GENE:a += (a >> BASE_1) & c;
 	  PBPAS::decomposePoly(N, ccum, res+ccum[N]*i,  N-1, dgs1, coeffs1+ccum1[N]*i, ccum1, N, dgs2, coeffs2, ccum2, pPtr, R, SFT);
 	}
-  } 
+  }
 
 
   //-------------------------------
@@ -2912,8 +2913,8 @@ float interpol_time = 0.0;
 	int d;
 	if(N1==0){
 	  if(! coeffs1[0]) return;
-	  R=( MulMod(coeffs1[0], R, pPtr->P))<<SFT;    
-	  PBPAS::decomposePoly2(N, ccum, res, R, N2, dgs2, coeffs2, ccum2, pPtr); 
+	  R=( MulMod(coeffs1[0], R, pPtr->P))<<SFT;
+	  PBPAS::decomposePoly2(N, ccum, res, R, N2, dgs2, coeffs2, ccum2, pPtr);
 	  return;
 	}
 
@@ -2921,7 +2922,7 @@ float interpol_time = 0.0;
 	//cilk_for(int i=0; i<=d; i++){//race with inline MontMulMod_OPT2_AS_GENE:a += (a >> BASE_1) & c;
 	for(int i=0; i<=d; i++){
 	  PBPAS::decomposePoly(N, ccum, res+ccum[N1]*i, N1-1, dgs1, coeffs1+ccum1[N1]*i, ccum1, N2, dgs2, coeffs2, ccum2, pPtr, R, SFT);
-	}	
+	}
   }
 
   //-------------------------------------
@@ -2932,20 +2933,20 @@ float interpol_time = 0.0;
       res[0]=AddMod(res[0],  MontMulMod_OPT2_AS_GENE(coeffs2[0], num, pPtr), pPtr->P);
 	  return;
 	}
-	
-	if(N2==1){ 
+
+	if(N2==1){
 	  d=shrinkDeg(dgs2[1], coeffs2, ccum2[1]);
-	  cilk_for(int i=0; i<=d; i++) 
+	  cilk_for(int i=0; i<=d; i++)
 	  //for(int i=0; i<=d; i++)
         PBPAS::decomposePoly2(N, ccum, res+ccum[1]*i, num, 0, dgs2, coeffs2+ccum2[1]*i, ccum2, pPtr);
 	  return;
 	}
-	
+
 	d=shrinkDeg(dgs2[N2], coeffs2, ccum2[N2]);
 	cilk_for(int i=0; i<=d; i++){
 	  //for(int i=0; i<=d; i++){
 	  PBPAS::decomposePoly2(N, ccum, res+ccum[N2]*i, num, N2-1, dgs2, coeffs2+ccum2[N2]*i, ccum2, pPtr);
-	}	
+	}
   }
 
 
@@ -2965,7 +2966,7 @@ float interpol_time = 0.0;
    *
    * Compute the inverses (reverse ordered) of given triangular set 'ts'.
    *
-   * Return value: 
+   * Return value:
    **/
   void getRevInvTiSet(sfixn *dgs, sfixn N, TriRevInvSet * tris, TriSet * ts,  MONTP_OPT2_AS_GENE * pPtr){
     register int i;
@@ -3005,10 +3006,10 @@ float interpol_time = 0.0;
    *
    * Compute the inverse of T_N modulo 'tPtr'.
    *
-   * Return value: 
+   * Return value:
    **/
   void NewtonRevInverse(sfixn N, preFFTRep * tRIPtrtmp, preFFTRep * tRIPtr, preFFTRep * tPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr){
-	register int i; 
+	register int i;
 	sfixn e,n;
 	sfixn * tmpPtr;
 	sfixn cutDeg;
@@ -3016,10 +3017,10 @@ float interpol_time = 0.0;
 	sfixn d1, d2, d3, d4, d5;
 	KroFFTRep * krofftrep, * krofftrep2;
 	preFFTRep * resPoly, * resPoly2;
-	
+
 	backupData(tPtr); //inlineFuncs.h
-	
-	if(N==1){ 
+
+	if(N==1){
 	  n=(BUSZSI(tRIPtr, 1))+1;
 	  e=logceiling(n);
 	  tmpPtr=(sfixn *)my_calloc(((BUSZSI(tPtr, 1))+1),(sizeof(sfixn)));
@@ -3052,91 +3053,91 @@ float interpol_time = 0.0;
 	SERBPAS::InitResPoly(resPoly2, N, BUSZS(tPtr) , BUSZS(tRIPtr));
 	SERBPAS::InitKroFFTRep(krofftrep, BUSZS(resPoly), N, 2, pPtr);
 	SERBPAS::InitKroFFTRep(krofftrep2, BUSZS(resPoly2), N, 2, pPtr);
-	
+
 	//=====================
 	// Newton Iteration  ==
 	//=====================
-	
+
 	d1=BUSZSI(tRIPtr, N);
 	d2=BUSZSI(tPtr, N);
 	d3=BUSZSI(resPoly, N);
 	d4=BUSZSI(tRIPtrtmp, N);
 	d5=BUSZSI(resPoly2, N);
-	
+
 	for (i=1; i<=e; i++){ //serial x^e
 	  cutDeg=(1<<i)-1;
-	  
-	  if(d1>cutDeg) 
-		BUSZSI(tRIPtr, N)=cutDeg; 
-	  else 
+
+	  if(d1>cutDeg)
+		BUSZSI(tRIPtr, N)=cutDeg;
+	  else
 		BUSZSI(tRIPtr, N)=d1;
 
-	  if(d2>cutDeg) 
-		BUSZSI(tPtr, N)=cutDeg; 
-	  else 
+	  if(d2>cutDeg)
+		BUSZSI(tPtr, N)=cutDeg;
+	  else
 		BUSZSI(tPtr, N)=d2;
-	  
-	  if(i>1) 
+
+	  if(i>1)
 		PBPAS::PolyCleanData(resPoly);
-	  
-	  if(d3>(2*cutDeg)) 
-		BUSZSI(resPoly, N)=2*cutDeg; 
-	  else 
+
+	  if(d3>(2*cutDeg))
+		BUSZSI(resPoly, N)=2*cutDeg;
+	  else
 		BUSZSI(resPoly, N)=d3;
-	  
+
 	  SERBPAS::decreaseKroFFTRep(krofftrep, BUSZS(resPoly));
-	  
+
 	  //=========================================================
 	  PBPAS::squarePoly_FFT(N, krofftrep, resPoly, tRIPtr, pPtr);
 	  // =============================================================
-	  
-	  
+
+
 	  PBPAS::PolyCleanData(tRIPtrtmp);
-	  
-	  if(d4> cutDeg) 
-		BUSZSI(tRIPtrtmp, N)=cutDeg; 
-	  else 
+
+	  if(d4> cutDeg)
+		BUSZSI(tRIPtrtmp, N)=cutDeg;
+	  else
 		BUSZSI(tRIPtrtmp, N)=d4;
 
-	  if(d3>cutDeg) 
-		BUSZSI(resPoly, N)=cutDeg; 
-	  else 
+	  if(d3>cutDeg)
+		BUSZSI(resPoly, N)=cutDeg;
+	  else
 		BUSZSI(resPoly, N)=d3;
 
 	  //=========================================================
 	  PBPAS::reduceCoeffs(N, tRIPtrtmp, resPoly, ts, tris, pPtr);
 	  //=========================================================
 
-	  if(i>1)  
+	  if(i>1)
 		PBPAS::KroneckerCleanData(krofftrep2);
 
-	  if(i>1) 
+	  if(i>1)
 		PBPAS::PolyCleanData(resPoly2);
-	  
-	  if(d5>2*cutDeg) 
-		BUSZSI(resPoly2, N)=2*cutDeg; 
-	  else 
+
+	  if(d5>2*cutDeg)
+		BUSZSI(resPoly2, N)=2*cutDeg;
+	  else
 		BUSZSI(resPoly2, N)=d5;
-	  
+
 	  SERBPAS::decreaseKroFFTRep(krofftrep2, BUSZS(resPoly2));
-	  
+
 	  //====================================================================
 	  PBPAS::mulPoly_FFT(N, krofftrep2, resPoly2, tRIPtrtmp, tPtr, pPtr);
-	  //==================================================================== 
+	  //====================================================================
 	  //actually kn fft, can not handle 4 65 65 65 65 1
 	  //shall use multi dft/fft
-	  
-	  if(d5>cutDeg) 
-		BUSZSI(resPoly2, N)=cutDeg; 
-	  else 
+
+	  if(d5>cutDeg)
+		BUSZSI(resPoly2, N)=cutDeg;
+	  else
 		BUSZSI(resPoly2, N)=d5;
-	  
+
 	  BUSZSI(tRIPtrtmp, N)=d4;
 	  PBPAS::PolyCleanData(tRIPtrtmp);
 	  BUSZSI(tRIPtrtmp, N)=cutDeg;
-	  
+
 	  PBPAS::reduceCoeffs(N, tRIPtrtmp, resPoly2, ts, tris, pPtr);
-	  
+
 	  //============================================
 	  PBPAS::addEqDgPoly_1(N, tRIPtr, tRIPtr, pPtr->P); //inline
 	  //============================================
@@ -3144,32 +3145,32 @@ float interpol_time = 0.0;
 	  //=================================================
 	  PBPAS::subEqDgPoly_1(N, tRIPtr, tRIPtrtmp, pPtr->P, 1);//inline
 	  //=============================================
-	  
+
 	}
-	
+
 	// actually free tmpPtr -- the reversal of tPtr->data.
 	my_free(DAT(tPtr));
 	restoreData(tPtr);
-		
+
 	BUSZSI(tRIPtr, N)=d1;
 	BUSZSI(tPtr, N)=d2;
 	BUSZSI(resPoly, N)=d3;
 	BUSZSI(tRIPtrtmp, N)=d4;
 	BUSZSI(resPoly2, N)=d5;
-	
-	freePoly(resPoly);  
-	freePoly(resPoly2); 
+
+	freePoly(resPoly);
+	freePoly(resPoly2);
 	SERBPAS::freeKroFFTRep(krofftrep);
 	SERBPAS::freeKroFFTRep(krofftrep2);
 	my_free(krofftrep);
 	my_free(krofftrep2);
 	my_free(resPoly);
 	my_free(resPoly2);
-	EXSTI(tris, N)=1; 
+	EXSTI(tris, N)=1;
 	//
 	return;
   }
-  
+
   // Input: degG=n-1, degF<l where x^l is the modulus.
   //        degF< l implies F is reduced r.w.t x^l.
   //        r=ceiling(log_2(l)), n=2^r.
@@ -3177,79 +3178,79 @@ float interpol_time = 0.0;
   //         =>  G is also the inverse of F modulo x^l.
   // note: good for all Fourier Primes.
   /**
-   * modularInvPM: Computes the inverse of F modulo x^r 
+   * modularInvPM: Computes the inverse of F modulo x^r
    *               This assumes F has a non-zero trailing coefficient.
    *               This works for all Fourier Primes.
-   * @degG: degree of G (output) 
-   * @GPtr: coefficient vector of G (output) 
+   * @degG: degree of G (output)
+   * @GPtr: coefficient vector of G (output)
    * @degF: degree of F
    * @FPtr: coefficient vector of F
-   * @r: 
+   * @r:
    * @n: equals 2^r
    * @pPtr: prime number structure
-   * 
+   *
    * Using the Middle product trick.
-   * So the running time is expected to be in 2 M(n) + o(M(n)) machine 
+   * So the running time is expected to be in 2 M(n) + o(M(n)) machine
    * word operations.
-   * Return value: G, the inverse of F modulo x^r 
-   **/   
+   * Return value: G, the inverse of F modulo x^r
+   **/
   sfixn *
   modularInvPM(sfixn degG, // degG=n-1;
-			   sfixn * GPtr, sfixn degF, sfixn * FPtr, 
+			   sfixn * GPtr, sfixn degF, sfixn * FPtr,
 			   sfixn r, sfixn n,
 			   MONTP_OPT2_AS_GENE * pPtr)
   {
 	int i;
 	sfixn nn, halfnn;
-	sfixn * rootsPtr=(sfixn *)my_calloc(n, sizeof(sfixn)), 
-	  * tmpGPtr=(sfixn *)my_calloc(n, sizeof(sfixn)), 
+	sfixn * rootsPtr=(sfixn *)my_calloc(n, sizeof(sfixn)),
+	  * tmpGPtr=(sfixn *)my_calloc(n, sizeof(sfixn)),
 	  * tmpFPtr=(sfixn *)my_calloc(n, sizeof(sfixn));
-	
+
 	GPtr[0]=1;
-	
+
 	for(i=1; i<=r; i++){ //serial, dependent on previous GPtr
 	  nn=1<<i;
 	  halfnn=nn>>1;
-	  
+
 	  SERBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(i, nn, rootsPtr, pPtr);
-	  
+
 	  EX_Mont_DFT_OPT2_AS_GENE( nn, i, rootsPtr, tmpGPtr, nn-1, GPtr, pPtr);
-	  
-	  if(degF>=(nn-1)) 
+
+	  if(degF>=(nn-1))
 		EX_Mont_DFT_OPT2_AS_GENE( nn, i, rootsPtr, tmpFPtr, nn-1, FPtr, pPtr);
-	  else    
+	  else
 		EX_Mont_DFT_OPT2_AS_GENE( nn, i, rootsPtr, tmpFPtr, degF, FPtr, pPtr);
 
 	  PBPAS::EX_Mont_PairwiseMul_OPT2_AS_R(nn, tmpFPtr, tmpGPtr, pPtr);
-	  
-	  
+
+
 	  EX_Mont_INVDFT_OPT2_AS_GENE_R_1 (nn, i, rootsPtr, tmpFPtr, pPtr);
-	  
-	  cilk_for(int j=0; j<halfnn; j++) 
+
+	  cilk_for(int j=0; j<halfnn; j++)
 		tmpFPtr[j]=tmpFPtr[j+halfnn];
-	  
-	  cilk_for(int j=halfnn; j<nn; j++) 
+
+	  cilk_for(int j=halfnn; j<nn; j++)
 		tmpFPtr[j]=0;
-	  
-	  
+
+
 	  EX_Mont_DFT_OPT2_AS_GENE_1 ( nn, i, rootsPtr, tmpFPtr, pPtr );
-	  
+
 	  PBPAS::EX_Mont_PairwiseMul_OPT2_AS_R(nn, tmpFPtr, tmpGPtr, pPtr);
-	  
-	  
+
+
 	  EX_Mont_INVDFT_OPT2_AS_GENE_R_1 (nn, i, rootsPtr, tmpFPtr, pPtr);
-	  
-	  cilk_for(int j=halfnn; j<nn; j++) 
+
+	  cilk_for(int j=halfnn; j<nn; j++)
 		GPtr[j] = SubMod(GPtr[j], tmpFPtr[j-halfnn], pPtr->P);
-	  
+
 	};
-	
+
 	my_free (rootsPtr);
 	my_free (tmpGPtr);
 	my_free (tmpFPtr);
 	return GPtr;
   }
-  
+
   //===========================================================
   // rPtr = p1Ptr ^ 2
   //===========================================================
@@ -3261,20 +3262,20 @@ float interpol_time = 0.0;
    * @p1Ptr: C-Cube prolynomial p1.
    * @pPtr: Information for the prime number.
    * use KN FFT or FFT; shall change to 2D TFT or plain multiplication
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
   void squarePoly_FFT(sfixn N, KroFFTRep * kPtr, preFFTRep * rPtr, preFFTRep *p1Ptr,  MONTP_OPT2_AS_GENE * pPtr){
     sfixn kdg1;
     int switcher=0;
-	
-    if((KE(kPtr))>(pPtr->Npow)) 
-      { 
+
+    if((KE(kPtr))>(pPtr->Npow))
+      {
 		//printf("FFT size larger than the prime %ld can handle-> Using MultiD-FFT solving this problem.", pPtr->P);
          switcher=1;}
-	
+
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(p1Ptr), BUSZS(p1Ptr), DAT(p1Ptr));
-	
+
     if(switcher){
       //
 	  //
@@ -3289,10 +3290,10 @@ float interpol_time = 0.0;
 	  PBPAS::EX_KN_Mont_FFTSQUARE_OPT2_AS_GENE_1(KN(kPtr), KE(kPtr), 0, KROOTS(kPtr), kdg1, DATSI(kPtr, 0), pPtr);
 
     }
-	
+
     PBPAS::fromtofftRepMultiD(N,  CUM(rPtr), DAT(rPtr), CUM(kPtr), BUSZS(rPtr), DATSI(kPtr, 0));
   }
-  
+
   //================================================================
   // Squaring by Multi-dimensional FFT.
   //
@@ -3307,7 +3308,7 @@ float interpol_time = 0.0;
     sfixn m=0, n=1;
     sfixn *rootsPtr, *tmprootsPtr;
 	sfixn *tmprootsPtr1;
-	
+
 	//std::cout << "entering fftMultiD_test_1" << std::endl;
 
 	for(i=1; i<=N; i++) { //N is small
@@ -3315,12 +3316,12 @@ float interpol_time = 0.0;
 	}
 
     //compute the primitive roots for all dimensions
-    for(i=1; i<=N; i++) { n *= dims[i]; m += dims[i]; } 
+    for(i=1; i<=N; i++) { n *= dims[i]; m += dims[i]; }
     //use reducer?? N is small
 
     rootsPtr=(sfixn *) my_calloc(m, sizeof(sfixn));
 
-    tmprootsPtr1 = rootsPtr;	
+    tmprootsPtr1 = rootsPtr;
 
     for(i=1; i<=N; i++) {//no parallel, dependency
       SERBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es[i], dims[i], tmprootsPtr1, pPtr);
@@ -3338,7 +3339,7 @@ float interpol_time = 0.0;
     my_free(rootsPtr);
 
   }
-  
+
   // fastest FFT and good for FFT-primes.
   /**
    * EX_KN_Mont_FFTSQUARE_OPT2_AS_GENE_1:
@@ -3347,38 +3348,38 @@ float interpol_time = 0.0;
    * @degRes: degree of result
    * @rootsPtr: powers of the primitive n-th root of unity
    * @degA: (Input and Output) degree of A
-   * @APtr: coefficient vector of A 
+   * @APtr: coefficient vector of A
    * @pPtr: prime number structure
-   * 
+   *
    * FFT-based square of A. In place: result in A.
-   * 
-   * 
+   *
+   *
    * Return value: the square of a polynomial.
-   **/   
+   **/
   void EX_KN_Mont_FFTSQUARE_OPT2_AS_GENE_1(sfixn n, sfixn e, sfixn degRes, sfixn * rootsPtr, sfixn degA, sfixn * APtr, MONTP_OPT2_AS_GENE * pPtr){
 	sfixn l_AB, e1, n1, sA;
-	
+
     l_AB = degRes + 1; // compute l_AB for FFT(A,B).
     e1 = logceiling(l_AB);
 
 	checkFrourierPrime(e1, pPtr);
-	
+
     n1 = 1L << e1;
-    
+
     // force this FFT use the n from parameter if n<n1.
     if ( (n<n1) || (degRes==0) ) { n1=n; e1=e;}
-	
+
 	sA = degA+1;
     cilk_for(int i=sA; i<n1; i++) APtr[i]=0;
-    
+
     EX_Mont_DFT_OPT2_AS_GENE_1( n1, e1, rootsPtr, APtr, pPtr);
-    
+
     PBPAS::EX_Mont_PairwiseMul_OPT2_AS_R(n1, APtr, APtr, pPtr);
-    
+
     EX_Mont_INVDFT_OPT2_AS_GENE_R_1(n1, e1, rootsPtr, APtr, pPtr);
-    	
+
   }
-  
+
   /**
    * reduceCoeffs:
    * @N: number of variables.
@@ -3387,16 +3388,16 @@ float interpol_time = 0.0;
    * @ts: a triangular set.
    * @tris: modular inverses of 'ts'.
    * @pPtr: information of the prime.
-   * 
-   * 'ts' has main variable N-1. 'fromPtr' has main variable N.
-   * Reduce the coefficients of 'fromPtr' by 'ts'. 
    *
-   * Return value: 
+   * 'ts' has main variable N-1. 'fromPtr' has main variable N.
+   * Reduce the coefficients of 'fromPtr' by 'ts'.
+   *
+   * Return value:
    **/
   void reduceCoeffs(sfixn N, preFFTRep * toPtr, preFFTRep * fromPtr, TriSet * ts, TriRevInvSet * tris,   MONTP_OPT2_AS_GENE * pPtr)
-  { 
+  {
 // register int i;
-	
+
 // 	backupData(fromPtr); //inline
 // 	backupData(toPtr);
 
@@ -3408,7 +3409,7 @@ float interpol_time = 0.0;
 // 	  SERBPAS::MultiMod(N-1, toPtr, fromPtr, ts, tris, pPtr);
 // 	  //===============================================
 // 	  nextCoefData(fromPtr, N); //inline DAT(fromPtr)+=CUMI(fromPtr, N);
-// 	  nextCoefData(toPtr, N); 
+// 	  nextCoefData(toPtr, N);
 // 	}
 
 // 	increaseOneDim(fromPtr); //inline
@@ -3420,13 +3421,13 @@ float interpol_time = 0.0;
 	sfixn deg = BUSZSI(toPtr, N);
 	preFFTRep ** arrayTo = (preFFTRep **)my_malloc((deg+1)*sizeof(preFFTRep *));
 	preFFTRep ** arrayFrom = (preFFTRep **)my_malloc((deg+1)*sizeof(preFFTRep *));
-	
+
 	cilk_for(int i=0; i<=deg; i++){
 	  arrayTo[i] = SERBPAS::CopyOnePoly_sameData(toPtr);
 	  arrayFrom[i] = SERBPAS::CopyOnePoly_sameData(fromPtr);
 	  //arrayTo[i] = (preFFTRep *)my_malloc(sizeof(preFFTRep));
 	  //SERBPAS::copyPolyPointers(arrayTo[i], toPtr);
-	  //race between copyVec_1_to_n and CopyOnePoly_sameData 
+	  //race between copyVec_1_to_n and CopyOnePoly_sameData
 	  N(arrayTo[i]) = N-1;
 	  SIZ(arrayTo[i]) = CUMI(toPtr, N);
 	  DAT(arrayTo[i]) = DAT(toPtr)+i*CUMI(toPtr, N);
@@ -3455,7 +3456,7 @@ float interpol_time = 0.0;
 // 	BUSZS(toPtr), DAT(fromPtr));
 
   }
-  
+
   /**
    * MultiMod:
    * @N: number of variables.
@@ -3464,36 +3465,36 @@ float interpol_time = 0.0;
    * @ts: a triangular set.
    * @tris: modular inverse of 'ts'.
    * @pPtr: the information of prime number p.
-   * 
+   *
    * Reduce 'inPtr' w.r.t 'ts' and save the result in 'outPtr'.
    *
-   * Return value: 
+   * Return value:
    **/
   void
   MultiMod(sfixn N, preFFTRep * outPtr, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr)
-  { 
+  {
 	if(zeroPolyp(inPtr)) return;
-	
+
 	//----yu
 	//why 1 here to use MultiMod_DF
 	//but in modpn:-NormalForm passed in opt=0 to MultiMod_OPT to use MultiMod_BULL
-	if(1){ 
+	if(1){
 	  // classical/FFT/TFT, depth-first reduction
-	  PBPAS::MultiMod_DF(N, outPtr, inPtr, ts, tris, pPtr);	  
+	  PBPAS::MultiMod_DF(N, outPtr, inPtr, ts, tris, pPtr);
 	}else
 	  {
 		// pure TFT, Bottom-up level-by-level reduction.
 		SERBPAS::MultiMod_BULL(N, outPtr, inPtr, ts, tris, pPtr);
-		
+
 	  }
-	
+
   }
-  
-  
+
+
   //========================================================================
   //   Multiavriate polynomial Fast Mod. (recursive.)
   //   using FFT.
-  // 
+  //
   // will destruct inPtr.
   // N is the # of current dimensions.
   // outPtr keeps the output of the reduction.
@@ -3501,9 +3502,9 @@ float interpol_time = 0.0;
   // inPtr keeps the input to be reduced.
   // -- The input is required bounded by 2 times ts->bounds (inslucively).
   // ts is the triangular set.
-  // tris is the inverses of reverse-coef-ordered ts. 
+  // tris is the inverses of reverse-coef-ordered ts.
   //========================================================================
-  
+
   /**
    * MultiMod_DF:
    * @N: number of variables.
@@ -3512,23 +3513,23 @@ float interpol_time = 0.0;
    * @ts: a triangular set.
    * @tris: modular inverse of 'ts'.
    * @pPtr: the information of prime number p.
-   * 
+   *
    * Reduce 'inPtr' w.r.t 'ts' and save the result in 'outPtr'.
    *
-   * Return value: 
+   * Return value:
    **/
   void
   MultiMod_DF(sfixn N, preFFTRep * outPtr, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr)
-  { 
+  {
 	//std::cout<<"PBPAS::MultiMod_DF"<<std::endl;
-	
+
 	if (zeroCoefp(DAT(inPtr), SIZ(inPtr)) ) return;
 	//preFFTRep * inPtrOri = SERBPAS::CopyOnePoly_sameData(inPtr);
 	PBPAS::MultiMod_1_par(N, inPtr, ts, tris, pPtr);
 	PBPAS::fromtofftRep(N, CUM(outPtr), DAT(outPtr), CUM(inPtr),  BUSZS(outPtr), DAT(inPtr));
-	
+
   }
-  
+
   //============================================================
   //
   //
@@ -3547,31 +3548,31 @@ float interpol_time = 0.0;
    * //@data0: DAT(inPtr)
    * Reduce 'inPtr' by 'ts' in-place.
    * I.e. 'inPtr'= 'inPtr' modulo 'ts'.
-   * Return value: 
+   * Return value:
    **/
   void MultiMod_1_par(sfixn N, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr){
 	//register int i;
 	int deg1=0, deg2=0, deg3=0, d;
-	
+
 	sfixn * restoreDat;
 	sfixn restoreSiz;
 	preFFTRep tmpIn;
-	
+
 	//std::cout<<"PBPAS::MultiMod_1_par, N="<< N <<", DAT(inPtr)=" << DAT(inPtr)<<std::endl;
 
-	if(N==1){ 
-	  
+	if(N==1){
+
 	  deg1 = shrinkDeg(BUSZSI(inPtr, N), DAT(inPtr), 1); //inline
 
 	  //std::cout<<"PBPAS::MultiMod_1_par, N==1, deg1="<<deg1<<std::endl;
 	  if (!deg1) return;
 	  if ( ( (BDSI(ts, 1)) > DivCut1 ) ) {
-		PBPAS::UniFastMod_1(deg1, DAT(inPtr), BUSZSI((ELEMI(ts, 1)), 1), DAT(ELEMI(ts, 1)), (NLB(tris))[1], DAT(ELEMI(tris, 1)), pPtr);  
+		PBPAS::UniFastMod_1(deg1, DAT(inPtr), BUSZSI((ELEMI(ts, 1)), 1), DAT(ELEMI(ts, 1)), (NLB(tris))[1], DAT(ELEMI(tris, 1)), pPtr);
 	  }
 	  else{
 		//std::cout<<"PBPAS::MultiMod_1_par, N==1, UniPlainMod_1"<<std::endl;
-		PBPAS::UniPlainMod_1(deg1, DAT(inPtr), BUSZSI((ELEMI(ts, 1)), 1), 
-							 DAT(ELEMI(ts, 1)), pPtr); 
+		PBPAS::UniPlainMod_1(deg1, DAT(inPtr), BUSZSI((ELEMI(ts, 1)), 1),
+							 DAT(ELEMI(ts, 1)), pPtr);
 	  }
 	  return;
 	}
@@ -3582,20 +3583,20 @@ float interpol_time = 0.0;
 	//std::cout<<"PBPAS::MultiMod_1_par, deg2=" <<deg2<<std::endl;
 
 	restoreDat = DAT(inPtr); //????
-	restoreSiz = SIZ(inPtr); 
+	restoreSiz = SIZ(inPtr);
 
 // 	N(inPtr) = N-1;
 // 	SIZ(inPtr) = CUMI(inPtr, N);
-		
+
 // 	for(int i=0; i<=deg2; i++){
 // 	  PBPAS::MultiMod_1_par(N-1, inPtrOri, inPtr, ts, tris, pPtr);
-// 	  DAT(inPtr) += CUMI(inPtr, N); 
+// 	  DAT(inPtr) += CUMI(inPtr, N);
 // 	}
 
 	preFFTRep ** cpinPtr = (preFFTRep **)my_malloc((deg2+1)*sizeof(preFFTRep *));
 
 	cilk_for(int i=0; i<=deg2; i++){
-	  cpinPtr[i] = SERBPAS::CopyOnePoly_sameData(inPtr); 
+	  cpinPtr[i] = SERBPAS::CopyOnePoly_sameData(inPtr);
 	  //calloc inside
 
 	  //cpinPtr[i]=(preFFTRep *)my_malloc(sizeof(preFFTRep));
@@ -3615,9 +3616,9 @@ float interpol_time = 0.0;
 	//my_free(cpinPtr[i]);
 	//}
 	//std::cout<<"PBPAS::MultiMod_1_par, after recursive"<<std::endl;
-	  
+
 	N(inPtr) = N;
-	DAT(inPtr) = restoreDat; 
+	DAT(inPtr) = restoreDat;
 	SIZ(inPtr) = restoreSiz;
 
 	d = BDSI(ts, N);
@@ -3628,23 +3629,23 @@ float interpol_time = 0.0;
 	PBPAS::copyVec_1_to_n(N-1, CUTS(inPtr), BDS(ts));
 	deg3 = shrinkDeg(CUTSI(inPtr, N), DAT(inPtr), CUMI(inPtr, N));
 	PBPAS::copyVec_1_to_n(N-1, CUTS(inPtr), BUSZS(inPtr));
-	
+
 	//BDSI(ts, N) = deg;
 	cpBDS[N] = deg3;
 	//std::cout<<"PBPAS::MultiMod_1_par, before InitOneReducedPoly"<<std::endl;
-	SERBPAS::InitOneReducedPoly(&tmpIn, N, cpBDS);  
+	SERBPAS::InitOneReducedPoly(&tmpIn, N, cpBDS);
 	my_free(cpBDS);
 
 	PBPAS::fromtofftRep(N, tmpIn.accum, tmpIn.data, CUM(inPtr), BUSZSD(tmpIn), DAT(inPtr));
 	//std::cout<<"PBPAS::MultiMod_1_par, after fromtofftRep"<<std::endl;
-	
+
 	//BDSI(ts, N) = d;
-	
+
 	if( (((N==2) && (d>DivCut2)) || ((N==3) && (d>DivCut3)) || ((N>3) && (d>DivCutN))) ){
 	  //printf("using MultiUniFastMod_1\n");
 	  //fflush(stdout);
 	  //std::cout<<"PBPAS::MultiMod_1_par, call PBPAS::MultiUniFastMod_1"<<std::endl;
-	  PBPAS::MultiUniFastMod_1(N, &tmpIn, deg3, inPtr, ts, tris, pPtr);	
+	  PBPAS::MultiUniFastMod_1(N, &tmpIn, deg3, inPtr, ts, tris, pPtr);
 	  //std::cout<<"PBPAS::MultiMod_1_par, after PBPAS::MultiUniFastMod_1"<<std::endl;
     }
 	else{
@@ -3654,13 +3655,13 @@ float interpol_time = 0.0;
 	  PBPAS::MultiUniPlainMod_1(N, deg3, &tmpIn, BDSI(ts, N)+1, ELEMI(ts, N), ts, tris, pPtr);
 	  //std::cout<<"PBPAS::MultiMod_1_par, after PBPAS::MultiUniPlainMod_1"<<std::endl;
 	  PBPAS::fromtofftRep(N, CUM(inPtr), DAT(inPtr), tmpIn.accum, BUSZSD(tmpIn), tmpIn.data);
-	  
+
 	}
-	
-	freePoly(&tmpIn);  
+
+	freePoly(&tmpIn);
 
   }
-  
+
   //============================================================
   //
   //
@@ -3669,7 +3670,7 @@ float interpol_time = 0.0;
   //
   //
   //=============================================================
-  // Modulo poly by T_n, then by [T_{n-1}, T_{n-2}, ...,T_1] 
+  // Modulo poly by T_n, then by [T_{n-1}, T_{n-2}, ...,T_1]
   /**
    * MultiUniFastMod_1:
    * @N: number of variables.
@@ -3679,31 +3680,31 @@ float interpol_time = 0.0;
    * @ts: a triangular set.
    * @tris: modular inverses of 'ts'.
    * @pPtr: the information of the prime p.
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
   void MultiUniFastMod_1(sfixn N, preFFTRep * tmpIn,  sfixn n, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr){
 	sfixn m,e,d1,d2;
 	sfixn cutDg;
-	
+
 	preFFTRep * resPoly, * resPoly2, * out;
 	KroFFTRep * krofftrep, * krofftrep2;
-	
+
 	//
     m=BUSZSI((ELEMI(ts, N)), N);
-	
-	if(n<m){ // if(DEBUG) printf("Leaving MultiUniFastMod_1.\n"); 
+
+	if(n<m){ // if(DEBUG) printf("Leaving MultiUniFastMod_1.\n");
 	  return;}
-	
+
 	resPoly=(preFFTRep *)my_calloc(1, sizeof(preFFTRep));
 	resPoly2=(preFFTRep *)my_calloc(1, sizeof(preFFTRep));
 	out=(preFFTRep *)my_calloc(1, sizeof(preFFTRep));
-	
+
 	krofftrep=(KroFFTRep *)my_calloc(1, sizeof(KroFFTRep));
 	krofftrep2=(KroFFTRep *)my_calloc(1, sizeof(KroFFTRep));
 	e=logceiling(n-m+1);
-	
-	if(! (EXSTI(tris, N))) {  
+
+	if(! (EXSTI(tris, N))) {
 	  SERBPAS::initCopyOneRevInv(out, ELEMI(tris, N));
 	  SERBPAS::NewtonRevInverse(N, out, ELEMI(tris, N), ELEMI(ts, N), ts, tris, pPtr );
 	  freePoly(out);
@@ -3740,41 +3741,41 @@ float interpol_time = 0.0;
 	BUSZSI(tmpIn, N) = d1;
 
 	//BUSZSI(ELEMI(tris, N), N) = d2;
-	
+
 	PBPAS::PolyCleanData(tmpIn);
-	
+
 	BUSZSI(tmpIn, N) = cutDg;
 	//std::cout<<"before 1st reduceCoeffs"<<std::endl;
 	PBPAS::reduceCoeffs(N, tmpIn, resPoly, ts, tris, pPtr);
 	//std::cout<<"after 1st reduceCoeffs"<<std::endl;
-	freePoly(resPoly); 
-	
+	freePoly(resPoly);
+
 	SERBPAS::InitResPoly(resPoly2, N, BUSZS(ELEMI(ts, N)), BUSZS(tmpIn));
-	
+
 	//=====================================================================
 	PBPAS::EX_mulPoly(N, resPoly2, ELEMI(ts, N), tmpIn,  pPtr);
 	//=====================================================================
 	//std::cout<<"after 2nd EX_mulPoly"<<std::endl;
 	BUSZSI(tmpIn, N)=d1;
-	
+
 	PBPAS::PolyCleanData(tmpIn);
-	
+
 	PBPAS::reduceCoeffs(N, tmpIn, resPoly2, ts, tris, pPtr);
 	//std::cout<<"after 2nd reduceCoeffs"<<std::endl;
 	freePoly(resPoly2);
-	
+
 	PBPAS::subPoly_1(N, inPtr, tmpIn, pPtr->P);
 	//std::cout<<"after subPoly_1"<<std::endl;
-	
-	my_free(resPoly); 
+
+	my_free(resPoly);
 	my_free(resPoly2);
 	my_free(out);
-	my_free(krofftrep); 
+	my_free(krofftrep);
 	my_free(krofftrep2);
 	//std::cout<<"before my_free(cpBUSZS)"<<std::endl;
 	//my_free(cpBUSZS);
   }
-  
+
 
   /**
    * MultiUniPlainMod_1:
@@ -3786,21 +3787,21 @@ float interpol_time = 0.0;
    * @ts: a triangular set.
    * @tris: modular inverses of 'ts'.
    * @pPtr: the information of prime p.
-   * 
+   *
    * In formula FPtr = QPtr * GPtr + rPtr,
-   * 'FPtr' and 'GPtr' are input. 
+   * 'FPtr' and 'GPtr' are input.
    * 'rPtr' is the output remainder. And 'rPtr' uses 'FPtr' as the in-place buffer.
    * Return value: the degree of the 'QPtr'.
    **/
   preFFTRep *
   MultiUniPlainMod_1(sfixn N, sfixn d1, preFFTRep * FPtr, sfixn d2, preFFTRep * GPtr, TriSet * ts, TriRevInvSet * tris, MONTP_OPT2_AS_GENE * pPtr){
 	sfixn d, a, b;
-	
+
 	preFFTRep co;
-	  
+
 	d1=shrinkDeg(BUSZSI(FPtr, N), DAT(FPtr), CUMI(FPtr, N));
 	d2=shrinkDeg(BUSZSI(GPtr, N), DAT(GPtr), CUMI(GPtr, N));
-	
+
 	d=d1-d2;
 	if(d<0) return FPtr;
 	if(N==0){
@@ -3809,10 +3810,10 @@ float interpol_time = 0.0;
 	  DATI(FPtr, 0)=0;
 	  return FPtr;
 	}
-	
+
 	if(N==1){
-	  if((BDSI(ts, 1))>DivCut1){ 
-		PBPAS::UniFastMod_1(d1, DAT(FPtr), d2, DAT(GPtr), 
+	  if((BDSI(ts, 1))>DivCut1){
+		PBPAS::UniFastMod_1(d1, DAT(FPtr), d2, DAT(GPtr),
 					 (NLB(tris))[1], DAT(ELEMI(tris, 1)) ,pPtr);}
 	  else{
 		PBPAS::UniPlainMod_1(d1, DAT(FPtr), d2, DAT(GPtr), pPtr);}
@@ -3825,25 +3826,25 @@ float interpol_time = 0.0;
         PBPAS::getCoefMulti(N, &co, FPtr, d1);
 		//std::cout<<"before SERBPAS::fmecgEqDg_1"<<std::endl;
         d1 = PBPAS::fmecgEqDg_1(N, FPtr, d, &co, GPtr, ts, tris, pPtr);
-		//std::cout<<"after SERBPAS::fmecgEqDg_1"<<std::endl;	
-	
+		//std::cout<<"after SERBPAS::fmecgEqDg_1"<<std::endl;
+
         if(d1==-1) {
-		  freePoly(&co); 
+		  freePoly(&co);
 		  return FPtr;
 		}
 		d=d1-d2;
 	  }
-	  
+
       freePoly(&co);
-	} 
+	}
 	return FPtr;
-	
+
   }
-  
+
   //========================================================================
   //  f1 = f1 - co * X**e * f2
-  // 
-  //  
+  //
+  //
   //========================================================================
   sfixn
   fmecgEqDg_1(sfixn N, preFFTRep * f1, sfixn e, preFFTRep * co, preFFTRep * f2, TriSet * ts, TriRevInvSet * tris, MONTP_OPT2_AS_GENE * pPtr){
@@ -3854,7 +3855,7 @@ float interpol_time = 0.0;
 	d1=shrinkDeg(BUSZSI(f1, N), DAT(f1), CUMI(f1, N));
 	d2=d1-e;
 	//std::cout<<"fmecgEqDg_1, d2="<<d2<<std::endl;
-	//preFFTRep *out1;	
+	//preFFTRep *out1;
 	//PBPAS::InitOneReducedPoly(out1, N-1, BUSZS(f1));
 	//std::cout<<"fmecgEqDg_1, after out1"<<std::endl;
 
@@ -3862,13 +3863,13 @@ float interpol_time = 0.0;
 	cilk_for(int i=0; i<=d2; i++){
 	  out[i] = (preFFTRep *)my_calloc(1, sizeof(preFFTRep));
 	  PBPAS::InitOneReducedPoly(out[i], N-1, BUSZS(f1));
-	} 
-	//SERBPAS::InitOneReducedPoly(&out, N-1, BUSZS(f1)); 
+	}
+	//SERBPAS::InitOneReducedPoly(&out, N-1, BUSZS(f1));
 	//std::cout<<"fmecgEqDg_1, after init out"<<std::endl;
 
 	//backupData(f2);
 	//decreaseOneDim(f2);
-	
+
 	preFFTRep **res = (preFFTRep **)my_malloc((d2+1)*sizeof(preFFTRep *));
 	cilk_for(int i=0; i<=d2; i++){
 	  res[i] = (preFFTRep *)my_calloc(1, sizeof(preFFTRep));
@@ -3906,16 +3907,16 @@ float interpol_time = 0.0;
 
 	  PBPAS::mul_Reduced(res[i], N-1, out[i], co, cpf2[i], ts, tris, pPtr);
 	  //SERBPAS::mul_Reduced(&res, N-1, &out, co, f2, ts, tris, pPtr);
-	  
+
 	  SERBPAS::subEqDgPoly_1(N-1, cpf1[i], out[i], pPtr->P, 1); //inline
 	  //subEqDgPoly_1(N-1, f1, &out, pPtr->P, 1); //inline
 
-	  //nextCoefData(f1, N);   
+	  //nextCoefData(f1, N);
 	  //nextCoefData(f2, N);
 	  freePoly(res[i]);
 	  freePoly(out[i]);
 	}
-	
+
 	//cilk_for(int i=0; i<=d2; i++){
 	//freePoly(res[i]);
 	//freePoly(out[i]);
@@ -3932,7 +3933,7 @@ float interpol_time = 0.0;
 
 	if((zeroCoefp(DAT(f1), CUMI(f1,N)))&& (d==0)) return -1; else return d; //inline
   }
-  
+
   //===================================================
   // MulMod
   // (1) resPtr = f1 * f2.
@@ -3950,13 +3951,13 @@ float interpol_time = 0.0;
    * @ts: the triangular set.
    * @tris: the inverses of 'ts'.
    * @pPtr: the information of the prime.
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
-  preFFTRep * 
+  preFFTRep *
   mul_Reduced(preFFTRep * resPtr, sfixn N, preFFTRep * out, preFFTRep * f1, preFFTRep * f2, TriSet * ts, TriRevInvSet * tris, MONTP_OPT2_AS_GENE * pPtr){
 	KroFFTRep kro;
-	
+
 	sfixn d1,d2,d3,d4,d5,sz1, sz2;
 	d1=shrinkDeg(BUSZSI(f1, N), DAT(f1), CUMI(f1, N));
 	d2=shrinkDeg(BUSZSI(f2, N), DAT(f2), CUMI(f2, N));
@@ -3966,7 +3967,7 @@ float interpol_time = 0.0;
 
 	//d3=BUSZSI(f1, N);
 	//d4=BUSZSI(f2, N);
-	
+
 	if((sz1>=MulCut)||(sz2>=MulCut)){
 	  d5= BUSZSI(resPtr, N);
 
@@ -3981,39 +3982,39 @@ float interpol_time = 0.0;
 
 	  BUSZSI(resPtr, N)=d1+d2;
 
-	  SERBPAS::InitKroFFTRep(&kro, BUSZS(resPtr), N, 2, pPtr); 
+	  SERBPAS::InitKroFFTRep(&kro, BUSZS(resPtr), N, 2, pPtr);
 	  //================================================================
 	  PBPAS::mulPoly_FFT(N, &kro, resPtr, cpf1, cpf2,  pPtr);
 	  //================================================================
 
 	  SERBPAS::freePoly_not_data(cpf1);
 	  SERBPAS::freePoly_not_data(cpf2);
-	  //race here	  
+	  //race here
 	  //BUSZSI(f1, N)=d3;
 	  //BUSZSI(f2, N)=d4;
 
 	  BUSZSI(resPtr, N)=d5;
-	  
+
 	  SERBPAS::freeKroFFTRep(&kro);}
 	else{
-	  
+
 	  if(N==1){
-		PBPAS::EX_Mont_PlainMul_OPT2_AS_GENE(BUSZSI(resPtr, 1), DAT(resPtr), d1, DAT(f1), d2, DAT(f2), pPtr); 
-		
+		PBPAS::EX_Mont_PlainMul_OPT2_AS_GENE(BUSZSI(resPtr, 1), DAT(resPtr), d1, DAT(f1), d2, DAT(f2), pPtr);
+
 	  } else{
-		PBPAS::plainMultiDMul(N, CUM(resPtr), DAT(resPtr), CUM(f1), BUSZS(f1), CUM(f2), BUSZS(f2), DAT(f1), DAT(f2), pPtr); 
+		PBPAS::plainMultiDMul(N, CUM(resPtr), DAT(resPtr), CUM(f1), BUSZS(f1), CUM(f2), BUSZS(f2), DAT(f1), DAT(f2), pPtr);
 	  }
-	  
+
 	}
-	
+
 	PBPAS::MultiMod(N, out, resPtr, ts, tris, pPtr);
 	return out; //not necessary --yu
   }
-  
+
   //***************************************************
   //normal form starts
   //***************************************************
-  
+
   //============================================================
   //
   //
@@ -4022,10 +4023,10 @@ float interpol_time = 0.0;
   //
   //
   //=============================================================
-  
+
   // suppose the RevInvPtr is known. or Say the first poly's RevInv in TriSet is computed.
   //destructive APtr into RPtr.
-  
+
   /**
    * UniFastMod_1:
    * @degA: the degree of univariate polynomial 'A'.
@@ -4035,117 +4036,117 @@ float interpol_time = 0.0;
    * @Lbound: The next power of 2 of (degA-degB) .
    * @BRevInvPtr: the modular inverse of 'B'.
    * @pPtr: the information of prime number p.
-   * 
+   *
    * Compute the remainder of A divied by B.
    *
-   * Return value: 
+   * Return value:
    **/
   void
   UniFastMod_1(sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, sfixn Lbound, sfixn * BRevInvPtr,  MONTP_OPT2_AS_GENE * pPtr){
-    
+
 	sfixn * FPtr,  *QPtr, * GPtr;
 	sfixn degF, power2,power3, n2,n3,l1,l2,l3, tmp, sz;
 	sfixn dg, da;
 	sfixn degQ=degA-degB;
-	
+
 	//std::cout<<"PBPAS::UniFastMod_1"<<std::endl;
 
 	degF=degQ;
-	
+
 	if(degF<0) {
 	  //std::cout<<"PBPAS::UniFastMod_1, degF<0"<<std::endl;
 	  return;}
-	
+
 	l1=degF+1;
-	
+
 	n2=1; power2=0; l2=(l1<<1)-1;tmp=l2;
 	while(tmp){tmp>>=1; n2<<=1; power2++;}
 	n3=1; power3=0;  l3=degB+degQ+1, tmp=l3;
 	while(tmp){tmp>>=1; n3<<=1; power3++;}
-	
+
 	dg = da = degF;
-	
+
 	sz = n2;
 	if( n3>n2 ) sz=n3;
-	
+
 	FPtr=(sfixn * )my_calloc(sz ,sizeof(sfixn));
 	GPtr=(sfixn * )my_calloc(sz ,sizeof(sfixn));
-	
-	
+
+
 	cilk_for(int i=0; i<=dg; i++) GPtr[i] = BRevInvPtr[i];
-	
+
 	FPtr = PBPAS::reverseUni(degB, FPtr, BPtr);
-	
+
 	FPtr = PBPAS::reverseUni(degA, FPtr, APtr);
-	
+
 	PBPAS::EX_Mont_FFTMul_OPT2_AS_GENE_1(n2, power2, da+dg, da, FPtr, dg, GPtr, pPtr);
-	
+
 	QPtr=(sfixn * ) my_calloc(degQ+1, sizeof(sfixn));
-	
+
 	QPtr = PBPAS::reverseUni(degQ, QPtr, FPtr);
-	
+
 	PBPAS::cleanVec(n3-1, FPtr);
-	
-	
+
+
 	PBPAS::EX_Mont_FFTMul_OPT2_AS_GENE(n3, power3, degQ+degB, FPtr, degQ, QPtr, degB, BPtr, pPtr);
-	
-	
+
+
 	cilk_for(int j=0; j<l3; j++) APtr[j] = SubMod(APtr[j], FPtr[j], pPtr->P);
 	cilk_for(int j=l3; j<=degA; j++) APtr[j] = 0;
-	
+
 	my_free(FPtr);
 	my_free(GPtr);
 	my_free(QPtr);
 
 	//std::cout<<"end PBPAS::UniFastMod_1"<<std::endl;
-  } 
+  }
 
   //============================================
   // Univariate Plain division.
   // type: in-place.
   // output: the remainder.
   //============================================
-  
-  /** 
+
+  /**
    * UniPlainMod_1:
    * @degA: The degree of the univeriate polynomial 'A'.
    * @APtr: The coefficient vector of univeriate polynomial 'A'.
    * @degB: The degree of the univeriate polynomial 'B'.
    * @BPtr: The coefficient vector of univeriate polynomial 'B'.
    * @pPtr: The information of the prime.
-   * 
+   *
    * Compute the remainder R, where A = QB+R mod p.
-   * The content of input 'A' will be replaced by 'R'. 
-   * Return value: 
+   * The content of input 'A' will be replaced by 'R'.
+   * Return value:
    **/
-  void 
+  void
   UniPlainMod_1(sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, MONTP_OPT2_AS_GENE * pPtr ){
 	register sfixn i,j,p=pPtr->P;
-	
+
 	sfixn tmp;
 
 	//std::cout<<"PBPAS::UniPlainMod_1"<<std::endl;
-	
+
 	if((degA-degB)<0) return;
 	if(degB>10) {
-      for(i=degA-degB; i>=0; i--){ //race for normalform 1 100 3 
+      for(i=degA-degB; i>=0; i--){ //race for normalform 1 100 3
         tmp=MontMulMod_OPT2_AS_GENE(APtr[degB+i], pPtr->R2BRsft, pPtr)<<(pPtr->Base_Rpow);
-        for(j=0; j<degB; j++) 
+        for(j=0; j<degB; j++)
 		  APtr[i+j]=SubMod(APtr[i+j], MontMulMod_OPT2_AS_GENE(BPtr[j], tmp, pPtr), p);
 
         APtr[i+degB]=0;
 	  }
 	}
 	else {
-	  for(i=degA-degB; i>=0; i--){ 
-		for(j=0; j<degB; j++) 
+	  for(i=degA-degB; i>=0; i--){
+		for(j=0; j<degB; j++)
 		  APtr[i+j]=SubMod(APtr[i+j], MulMod(BPtr[j], APtr[degB+i], p), p);
 
 	    APtr[i+degB]=0;
 	  }
 	}
   }
-  
+
 
   /**
    * EX_Mont_FFTMul_OPT2_AS_GENE_1:
@@ -4153,16 +4154,16 @@ float interpol_time = 0.0;
    * @e: log2 of n
    * @degRes: degree of result
    * @degA: (Input and Output) degree of A
-   * @APtr: coefficient vector of A 
+   * @APtr: coefficient vector of A
    * @degB: degree of B
    * @BPtr: coefficient vector of B
    * @pPtr: prime number structure
-   * 
+   *
    * FFT-based multiplication of A by B. In place: result in A.
-   * 
-   * 
+   *
+   *
    * Return value: the product of two polynomials.
-   **/   
+   **/
   void EX_Mont_FFTMul_OPT2_AS_GENE_1(sfixn n, sfixn e, sfixn degRes, sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, MONTP_OPT2_AS_GENE * pPtr){
 	//register int i;
 	sfixn l_AB, e1, n1, sA, sB;
@@ -4176,28 +4177,28 @@ float interpol_time = 0.0;
 	// force this FFT use the n from parameter if n<n1.
 	if ( (n<n1) || (degRes==0) ) {n1=n; e1=e;}
 	PBPAS::checkFrourierPrime(e1, pPtr);
-	
+
 	rootsPtr=(sfixn *)my_calloc(n1, sizeof(sfixn));
-	
+
 	PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(e1, n1, rootsPtr, pPtr);
-	
+
 	sA = degA+1;
 	sB = degB+1;
 	for(int i=sA; i<n1; i++) APtr[i]=0;
-	for(int i=sB; i<n1; i++) BPtr[i]=0; 
- 
+	for(int i=sB; i<n1; i++) BPtr[i]=0;
+
 	cilk_spawn EX_Mont_DFT_OPT2_AS_GENE_1( n1, e1, rootsPtr, APtr, pPtr);
 	EX_Mont_DFT_OPT2_AS_GENE_1( n1, e1, rootsPtr, BPtr, pPtr);
 	cilk_sync;
 
 	PBPAS::EX_Mont_PairwiseMul_OPT2_AS_R(n1, APtr, BPtr, pPtr);
-	
+
 	EX_Mont_INVDFT_OPT2_AS_GENE_R_1(n1, e1, rootsPtr, APtr, pPtr);
-	
+
 	my_free(rootsPtr);
-	
+
   }
-  
+
   /**
    * EX_Mont_FFTMul_OPT2_AS_GENE:
    * @n: the FFT size
@@ -4205,16 +4206,16 @@ float interpol_time = 0.0;
    * @degRes: degree of result
    * @resPtr: coefficient vector of result
    * @degA: degree of A
-   * @APtr: coefficient vector of A 
+   * @APtr: coefficient vector of A
    * @degB: degree of B
    * @BPtr: coefficient vector of B
    * @pPtr: prime number structure
-   * 
+   *
    * FFT-based multiplication of A by B. Result is in resPtr.
-   * 
-   * 
+   *
+   *
    * Return value: the product of two polynomials.
-   **/   
+   **/
   void EX_Mont_FFTMul_OPT2_AS_GENE(sfixn n, sfixn e, sfixn degRes, sfixn * resPtr, sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, MONTP_OPT2_AS_GENE * pPtr){
 	//register int i;
 	sfixn l_AB, e1, n1, BRsft=pPtr->Base_Rpow;
@@ -4229,22 +4230,22 @@ float interpol_time = 0.0;
 	if ((n<n1) || (degRes==0)) {n1=n; e1=e;}
 
 	PBPAS::checkFrourierPrime(e1, pPtr);
-	
+
 	rootsPtr=(sfixn *)my_calloc(n1, sizeof(sfixn));
 	dftAPtr=(sfixn *)my_calloc(n1, sizeof(sfixn));
-	dftBPtr=(sfixn *)my_calloc(n1, sizeof(sfixn));	
-	
-	if((pPtr->c_pow==0) || ((pPtr->c_pow+pPtr->Rpow)>=BASE) ){	  
+	dftBPtr=(sfixn *)my_calloc(n1, sizeof(sfixn));
+
+	if((pPtr->c_pow==0) || ((pPtr->c_pow+pPtr->Rpow)>=BASE) ){
 	  PBPAS::Mont_GetNthRoots_OPT2_AS_GENE(e1,n1,rootsPtr,pPtr);
-	  
+
 	  cilk_spawn MODPN::Mont_dft_OPT2_AS_GENE( n1, e1, rootsPtr, dftAPtr, degA, APtr, pPtr);
 	  MODPN::Mont_dft_OPT2_AS_GENE( n1, e1, rootsPtr, dftBPtr, degB, BPtr, pPtr);
 	  cilk_sync;
 
 	  for(int i=0; i<n1; i++) dftAPtr[i]=MontMulMod_OPT2_AS_GENE(dftAPtr[i], dftBPtr[i]<<BRsft, pPtr);
-	  
+
 	  MODPN::Mont_invdft_OPT2_AS_GENE_R(n1, e1, rootsPtr, dftAPtr, degRes, resPtr, pPtr);
-	  
+
 	}
 	else{
 	  PBPAS::Mont_GetNthRoots_OPT2_AS_GENE_SPE(e1,n1,rootsPtr,pPtr);
@@ -4256,14 +4257,14 @@ float interpol_time = 0.0;
 	  for(int i=0; i<n1; i++) dftAPtr[i]=MontMulMod_OPT2_AS_GENE_SPE(dftAPtr[i], dftBPtr[i]<<BRsft, pPtr);
 
 	  MODPN::Mont_invdft_OPT2_AS_GENE_SPE_R(n1, e1, rootsPtr, dftAPtr, degRes, resPtr, pPtr);
-	  
+
 	}
-		
+
 	my_free(dftAPtr);
 	my_free(dftBPtr);
 	my_free(rootsPtr);
   }
-  
+
 
   /**
    * EX_mulPoly:
@@ -4271,7 +4272,7 @@ float interpol_time = 0.0;
    * @resPtr: (output) The output prod of 'p1Ptr' and 'p2Ptr'.
    * @f1: A C-Cube polynomial.
    * @f2: A C-Cube polynomial.
-   * @pPtr: Information for the Fourier prime number p. 
+   * @pPtr: Information for the Fourier prime number p.
    *
    * Compute the product of f1 and f2  by either Kronecker-based univariate FFT approach or by direct Multi-dimensional FFT or by classical multiplication.
    *
@@ -4281,17 +4282,17 @@ float interpol_time = 0.0;
 	sfixn sz1, sz2;
 	sz1=getDenseSiz(N, f1, BUSZSI(f1, N), DAT(f1), CUMI(f1, N));
 	sz2=getDenseSiz(N, f2, BUSZSI(f2, N), DAT(f2), CUMI(f2, N));
-	
+
 	if((sz1>=MulCut)||(sz2>=MulCut)){
 	  //EX_mulPoly_FFT( N, resPtr, f1, f2,  pPtr);
-	  
+
 	  PBPAS::EX_mulPoly_TFTFFT(N, resPtr, f1, f2, pPtr);
-	  
+
 	}else{
 	  PBPAS::plainMultiDMul(N, CUM(resPtr), DAT(resPtr), CUM(f1), BUSZS(f1), CUM(f2), BUSZS(f2), DAT(f1), DAT(f2), pPtr);
 	}
   }
-  
+
   /**
    * EX_mulPoly_TFTFFT:
    * @N: the number of variables.
@@ -4299,10 +4300,10 @@ float interpol_time = 0.0;
    * @f1: a C-Cube polynomial.
    * @f2: a C-Cube polynomial.
    * @pPtr: the information of the prime p.
-   * 
+   *
    * The product f1 and f2.
    *
-   * Return value: 
+   * Return value:
    **/
   void EX_mulPoly_TFTFFT(sfixn N, preFFTRep * resPtr, preFFTRep * f1, preFFTRep * f2,  MONTP_OPT2_AS_GENE * pPtr)
   {
@@ -4311,10 +4312,10 @@ float interpol_time = 0.0;
 	//magic 8 here ---yu
 	if( SERBPAS::forcutoff_Multi_TFT_FFT(N, BUSZS(f1), BUSZS(f2), 8) ==0 ){
 	  PBPAS::EX_mulPoly_FFT(N, resPtr, f1, f2, pPtr);
-	   
+
 	}
 	else{
-	  SERBPAS::InitKroTFTRep(&kro, BUSZS(resPtr), N, 2, pPtr); 
+	  SERBPAS::InitKroTFTRep(&kro, BUSZS(resPtr), N, 2, pPtr);
 	  //================================================================
 	  PBPAS::polyMul_TFT(N, &kro, resPtr, f1, f2,  pPtr);
 	  //===============================================================
@@ -4322,23 +4323,23 @@ float interpol_time = 0.0;
 	}
     return;
   }
-  
+
   /**
    * EX_mulPoly_FFT:
    * @N: Number of variables.
    * @resPtr: (output) The output prod of 'p1Ptr' and 'p2Ptr'.
    * @f1: A C-Cube polynomial.
    * @f2: A C-Cube polynomial.
-   * @pPtr: Information for the Fourier prime number p. 
+   * @pPtr: Information for the Fourier prime number p.
    *
-   * Compute the product of f1 and f2  by either Kronecker-based 
+   * Compute the product of f1 and f2  by either Kronecker-based
    * univariate FFT approach or by direct Multi-dimensional FFT.
    *
    * Return value: The product of f1 and f2.
    **/
   void EX_mulPoly_FFT(sfixn N, preFFTRep * resPtr, preFFTRep * f1, preFFTRep * f2,  MONTP_OPT2_AS_GENE *pPtr){
     KroFFTRep kro;
-	
+
     SERBPAS::InitKroFFTRep(&kro, BUSZS(resPtr), N, 2, pPtr);
     //================================================================
     PBPAS::mulPoly_FFT(N, &kro, resPtr, f1, f2,  pPtr);
@@ -4346,11 +4347,11 @@ float interpol_time = 0.0;
     SERBPAS::freeKroFFTRep(&kro);
     return;
   }
-  
+
   //============================================================
   // rPtr = p1Ptr * p2Ptr
   //============================================================
-  
+
   /**
    * mulPoly_FFT:
    * @N: Number of variables.
@@ -4358,25 +4359,25 @@ float interpol_time = 0.0;
    * @rPtr: (output) The output prod of 'p1Ptr' and 'p2Ptr'.
    * @p1Ptr: A C-Cube polynomial.
    * @p2Ptr: A C-Cube polynomial.
-   * @pPtr: Information for the Fourier prime number p. 
+   * @pPtr: Information for the Fourier prime number p.
    *
-   * Compute the product of p1Ptr and p2Ptr  by either Kronecker-based 
+   * Compute the product of p1Ptr and p2Ptr  by either Kronecker-based
    * univariate FFT approach or by direct Multi-dimensional FFT.
    *
-   * Return value: 
+   * Return value:
    **/
   void mulPoly_FFT(sfixn N, KroFFTRep * kPtr, preFFTRep * rPtr, preFFTRep * p1Ptr, preFFTRep * p2Ptr,  MONTP_OPT2_AS_GENE * pPtr){
     sfixn kdg1=0, kdg2=0;
-    int switcher=0;	
-	
-    if((KE(kPtr))>(pPtr->Npow)) 
-      { 
+    int switcher=0;
+
+    if((KE(kPtr))>(pPtr->Npow))
+      {
 		//printf("FFT size larger than the prime %ld can handle!  using MultiDFFT to solve the problem.  -> ", pPtr->P);
 		switcher=1;}
-	
+
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(p1Ptr), BUSZS(p1Ptr), DAT(p1Ptr));
     PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(p2Ptr), BUSZS(p2Ptr), DAT(p2Ptr));
-	
+
     //if((switcher) || (KN(kPtr)<4)){
     //magic number 4 here, for debugging when size of fft is very small ---yu
 	if( switcher) {
@@ -4390,54 +4391,54 @@ float interpol_time = 0.0;
 	  kdg1= (BUSZSI(p1Ptr, N)+1)*CUMI(kPtr, N)-1;
 	  kdg2= (BUSZSI(p2Ptr, N)+1)*CUMI(kPtr, N)-1;
 	  KROOTS(kPtr)=(sfixn *)my_calloc(KN(kPtr), sizeof(sfixn));
-	  
+
 	  SERBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(KE(kPtr), KN(kPtr), KROOTS(kPtr),pPtr);
-	  
+
 	  //================================================================
 	  PBPAS::EX_KN_Mont_FFTMul_OPT2_AS_GENE_1(KN(kPtr), KE(kPtr), 0, KROOTS(kPtr), kdg1, DATSI(kPtr, 0), kdg2, DATSI(kPtr, 1), pPtr);
 	  //================================================================
-	  
+
     }
 
     PBPAS::fromtofftRepMultiD(N,  CUM(rPtr), DAT(rPtr), CUM(kPtr), BUSZS(rPtr), DATSI(kPtr, 0));
 
   }
-  
-  
+
+
   //-----------------------------------------------
   void polyMul_TFT(sfixn N, KroTFTRep * kPtr, preFFTRep * rPtr, preFFTRep * p1Ptr, preFFTRep * p2Ptr,  MONTP_OPT2_AS_GENE * pPtr){
-	
+
 	PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 0), CUM(p1Ptr), BUSZS(p1Ptr), DAT(p1Ptr));
-	
+
 	PBPAS::fromtofftRepMultiD(N,  CUM(kPtr), DATSI(kPtr, 1), CUM(p2Ptr), BUSZS(p2Ptr), DAT(p2Ptr));
-	
+
 	//================================================================
 	PBPAS::tftMultiD_test_1(DATSI(kPtr, 0), DATSI(kPtr, 1), N, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
 	//SERBPAS::tftMultiD_test(DATSI(kPtr, 0), DATSI(kPtr, 1), N, ES(kPtr), DIMS(kPtr), LS(kPtr), pPtr);
 	//================================================================
-	
+
 	PBPAS::fromtofftRepMultiD(N,  CUM(rPtr), DAT(rPtr), CUM(kPtr), BUSZS(rPtr), DATSI(kPtr, 0));
   }
-  
+
   //=========================================================================
   // Bottom-up level-by-level reduction.
   // using TFTs.
   //=========================================================================
   void
   MultiMod_BULL(sfixn N, preFFTRep * outPtr, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr)
-  { 
+  {
 	//std::cout<<"PBPAS::MultiMod_BULL"<<std::endl;
-	if (zeroCoefp(DAT(inPtr), SIZ(inPtr)) ) 
+	if (zeroCoefp(DAT(inPtr), SIZ(inPtr)) )
 	  return;
-	
+
 	//=========================================
 	PBPAS::MultiMod_1_BULL_par(N, inPtr, ts, tris, pPtr);
 	//=========================================
-	
+
 	PBPAS::fromtofftRep(N, CUM(outPtr), DAT(outPtr), CUM(inPtr),  BUSZS(outPtr), DAT(inPtr));
-	
+
   }
-  
+
   /**
    * MultiMod_1_BULL_par:
    * @N: number of variables.
@@ -4446,99 +4447,99 @@ float interpol_time = 0.0;
    * @ts: a triangular set.
    * @tris: modular inverse of 'ts'.
    * @pPtr: the information of prime number p.
-   * 
+   *
    * Reduce 'inPtr' w.r.t 'ts' and save the result in 'outPtr'.
    *
-   * Return value: 
+   * Return value:
    **/
   void MultiMod_1_BULL_par(sfixn N, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr){
-	
+
 	sfixn *lastNonZeroPtr, *datPtr;// *tmpVec;
 	sfixn siz; //deg;
 	//preFFTRep * tmpInPtr, *cpShellInPtr;
-	
+
 	//std::cout<<"PBPAS::MultiMod_BULL_1"<<std::endl;
 	if(N<1) { std::cout<<"Number of variables < 1."<<std::endl; exit(1); }
-	
+
 	siz=BUSZSI(inPtr, 1)+1;
-	
-	lastNonZeroPtr = DAT(inPtr) + shrinkDeg(SIZ(inPtr)-1, DAT(inPtr), 1);  
-	
+
+	lastNonZeroPtr = DAT(inPtr) + shrinkDeg(SIZ(inPtr)-1, DAT(inPtr), 1);
+
 	//for(datPtr=DAT(inPtr); datPtr<=lastNonZeroPtr; datPtr+=siz){
 	sfixn deg2 = (lastNonZeroPtr - DAT(inPtr))/siz;
 	cilk_for (int k=0; k<=deg2; k++) {
 	  sfixn *datPtrk = DAT(inPtr) + k*siz;
 	  sfixn degk=shrinkDeg(BUSZSI(inPtr, 1), datPtrk, 1);
-	  
+
 	  if (((BDSI(ts, 1))>DivCut1)) {
-		PBPAS::UniFastMod_1(degk, datPtrk, BUSZSI((ELEMI(ts, 1)), 1), DAT(ELEMI(ts, 1)), 
-					 (NLB(tris))[1], DAT(ELEMI(tris, 1)), pPtr); 
+		PBPAS::UniFastMod_1(degk, datPtrk, BUSZSI((ELEMI(ts, 1)), 1), DAT(ELEMI(ts, 1)),
+					 (NLB(tris))[1], DAT(ELEMI(tris, 1)), pPtr);
 	  }
 	  else{
-		PBPAS::UniPlainMod_1(degk, datPtrk, BUSZSI((ELEMI(ts, 1)), 1), 
-					  DAT(ELEMI(ts, 1)), pPtr); 
+		PBPAS::UniPlainMod_1(degk, datPtrk, BUSZSI((ELEMI(ts, 1)), 1),
+					  DAT(ELEMI(ts, 1)), pPtr);
 	  }
 	}
-		
+
 	if(N==1)  return;
-	
+
 	//tmpInPtr=(preFFTRep *)my_malloc(sizeof(preFFTRep));
 	//tmpVec=(sfixn *)my_calloc(N+1, sizeof(sfixn));
-	
-	for(int i=2; i<N-1; i++){  
+
+	for(int i=2; i<N-1; i++){
 
 	  //for(datPtr=DAT(inPtr); datPtr<=lastNonZeroPtr;
 	  //datPtr+=CUMI(inPtr, i+1)){
 	  sfixn degiplus1 = (lastNonZeroPtr - DAT(inPtr))/CUMI(inPtr, i+1);
 	  cilk_for (int k=0; k<=degiplus1; k++) {
 		sfixn *datPtrik = DAT(inPtr) + k*CUMI(inPtr, i+1);
-		sfixn degik = shrinkDeg(CUTSI(inPtr, i), datPtrik, CUMI(inPtr, i));    
-		
+		sfixn degik = shrinkDeg(CUTSI(inPtr, i), datPtrik, CUMI(inPtr, i));
+
 		preFFTRep * tmpInPtr=(preFFTRep *)my_malloc(sizeof(preFFTRep));
 		sfixn *tmpVec=(sfixn *)my_calloc(N+1, sizeof(sfixn));
-		
-		for(int j=0; j<i; j++) 
+
+		for(int j=0; j<i; j++)
 		  tmpVec[j]=BDSI(ts, j);
-		
+
 		tmpVec[i]=degik;
-        
+
 		SERBPAS::InitOneReducedPoly(tmpInPtr, i, tmpVec);
-		PBPAS::fromtofftRep(i, tmpInPtr->accum, tmpInPtr->data, CUM(inPtr), 
+		PBPAS::fromtofftRep(i, tmpInPtr->accum, tmpInPtr->data, CUM(inPtr),
 							  BUSZS(tmpInPtr), datPtrik);
-		
+
 		preFFTRep *cpShellInPtr=(preFFTRep *)my_malloc(sizeof(preFFTRep));
-		
+
 		SERBPAS::copyPolyPointers(cpShellInPtr, inPtr);
-		
+
 		N(cpShellInPtr)=i;
 		SIZ(cpShellInPtr)=CUMI(inPtr, i+1);
 		DAT(cpShellInPtr)=datPtrik;
-		
-		if((((i==2)&&(BDSI(ts, i)>DivCut2)) || ((i==3)&&(BDSI(ts, i)>DivCut3)) || ((i>3)&&(BDSI(ts, i)>DivCutN)))){		  
-		  PBPAS::MultiUniFastMod_1_TFT(i, tmpInPtr, degik, cpShellInPtr, ts, tris, pPtr); 
+
+		if((((i==2)&&(BDSI(ts, i)>DivCut2)) || ((i==3)&&(BDSI(ts, i)>DivCut3)) || ((i>3)&&(BDSI(ts, i)>DivCutN)))){
+		  PBPAS::MultiUniFastMod_1_TFT(i, tmpInPtr, degik, cpShellInPtr, ts, tris, pPtr);
 		  //why just use TFT here? ---yu
-															  
+
 		}
-		else{			
+		else{
 		  PBPAS::MultiUniPlainMod_1(i, degik, tmpInPtr, BDSI(ts, i)+1,  ELEMI(ts, i), ts, tris, pPtr);
-		  
+
 		  PBPAS::fromtofftRep(i, CUM(cpShellInPtr), DAT(cpShellInPtr), CUM(tmpInPtr),  BUSZS(tmpInPtr), DAT(tmpInPtr));
-		  
+
 		}
-		
+
 		freePoly(tmpInPtr);
 		my_free(tmpInPtr);
 		my_free(tmpVec);
 		my_free(cpShellInPtr);
 	  }
-	  
+
 	}
-	
+
 	//my_free(tmpVec);
-	//my_free(tmpInPtr);    
-	
+	//my_free(tmpInPtr);
+
 	if(N>=3){
-	  
+
 	  //tmpInPtr=(preFFTRep *)my_malloc(sizeof(preFFTRep));
 	  //tmpVec=(sfixn *)my_calloc(N, sizeof(sfixn));
 
@@ -4547,16 +4548,16 @@ float interpol_time = 0.0;
 	  cilk_for (int k=0; k<=degNplus1; k++) {
 		sfixn *datPtrNk = DAT(inPtr) + k*CUMI(inPtr, N);
 		sfixn degNk = shrinkDeg(CUTSI(inPtr, N-1), datPtrNk, CUMI(inPtr, N-1));
- 
+
 		preFFTRep * tmpInPtr=(preFFTRep *)my_malloc(sizeof(preFFTRep));
 		sfixn *tmpVec=(sfixn *)my_calloc(N+1, sizeof(sfixn));
-     
-		for(int j=0; j<N-1; j++) 
+
+		for(int j=0; j<N-1; j++)
 		  tmpVec[j]=BDSI(ts, j);
-		
+
 		tmpVec[N-1]=degNk;
 		SERBPAS::InitOneReducedPoly(tmpInPtr, N-1, tmpVec);
-		PBPAS::fromtofftRep(N-1, tmpInPtr->accum, tmpInPtr->data, CUM(inPtr), 
+		PBPAS::fromtofftRep(N-1, tmpInPtr->accum, tmpInPtr->data, CUM(inPtr),
 					 BUSZS(tmpInPtr), datPtrNk);
 
 		preFFTRep *cpShellInPtr=(preFFTRep *)my_malloc(sizeof(preFFTRep));
@@ -4565,17 +4566,17 @@ float interpol_time = 0.0;
 		N(cpShellInPtr)=N-1;
 		SIZ(cpShellInPtr)=CUMI(inPtr, N);
 		DAT(cpShellInPtr)=datPtrNk;
-		
+
 		if((((N-1==2)&&(BDSI(ts, N-1)>DivCut2)) || ((N-1==3)&&(BDSI(ts, N-1)>DivCut3)) || ((N-1>3)&&(BDSI(ts, N-1)>DivCutN)))){
-		  
+
 		  PBPAS::MultiUniFastMod_1_TFT(N-1, tmpInPtr, degNk, cpShellInPtr, ts, tris, pPtr);
 		}
 		else{
-		  
+
 		  PBPAS::MultiUniPlainMod_1(N-1, degNk, tmpInPtr, BDSI(ts, N-1)+1,  ELEMI(ts, N-1), ts, tris, pPtr);
 		  PBPAS::fromtofftRep(N-1, CUM(cpShellInPtr), DAT(cpShellInPtr), CUM(tmpInPtr),  BUSZS(tmpInPtr), DAT(tmpInPtr));
 		}
-		
+
 		my_free(tmpVec);
 		freePoly(tmpInPtr);
 		my_free(tmpInPtr);
@@ -4583,30 +4584,30 @@ float interpol_time = 0.0;
 	  }
 	  //my_free(tmpVec);
 	  //my_free(tmpInPtr);
-	  
+
 	}
-	
+
 	preFFTRep * tmpInPtr=(preFFTRep *)my_malloc(sizeof(preFFTRep));
 	sfixn *tmpVec=(sfixn *)my_calloc(N+1, sizeof(sfixn));
 	sfixn degN=shrinkDeg(BUSZSI(inPtr, N), DAT(inPtr), CUMI(inPtr, N));
 
-	for(int j=0; j<N; j++) 
+	for(int j=0; j<N; j++)
 	  tmpVec[j]=BDSI(ts, j);
 
 	tmpVec[N]=degN;
 	SERBPAS::InitOneReducedPoly(tmpInPtr, N, tmpVec);
-	PBPAS::fromtofftRep(N, tmpInPtr->accum, tmpInPtr->data, CUM(inPtr), 
+	PBPAS::fromtofftRep(N, tmpInPtr->accum, tmpInPtr->data, CUM(inPtr),
 				 BUSZS(tmpInPtr), DAT(inPtr));
 	PBPAS::MultiUniFastMod_1_TFT(N, tmpInPtr, degN, inPtr, ts, tris, pPtr);
-	
+
 	freePoly(tmpInPtr);
 	my_free(tmpVec);
 	my_free(tmpInPtr);
-	
+
   }
-  
+
   //=============================================================
-  // Modulo poly by T_n, then by [T_{n-1}, T_{n-2}, ...,T_1] 
+  // Modulo poly by T_n, then by [T_{n-1}, T_{n-2}, ...,T_1]
   /**
    * MultiUniFastMod_1_TFT:
    * @N: number of variables.
@@ -4616,8 +4617,8 @@ float interpol_time = 0.0;
    * @ts: a triangular set.
    * @tris: modular inverses of 'ts'.
    * @pPtr: the information of the prime p.
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
   void MultiUniFastMod_1_TFT(sfixn N, preFFTRep * tmpIn,  sfixn n, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr){
 	sfixn m,e,d1,d2;
@@ -4625,27 +4626,27 @@ float interpol_time = 0.0;
 
 	preFFTRep * resPoly, * resPoly2, * out;
 	KroTFTRep * krotftrep, * krotftrep2;
-	
-	
+
+
 	m=BUSZSI((ELEMI(ts, N)), N);
-	
-	if(n<m){ if(DEBUG2) printf("Leaving MultiUniFastMod_1.\n"); 
+
+	if(n<m){ if(DEBUG2) printf("Leaving MultiUniFastMod_1.\n");
 	  return;}
-	
+
 	resPoly=(preFFTRep *)my_calloc(1,sizeof(preFFTRep));
 	resPoly2=(preFFTRep *)my_calloc(1,sizeof(preFFTRep));
 	out=(preFFTRep *)my_calloc(1,sizeof(preFFTRep));
-	
+
 	krotftrep=(KroTFTRep *)my_calloc(1,sizeof(KroTFTRep));
 	krotftrep2=(KroTFTRep *)my_calloc(1,sizeof(KroTFTRep));
 	e=logceiling(n-m+1);
 
-	if(! (EXSTI(tris, N))){  
+	if(! (EXSTI(tris, N))){
 	  SERBPAS::initCopyOneRevInv(out, ELEMI(tris, N));
 	  SERBPAS::NewtonRevInverse(N, out, ELEMI(tris, N), ELEMI(ts, N), ts, tris, pPtr );
 	  freePoly(out);
 	}
-	
+
 	cutDg=n-m;
 	d1=BUSZSI(tmpIn, N);
 	//d2=BUSZSI(ELEMI(tris, N), N);
@@ -4669,75 +4670,75 @@ float interpol_time = 0.0;
 	//============================================================
 
 	SERBPAS::freeKroTFTRep(krotftrep);
-	
+
 	PBPAS::reverseMulti_1(cutDg, CUMI(resPoly, N), DAT(resPoly));
-	
+
 	BUSZSI(tmpIn, N)=d1;
 	//BUSZSI(ELEMI(tris, N), N)=d2;
-	
+
 	PBPAS::PolyCleanData(tmpIn);
-	
+
 	BUSZSI(tmpIn, N)=cutDg;
-	
+
 	//SERBPAS::reduceCoeffs(N, tmpIn, resPoly, ts, tris, pPtr);
 	PBPAS::reduceCoeffs(N, tmpIn, resPoly, ts, tris, pPtr);
 
-	freePoly(resPoly); 
-	
+	freePoly(resPoly);
+
 	SERBPAS::InitResPoly(resPoly2, N,  BUSZS(ELEMI(ts, N)), BUSZS(tmpIn));
-	SERBPAS::InitKroTFTRep(krotftrep2, BUSZS(resPoly2), N, 2, pPtr); 
-	
-	//if(N==topN) t=gettime(); 
+	SERBPAS::InitKroTFTRep(krotftrep2, BUSZS(resPoly2), N, 2, pPtr);
+
+	//if(N==topN) t=gettime();
 	//================================================================
 	//SERBPAS::polyMul_TFT(N, krotftrep2, resPoly2, ELEMI(ts, N), tmpIn,  pPtr);
 	PBPAS::polyMul_TFT(N, krotftrep2, resPoly2, ELEMI(ts, N), tmpIn,  pPtr);
 	//================================================================
 	//if(N==topN) top2MulTime1+=gettime()-t;
-	
+
 	SERBPAS::freeKroTFTRep(krotftrep2);
 	BUSZSI(tmpIn, N)=d1;
-	
+
 	PBPAS::PolyCleanData(tmpIn);
-	
+
 	// PureFast_
-	
+
 	//SERBPAS::reduceCoeffs(N, tmpIn, resPoly2, ts, tris, pPtr);
 	PBPAS::reduceCoeffs(N, tmpIn, resPoly2, ts, tris, pPtr);
 
 	freePoly(resPoly2);
-	
+
 	PBPAS::subPoly_1(N, inPtr, tmpIn, pPtr->P);
-	
-	my_free(resPoly); 
+
+	my_free(resPoly);
 	my_free(resPoly2);
 	my_free(out);
-	my_free(krotftrep); 
+	my_free(krotftrep);
 	my_free(krotftrep2);
   }
-  
+
   // type: exported
   // input: A = (degA, APtr), B = (degB, BPtr) and p.
   // ouput: (degRes, resPtr) = A*B mod p.
-  // use: classical univariate polynomial multiplication. 
+  // use: classical univariate polynomial multiplication.
   // note: good for all machine word Fourier Prime.
   /**
    * EX_Mont_PlainMul_OPT2_AS_GENE:
    * @degRes: degree of result
-   * @resPtr: coefficient vector of result 
+   * @resPtr: coefficient vector of result
    * @degA:  degree of arg 1
    * @APtr:  coefficient vector of  arg 1
    * @degB: degree of arg 2
    * @BPtr: coefficient vector of  arg 2
    * @pPtr: info about the prime number 'p'
-   * 
-   * Claasical univariate multiplication 
+   *
+   * Claasical univariate multiplication
    * in prime characterisitc 'p' (machine word)
    * using the improved Montgommery trick.
    * Will run special if p-1 is a power of 2.
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
-  void 
+  void
   EX_Mont_PlainMul_OPT2_AS_GENE(sfixn degRes, sfixn * resPtr, sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, MONTP_OPT2_AS_GENE * pPtr ){
 	sfixn d1=degA, d2=degB;
 	d1=shrinkDegUni(d1, APtr); //inline
@@ -4747,74 +4748,74 @@ float interpol_time = 0.0;
 	  SERBPAS::Mont_PlainMul_OPT2_AS_GENE(degRes, resPtr, d1, APtr, d2, BPtr, pPtr );
 	}
 	else{
-	  SERBPAS::Mont_PlainMul_OPT2_AS_GENE_SPE(degRes, resPtr, d1, APtr, d2, BPtr, pPtr );   
+	  SERBPAS::Mont_PlainMul_OPT2_AS_GENE_SPE(degRes, resPtr, d1, APtr, d2, BPtr, pPtr );
 	}
   }
-  
+
   //======================================================================
   // Plain univariate polynomial multiplication over Z/pZ.
   //======================================================================
-  
+
   // type: local
   // note: good for all machine word Fourier Prime.
   /**
    * Mont_PlainMul_OPT2_AS_GENE:
    * @degRes: degree of result
-   * @resPtr: coefficient vector of result 
+   * @resPtr: coefficient vector of result
    * @degA:  degree of arg 1
    * @APtr:  coefficient vector of  arg 1
    * @degB: degree of arg 2
    * @BPtr: coefficient vector of  arg 2
    * @pPtr: info about the prime number 'p'
-   * 
-   * Classical univariate multiplication 
+   *
+   * Classical univariate multiplication
    * in prime characterisitc 'p' (machine word)
    * using the improved Montgommery trick.
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
   void
   Mont_PlainMul_OPT2_AS_GENE(sfixn degRes, sfixn * resPtr, sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, MONTP_OPT2_AS_GENE * pPtr ){
     int i,j;
-	
+
     sfixn p=pPtr->P, R=(1L<<pPtr->Rpow)%p, BRsft= pPtr->Base_Rpow,
 	  R2=(MulMod(R,R,p))<<BRsft, tmp; //inline
 
     for(i=0; i<=degA; i++){
       if(! APtr[i]) continue;
       if(APtr[i]==1){
-		for(j=0; j<=degB; j++) 
+		for(j=0; j<=degB; j++)
 		  resPtr[i+j] = AddMod(BPtr[j], resPtr[i+j], p); //inline
       }
-      else{		
+      else{
         tmp = (MontMulMod_OPT2_AS_GENE(APtr[i],R2,pPtr))<<BRsft; //inline
 		for(j=0; j<=degB; j++){
 		  resPtr[i+j] = AddMod( MontMulMod_OPT2_AS_GENE(BPtr[j],tmp,pPtr), resPtr[i+j], p); //inline
-		  
+
 		}
-      }	  
+      }
     }
   }
-  
-  
+
+
   // type: local
   // note: for machine word Fourier Prime in special shape.
   /**
    * Mont_PlainMul_OPT2_AS_GENE_SPE:
    * @degRes: degree of result
-   * @resPtr: coefficient vector of result 
+   * @resPtr: coefficient vector of result
    * @degA:  degree of arg 1
    * @APtr:  coefficient vector of  arg 1
    * @degB: degree of arg 2
    * @BPtr: coefficient vector of  arg 2
    * @pPtr: info about the prime number 'p'
-   * 
-   * Claasical univariate multiplication 
+   *
+   * Claasical univariate multiplication
    * in prime characterisitc 'p' (machine word)
    * using the improved Montgommery trick.
-   * Assume p = c*N+1. Both c,N, need to be power of 2. 
-   * 
-   * Return value: 
+   * Assume p = c*N+1. Both c,N, need to be power of 2.
+   *
+   * Return value:
    **/
   void
   Mont_PlainMul_OPT2_AS_GENE_SPE(sfixn degRes, sfixn * resPtr, sfixn degA, sfixn * APtr, sfixn degB, sfixn * BPtr, MONTP_OPT2_AS_GENE * pPtr ){
@@ -4835,7 +4836,7 @@ float interpol_time = 0.0;
 	  }
 	}
   }
-  
+
   // 1 -> DF
   // 0 -> BULL
   /**
@@ -4851,28 +4852,28 @@ float interpol_time = 0.0;
    *
    * Reduce 'inPtr' w.r.t 'ts' and save the result in 'outPtr'.
    *
-   * Return value: 
+   * Return value:
    **/
   void
   MultiMod_OPT(sfixn N, preFFTRep * outPtr, preFFTRep * inPtr, TriSet * ts, TriRevInvSet * tris,  MONTP_OPT2_AS_GENE * pPtr, int opt){
-	
+
 	if(zeroPolyp(inPtr)) return;
-	
+
 	if(opt){
 	  PBPAS::MultiMod_DF(N, outPtr, inPtr, ts, tris, pPtr);
 	}else
 	  {
 	    PBPAS::MultiMod_BULL(N, outPtr, inPtr, ts, tris, pPtr);
-		
+
 	  }
   }
-  
+
   /**
    * EX_getRevInvTriSet:
    * @N: the number of variables.
    * @ts: a triangualr set.
    * @pPtr: the information the prime.
-   * 
+   *
    * To compute the modular inverses of 'ts'.
    *
    * Return value: the modular inverses of 'ts'.
@@ -4891,7 +4892,7 @@ float interpol_time = 0.0;
 	PBPAS::getRevInvTiSet(dgs, N, tris, ts, pPtr);
 	my_free(dgs);
 	return tris;
-	
+
   }
 
   /*--------------------------------------------------------------------------------------
@@ -4902,43 +4903,43 @@ float interpol_time = 0.0;
    B(x^(K-1),y^(d2-1))
    because of theta (for negcyclic converlution), K is a power of 2
 
-   A and B are bivariate, encoded in dense recursive representation 
-   for y > x, so A and B appear as univariate polynomials 
+   A and B are bivariate, encoded in dense recursive representation
+   for y > x, so A and B appear as univariate polynomials
    with monomials (y^0,...,y^d1) and coefficients in that are univariate in x
    Assumptions:
    deg(A,x) = deg(B,x) = K-1  (may be thanks to padding either A or B)
    deg(A,y) = d1 - 1
-   deg(B,y) = d2 - 1  
+   deg(B,y) = d2 - 1
 
-   The output is A*B mod x^K+1 mod p 
+   The output is A*B mod x^K+1 mod p
   ----------------------------------------------------------------------------------------*/
-  sfixn * IntPolyMulMod_2DTFT(sfixn *A, sfixn *B, 
-			      sfixn d1, sfixn d2, 
+  sfixn * IntPolyMulMod_2DTFT(sfixn *A, sfixn *B,
+			      sfixn d1, sfixn d2,
 			      sfixn K, sfixn p)
   {//--------------------------------------------------------------------------------------
     MONTP_OPT2_AS_GENE *pPtr = (MONTP_OPT2_AS_GENE*)my_malloc(sizeof(MONTP_OPT2_AS_GENE));
     EX_MontP_Init_OPT2_AS_GENE(pPtr, p);
 
-    //for A*B mod x^K+1 mod p 
-    sfixn es1 = logceiling(K); //K=2^k=dims1=ls1      
+    //for A*B mod x^K+1 mod p
+    sfixn es1 = logceiling(K); //K=2^k=dims1=ls1
     sfixn es2K = es1+1;
     sfixn ls2 = d1+d2-1; // y-size of A*B mod x^K + 1
     sfixn es2 = logceiling(ls2);
-    
+
     if ( (es2K > (pPtr->Npow)) || (es2 > (pPtr->Npow)) || (es1 > (pPtr->Npow)) )
       exit (1); //checkFrourierPrime
-    
+
     sfixn dims2 = 1<<es2; //dimension (power of 2) of y //y-size of the 2-D FFT of the result
     sfixn s = K*ls2;      //size of result // real size of the result
     sfixn s1 = K*d1;  //size of A
     sfixn s2 = K*d2;  //size of B
     sfixn K2 = K<<1;      //length of theta vector
-  
-    //for FFT (omega and gamma), theta^(2K-1), (theta^(-1))^0=1, AP,BP,res   	
+
+    //for FFT (omega and gamma), theta^(2K-1), (theta^(-1))^0=1, AP,BP,res
     sfixn *rootsPtr = (sfixn *) my_calloc(K+dims2+K2+1+s1+s2+s, sizeof(sfixn));
     // first K slots for the successive powers of omega (x-direction)
     // next dims2 slots for the successive powers of gamma  (y-direction)
-    // next (K2+1) slots for the successive powers of theta and 1 
+    // next (K2+1) slots for the successive powers of theta and 1
     // next s1 slots for the weigth vwctor A'
     // next s2 slots for the weigth vector B'
     // next s slots are for intermediate computations of the result
@@ -4946,10 +4947,10 @@ float interpol_time = 0.0;
     sfixn *rootsPtr_2 = rootsPtr+K;
     //gamma
     cilk_spawn PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es2, dims2, rootsPtr_2, pPtr);
-    
-    // theta^0, ... theta^(2*K-1)    
+
+    // theta^0, ... theta^(2*K-1)
     PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es2K, K2, thetaPtr, pPtr);
-    
+
     //omega
     for (int i=0; i<K; i++){ //use cilk_for or not? test to see
       rootsPtr[i] = thetaPtr[i<<1];
@@ -4969,15 +4970,15 @@ float interpol_time = 0.0;
     //for (int i=0; i<dims2; ++i)
     //  std::cout<<rootsPtr_2[i]<<", ";
     //std::cout<<std::endl;
-    
+
     //apply WeightVector and evaluate
     sfixn * AP = thetaPtr+K2+1;
-    sfixn * BP = AP+s1;   
+    sfixn * BP = AP+s1;
     sfixn * res = BP+s2;
-    
+
     cilk_spawn PBPAS::WeightVectorEval(thetaPtr, A, AP, res, K, d1, dims2, ls2, rootsPtr, pPtr);
-    
-    sfixn * res2 = (sfixn *) my_calloc(s, sizeof(sfixn)); ; 
+
+    sfixn * res2 = (sfixn *) my_calloc(s, sizeof(sfixn)); ;
     PBPAS::WeightVectorEval(thetaPtr, B, BP, res2, K, d2, dims2, ls2, rootsPtr, pPtr);
     cilk_sync;
 
@@ -4987,8 +4988,8 @@ float interpol_time = 0.0;
 
     sfixn R=(1L<<pPtr->Rpow)%pPtr->P;
     sfixn BRsft=pPtr->Base_Rpow;
-    thetaPtr[K2]=R<<BRsft; //(theta^(-1))^0=1, special Mongomery rep    
- 
+    thetaPtr[K2]=R<<BRsft; //(theta^(-1))^0=1, special Mongomery rep
+
     //std::cout<<"powers of theta -------"<<std::endl;
     //for (int i=0; i<=K2; ++i)
     //  std::cout<<thetaPtr[i]<<", ";
@@ -4998,8 +4999,8 @@ float interpol_time = 0.0;
     cilk_for(int i=0; i<ls2; i++){
       int m = i*K;
       for(int j=0; j<K; j++){
-	int n = m+j;	
-	res2[n]=MontMulMod_OPT2_AS_GENE(res2[n], thetaPtr[K2-j], pPtr); 
+	int n = m+j;
+	res2[n]=MontMulMod_OPT2_AS_GENE(res2[n], thetaPtr[K2-j], pPtr);
 	//the ith-powers of theta's inverse is backward from thetaPtr[K2] to [K2-K+1]
       }
     }
@@ -5015,19 +5016,19 @@ float interpol_time = 0.0;
   // ls2   = d1+d2-1;
   // es2   = logceiling(ls2);
   // dims2 = 1<<es2;
-  void WeightVectorEval(sfixn *thetaPtr, sfixn *A, sfixn *AP, sfixn *res, 		
-			sfixn K, sfixn d, sfixn dims2, sfixn ls2, 
+  void WeightVectorEval(sfixn *thetaPtr, sfixn *A, sfixn *AP, sfixn *res,
+			sfixn K, sfixn d, sfixn dims2, sfixn ls2,
 			sfixn *rootsPtr, MONTP_OPT2_AS_GENE *pPtr)
   {//----------------------------------------------------------------------
     //change coordiate
     cilk_for(int i=0; i<d; i++){
       int m = i*K;
       for(int j=0; j<K; j++){
-	int n = m+j;	
-	AP[n]=MontMulMod_OPT2_AS_GENE(A[n], thetaPtr[j], pPtr); 
+	int n = m+j;
+	AP[n]=MontMulMod_OPT2_AS_GENE(A[n], thetaPtr[j], pPtr);
       }
     }
-    PBPAS::bivarEvalBy2DTFT(res, K, dims2, K, ls2, AP, K-1, d-1, rootsPtr, pPtr);  
+    PBPAS::bivarEvalBy2DTFT(res, K, dims2, K, ls2, AP, K-1, d-1, rootsPtr, pPtr);
   }
 }//end of PBPAS
 

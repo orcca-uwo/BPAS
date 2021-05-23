@@ -8,6 +8,8 @@
 #include "../MapleTestTool/MapleTestTool.hpp"
 
 #include "../../include/IntegerPolynomial/mzpolynomial.hpp"
+#include "../../include/IntegerPolynomial/SMZP_Hensel.h"
+#include "../../include/Parser/bpas_parser.h"
 
 long nvar = 3;
 long numTerms = 10;
@@ -15,8 +17,15 @@ long coefBound = 5ul;
 degree_t sparsity = 10;
 int includeNeg = 1;
 
+const char* g_syms[] = {"x0", "x1", "x2", "x3", "x4", "x5",
+                        "x6", "x7", "x8", "x9", "x10",
+                        "x11", "x12", "x13", "x14", "x15",
+                        "x16", "x17", "x18", "x19", "x20",
+                        "x21", "x22", "x23", "x24", "x25"
+                        };
+
 ///////////////////////
-// - For each operator, check the following combinations: 
+// - For each operator, check the following combinations:
 //      - SMZP of same nvar
 //      - SMZP of different nvar
 //      - SMZP that is zero
@@ -33,7 +42,7 @@ void testDefaultConstructor() {
         exit(1);
     }
 
-    std::cerr << "SMZP default constructor test: PASSED" << std::endl;    
+    std::cerr << "SMZP default constructor test: PASSED" << std::endl;
 }
 
 void testNvarConstructor(){
@@ -107,7 +116,7 @@ void testCopyConstructor() {
 
     ExpressionTree pTree = p.convertToExpressionTree();
     pTree -= q.convertToExpressionTree();
-    
+
     std::string retErr;
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
@@ -127,7 +136,7 @@ void testMoveConstructor() {
     ExpressionTree pTree = p.convertToExpressionTree();
 
     mpz_class val = mpz_class(rand() % coefBound + 1);
-    SparseMultivariateIntegerPolynomial q = p + val; 
+    SparseMultivariateIntegerPolynomial q = p + val;
 
     pTree += ExpressionTree(new ExprTreeNode(mpz_class(val)));
 
@@ -143,7 +152,7 @@ void testMoveConstructor() {
         exit(1);
     }
 
-    std::cerr << "SMZP move constructor test: PASSED" << std::endl;   
+    std::cerr << "SMZP move constructor test: PASSED" << std::endl;
 }
 
 
@@ -271,7 +280,7 @@ void testDUZPConstructor() {
         exit(1);
     }
 
-    std::cerr << "SMZP DUZP constructor test: PASSED" << std::endl;   
+    std::cerr << "SMZP DUZP constructor test: PASSED" << std::endl;
 }
 
 //NOTE this constructor assumed that convertToSUP() works.
@@ -298,7 +307,7 @@ void testSUPConstructor() {
         exit(1);
     }
 
-    std::cerr << "SMZP SUP<SMZP> constructor test: PASSED" << std::endl;   
+    std::cerr << "SMZP SUP<SMZP> constructor test: PASSED" << std::endl;
 }
 
 
@@ -378,7 +387,7 @@ void testIsNegativeOne() {
     }
 
     std::cerr << "SMZP isNegativeOne() test: FAILED" << std::endl;
-    exit(1);   
+    exit(1);
 }
 
 void testNegativeOne() {
@@ -441,7 +450,7 @@ void testUnitCanonical() {
     if (!(u*v).isOne()) {
         std::cerr << "SMZP unitCanonical() test: FAILED" << std::endl;
         std::cerr << "v should be the inverse of u but their product is: " << (u*v) << std::endl;
-        exit(1); 
+        exit(1);
     }
 
     std::cerr << "SMZP unitCanonical() test: PASSED" << std::endl;
@@ -468,7 +477,7 @@ void testCopyAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP copy assignment from Integer test: FAILED" << std::endl; 
+        std::cerr << "SMZP copy assignment from Integer test: FAILED" << std::endl;
         std::cerr << "Integer: " << it << " SMZP: " << p1;
         exit(1);
     }
@@ -494,19 +503,19 @@ void testMoveAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP move assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP move assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
 
-    std::cerr << "SMZP move assignment test: PASSED" << std::endl; 
+    std::cerr << "SMZP move assignment test: PASSED" << std::endl;
 }
 
 
 void testSMZPAddition() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     //      - SMZP of same nvar
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
@@ -525,7 +534,7 @@ void testSMZPAddition() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp addition test1: FAILED" << std::endl; 
+        std::cerr << "SMZP smzp addition test1: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
@@ -578,7 +587,7 @@ void testSMZPAddition() {
         exit(1);
     }
 
-    //      - SMZP that is a constant and is nvar == 0    
+    //      - SMZP that is a constant and is nvar == 0
     q = SparseMultivariateIntegerPolynomial(0);
     q.zero();
     q += mpz_class(rand() % coefBound + 1);
@@ -602,7 +611,7 @@ void testSMZPAdditionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     ExpressionTree pTree = p.convertToExpressionTree();
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     ExpressionTree qTree = q.convertToExpressionTree();
@@ -618,7 +627,7 @@ void testSMZPAdditionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp addition assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP smzp addition assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
@@ -672,7 +681,7 @@ void testSMZPAdditionAssignment() {
         exit(1);
     }
 
-    //      - SMZP that is a constant and is nvar == 0    
+    //      - SMZP that is a constant and is nvar == 0
     q = SparseMultivariateIntegerPolynomial(0);
     q.zero();
     q += mpz_class(rand() % coefBound + 1);
@@ -711,10 +720,10 @@ void testUnaryNegative() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP unary negative test: FAILED" << std::endl; 
+        std::cerr << "SMZP unary negative test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //      - SMZP that is zero
     p.zero();
@@ -746,7 +755,7 @@ void testUnaryNegative() {
         exit(1);
     }
 
-    //      - SMZP that is a constant and is nvar == 0    
+    //      - SMZP that is a constant and is nvar == 0
     p = SparseMultivariateIntegerPolynomial(0);
     p.zero();
     p += mpz_class(rand() % coefBound + 1);
@@ -768,7 +777,7 @@ void testUnaryNegative() {
 void testSMZPSubtraction() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
 
@@ -786,11 +795,11 @@ void testSMZPSubtraction() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp subtraction test: FAILED" << std::endl; 
+        std::cerr << "SMZP smzp subtraction test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
- 
+
     //      - SMZP of different nvar
     q.randomPolynomial(nvar+2, numTerms, coefBound, sparsity, includeNeg);
 
@@ -839,7 +848,7 @@ void testSMZPSubtraction() {
         exit(1);
     }
 
-    //      - SMZP that is a constant and is nvar == 0    
+    //      - SMZP that is a constant and is nvar == 0
     q = SparseMultivariateIntegerPolynomial(0);
     q.zero();
     q += mpz_class(rand() % coefBound + 1);
@@ -863,7 +872,7 @@ void testSMZPSubtractionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     ExpressionTree pTree = p.convertToExpressionTree();
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     ExpressionTree qTree = q.convertToExpressionTree();
@@ -879,7 +888,7 @@ void testSMZPSubtractionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp subtraction assignment test 1: FAILED" << std::endl; 
+        std::cerr << "SMZP smzp subtraction assignment test 1: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
@@ -933,7 +942,7 @@ void testSMZPSubtractionAssignment() {
         exit(1);
     }
 
-    //      - SMZP that is a constant and is nvar == 0    
+    //      - SMZP that is a constant and is nvar == 0
     q = SparseMultivariateIntegerPolynomial(0);
     q.zero();
     q += mpz_class(rand() % coefBound + 1);
@@ -950,13 +959,13 @@ void testSMZPSubtractionAssignment() {
         exit(1);
     }
 
-    std::cout << "SMZP smzp subtraction assignment test: PASSED" << std::endl;  
+    std::cout << "SMZP smzp subtraction assignment test: PASSED" << std::endl;
 }
 
 void testSMZPMultiplication() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
 
@@ -974,7 +983,7 @@ void testSMZPMultiplication() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp multiplication test: FAILED" << std::endl; 
+        std::cerr << "SMZP smzp multiplication test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
@@ -1027,7 +1036,7 @@ void testSMZPMultiplication() {
         exit(1);
     }
 
-    //      - SMZP that is a constant and is nvar == 0    
+    //      - SMZP that is a constant and is nvar == 0
     q = SparseMultivariateIntegerPolynomial(0);
     q.zero();
     q += mpz_class(rand() % coefBound + 1);
@@ -1054,7 +1063,7 @@ void testSMZPMultiplicationAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     ExpressionTree pTree = p.convertToExpressionTree();
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     ExpressionTree qTree = q.convertToExpressionTree();
@@ -1070,10 +1079,10 @@ void testSMZPMultiplicationAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp multiplication assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP smzp multiplication assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //      - SMZP of different nvar
     q.randomPolynomial(nvar+2, numTerms, coefBound, sparsity, includeNeg);
@@ -1122,7 +1131,7 @@ void testSMZPMultiplicationAssignment() {
         exit(1);
     }
 
-    //      - SMZP that is a constant and is nvar == 0    
+    //      - SMZP that is a constant and is nvar == 0
     q = SparseMultivariateIntegerPolynomial(0);
     q.zero();
     q += mpz_class(rand() % coefBound + 1);
@@ -1139,7 +1148,7 @@ void testSMZPMultiplicationAssignment() {
         exit(1);
     }
 
-    std::cout << "SMZP smzp multiplication assignment test: PASSED" << std::endl;   
+    std::cout << "SMZP smzp multiplication assignment test: PASSED" << std::endl;
 }
 
 void testSMZPDivision() {
@@ -1149,7 +1158,7 @@ void testSMZPDivision() {
     SparseMultivariateIntegerPolynomial q = p;
     p *= p;
     p *= p;
-    p *= p;
+    // p *= p; //makes things real large real quick
 
     SparseMultivariateIntegerPolynomial quo = p/q;
 
@@ -1158,13 +1167,12 @@ void testSMZPDivision() {
     ExpressionTree quoTree = quo.convertToExpressionTree();
 
     //Due to the way the divide operation works (by returning the value of
-    //interest in a new variable) we need some custom code to handle the 
+    //interest in a new variable) we need some custom code to handle the
     //variable naming and actually retrieving the value. Not just the proc return value.
 
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
-
 
     std::vector<std::string> inputs;
     inputs.push_back(pTree.toMapleString() + ":");
@@ -1211,7 +1219,7 @@ void testSMZPDivision() {
     p *= q;
 
     quo = p/q;
-    
+
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString() + ":");
     inputs.push_back(q.convertToExpressionTree().toMapleString() + ":");
@@ -1242,9 +1250,9 @@ void testSMZPDivision() {
 //      - SMZP that is zero
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     p.zero();
-    
+
     quo = p/q;
-    
+
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString() + ":");
     inputs.push_back(q.convertToExpressionTree().toMapleString() + ":");
@@ -1280,8 +1288,8 @@ void testSMZPDivision() {
     p *= z; //multiply by z to ensure exact division
     q += z;
 
-    quo = p/q; 
-    
+    quo = p/q;
+
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString() + ":");
     inputs.push_back(q.convertToExpressionTree().toMapleString() + ":");
@@ -1318,7 +1326,7 @@ void testSMZPDivision() {
     p *= z;
     q += z;
 
-    quo = p/q; 
+    quo = p/q;
 
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString() + ":");
@@ -1353,11 +1361,11 @@ void testSMZPDivision() {
 void testSMZPDivisionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     SparseMultivariateIntegerPolynomial q = p;
     p *= p;
     p *= p;
-    p *= p;
+    // p *= p;
     ExpressionTree pTree = p.convertToExpressionTree();
 
     p /= q;
@@ -1366,7 +1374,7 @@ void testSMZPDivisionAssignment() {
     ExpressionTree quoTree = p.convertToExpressionTree();
 
     //Due to the way the divide operation works (by returning the value of
-    //interest in a new variable) we need some custom code to handle the 
+    //interest in a new variable) we need some custom code to handle the
     //variable naming and actually retrieving the value. Not just the proc return value.
 
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
@@ -1378,7 +1386,7 @@ void testSMZPDivisionAssignment() {
     inputs.push_back(pTree.toMapleString() + ":");
     inputs.push_back(qTree.toMapleString() + ":");
     inputs.push_back(quoTree.toMapleString() + ":");
-    
+
     std::string procStr = "divide:";
     char* cstr = new char[procStr.length()+1];
     std::strcpy (cstr, procStr.c_str());
@@ -1452,7 +1460,7 @@ void testSMZPDivisionAssignment() {
 //      - SMZP that is zero
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     p.zero();
-    
+
     pTree = p.convertToExpressionTree();
 
     p/=q;
@@ -1492,7 +1500,7 @@ void testSMZPDivisionAssignment() {
     q += z;
 
     pTree = p.convertToExpressionTree();
-    p /= q; 
+    p /= q;
 
     inputs.clear();
     inputs.push_back(pTree.toMapleString() + ":");
@@ -1529,9 +1537,9 @@ void testSMZPDivisionAssignment() {
     z = mpz_class(rand() % coefBound + 1);
     p *= z;
     q += z;
-    
+
     pTree = p.convertToExpressionTree();
-    p /= q; 
+    p /= q;
 
     inputs.clear();
     inputs.push_back(pTree.toMapleString() + ":");
@@ -1567,8 +1575,8 @@ void testExponentiation() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
 
-    int exp = (rand() % 10) + 1; //10 for practical purposes;
-    
+    int exp = (rand() % 6) + 1; //6 for practical purposes;
+
     SparseMultivariateIntegerPolynomial prod = p ^ exp;
     ExpressionTree pTree = p.convertToExpressionTree();
     ExpressionTree prodTree = prod.convertToExpressionTree();
@@ -1583,7 +1591,7 @@ void testExponentiation() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp exponentiation test: FAILED1" << std::endl; 
+        std::cerr << "SMZP smzp exponentiation test: FAILED1" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
@@ -1594,7 +1602,7 @@ void testExponentiation() {
     prod = p^exp;
     pTree = p.convertToExpressionTree();
     prodTree = prod.convertToExpressionTree();
-    
+
     pTree ^= constTree;
     pTree -= prodTree;
 
@@ -1619,7 +1627,7 @@ void testExponentiation() {
         std::cerr << "SMZP smzp exponentiation test: FAILED3" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    }    
+    }
 
 //      - SMZP that is a constant and is nvar == 0
     p = SparseMultivariateIntegerPolynomial(0);
@@ -1662,7 +1670,7 @@ void testExponentiationAssignment() {
 
     ExpressionTree pTree = p.convertToExpressionTree();
 
-    int exp = (rand() % 10) + 1;
+    int exp = (rand() % 6) + 1;
     p ^= exp;
 
     ExpressionTree prodTree = p.convertToExpressionTree();
@@ -1676,7 +1684,7 @@ void testExponentiationAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP smzp exponentiation assignment test: FAILED1" << std::endl; 
+        std::cerr << "SMZP smzp exponentiation assignment test: FAILED1" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
@@ -1710,7 +1718,7 @@ void testExponentiationAssignment() {
         std::cerr << "SMZP smzp exponentiation assignment test: FAILED3" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    }    
+    }
 
 //      - SMZP that is a constant and is nvar == 0
     p = SparseMultivariateIntegerPolynomial(0);
@@ -1761,7 +1769,9 @@ void testGCD() {
     }
 
     SparseMultivariateIntegerPolynomial g = p.gcd(q);
-    
+
+    // std::cerr << "GCD1: " << g << std::endl;
+
     std::vector<std::string> inputs;
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(q.convertToExpressionTree().toMapleString());
@@ -1770,11 +1780,14 @@ void testGCD() {
     mapleTest->restartMapleKernel();
     std::string retErr;
     if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP gcd() test: FAILED1" << std::endl;
-        std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        std::cerr << "q: " << q << std::endl;
-        exit(1); 
+        g *= Integer(-1);
+        if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP gcd() test: FAILED1" << std::endl;
+            std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            std::cerr << "q: " << q << std::endl;
+            exit(1);
+        }
     }
 
     //Test non-trivial
@@ -1793,16 +1806,21 @@ void testGCD() {
 
     g = p.gcd(q);
 
+    // std::cerr << "GCD2: " << g << std::endl;
+
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(q.convertToExpressionTree().toMapleString());
 
     if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP gcd() test: FAILED2" << std::endl;
-        std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        std::cerr << "q: " << q << std::endl;
-        exit(1); 
+        g *= Integer(-1);
+        if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP gcd() test: FAILED2" << std::endl;
+            std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            std::cerr << "q: " << q << std::endl;
+            exit(1);
+        }
     }
 
     //Test different nvar
@@ -1810,17 +1828,22 @@ void testGCD() {
     q.randomPolynomial(nvar+2, numTerms, coefBound, sparsity, includeNeg);
 
     g = p.gcd(q);
+    // std::cerr << "GCD3: " << g << std::endl;
+
 
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(q.convertToExpressionTree().toMapleString());
-    
+
     if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP gcd() test: FAILED3" << std::endl;
-        std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        std::cerr << "q: " << q << std::endl;
-        exit(1); 
+        g *= Integer(-1);
+        if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP gcd() test: FAILED3" << std::endl;
+            std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            std::cerr << "q: " << q << std::endl;
+            exit(1);
+        }
     }
 
     //Test non-trivial
@@ -1832,23 +1855,32 @@ void testGCD() {
         p += r;
 
         r.randomPolynomial(nvar+2, numTerms, coefBound, sparsity, includeNeg);
+        // r.randomPolynomial(nvar+2, numTerms, coefBound, sparsity, includeNeg);
         r = r[0];
         q += r;
     }
+    r.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
+    p *= r;
+    q *= r;
+
     g = p.gcd(q);
-    
+    // std::cerr << "GCD4: " << g << std::endl;
+
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(q.convertToExpressionTree().toMapleString());
 
     if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP gcd() test: FAILED4" << std::endl;
-        std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        std::cerr << "q: " << q << std::endl;
-        exit(1); 
+        g *= Integer(-1);
+        if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP gcd() test: FAILED4" << std::endl;
+            std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            std::cerr << "q: " << q << std::endl;
+            exit(1);
+        }
     }
-    
+
     //Test different nvar and different variables names
 
     std::vector<Symbol> vars = Symbol::randomElements(nvar+2);
@@ -1861,19 +1893,24 @@ void testGCD() {
     q.setRingVariables(vars);
 
     g = p.gcd(q);
+    // std::cerr << "GCD5: " << g << std::endl;
+
     inputs.clear();
 
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(q.convertToExpressionTree().toMapleString());
 
     if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP gcd() test: FAILED4" << std::endl;
-        std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        std::cerr << "q: " << q << std::endl;
-        exit(1); 
+        g *= Integer(-1);
+        if (mapleTest->testProcReturn("gcd", inputs, g.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP gcd() test: FAILED4" << std::endl;
+            std::cerr << "Expected " << g << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            std::cerr << "q: " << q << std::endl;
+            exit(1);
+        }
     }
-    
+
 
     std::cerr << "SMZP gcd() test: PASSED" << std::endl;
 
@@ -1882,7 +1919,7 @@ void testGCD() {
 void testContent() {
 
     SparseMultivariateIntegerPolynomial p;
-    
+
     p.zero();
     Integer content = p.content();
     if (content != 0) {
@@ -1942,41 +1979,35 @@ void testContent() {
         std::cerr << "SMZP content() test: FAILED" << std::endl;
         std::cerr << "Expected " << content << " but got: " << retErr << std::endl;
         std::cerr << "p: " << p << std::endl;
-        exit(1); 
+        exit(1);
     }
 
 
     if (nvar == 0) {
-        std::cerr << "SMZP content() test: PASSED" << std::endl;
+        std::cerr << "SMZP content() test0: PASSED" << std::endl;
         return;
     }
 
     //test content w.r.t some variable
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     vars = p.ringVariables();
-    
+
     std::vector<Symbol> contSyms;
     contSyms.push_back(vars[0]);
     SparseMultivariateIntegerPolynomial pCont = p.content(contSyms);
-
-    if (pCont.leadingCoefficient() < 0) {
-        if (p.leadingCoefficient() > 0) {
-            std::cerr << "SMZP content() test FAILED" << std::endl;
-            std::cerr << "Content was negative but p's leading coefficient was not." << std::endl;
-        }
-        //change content to be positive here as maple's content is always positive.
-        pCont *= Integer(-1);
-    }
 
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(vars[0].toString());
 
     if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP content(Symbol) test: FAILED1" << std::endl;
-        std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        exit(1);
+        pCont *= Integer(-1);
+        if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP content(Symbol) test: FAILED1" << std::endl;
+            std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            exit(1);
+        }
     }
 
 
@@ -1989,60 +2020,42 @@ void testContent() {
     }
 
     pCont = p.content(contSyms);
-    if (pCont.leadingCoefficient() < 0) {
-        if (p.leadingCoefficient() > 0) {
-            std::cerr << "SMZP content() test FAILED" << std::endl;
-            std::cerr << "Content was negative but p's leading coefficient was not." << std::endl;
-        }
-        //change content to be positive here as maple's content is always positive.
-        pCont *= Integer(-1);
-    }
 
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(vars[0].toString());
 
     if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP content(Symbol) test: FAILED2" << std::endl;
-        std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        exit(1);
+        pCont *= Integer(-1);
+        if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP content(Symbol) test: FAILED2" << std::endl;
+            std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            exit(1);
+        }
     }
 
     if (nvar > 1) {
         contSyms.clear();
         contSyms.push_back(vars[1]);
         pCont = p.content(contSyms);
-        if (pCont.leadingCoefficient() < 0) {
-            if (p.leadingCoefficient() > 0) {
-                std::cerr << "SMZP content() test FAILED" << std::endl;
-                std::cerr << "Content was negative but p's leading coefficient was not." << std::endl;
-            }
-            //change content to be positive here as maple's content is always positive.
-            pCont *= Integer(-1);
-        }
 
         inputs.clear();
         inputs.push_back(p.convertToExpressionTree().toMapleString());
         inputs.push_back(vars[1].toString());
 
         if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-            std::cerr << "SMZP content(Symbol) test: FAILED3" << std::endl;
-            std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
-            std::cerr << "p: " << p << std::endl;
-            exit(1);
+            pCont *= Integer(-1);
+            if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+                std::cerr << "SMZP content(Symbol) test: FAILED3" << std::endl;
+                std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
+                std::cerr << "p: " << p << std::endl;
+                exit(1);
+            }
         }
 
         contSyms.push_back(vars[0]);
         pCont = p.content(contSyms);
-        if (pCont.leadingCoefficient() < 0) {
-            if (p.leadingCoefficient() > 0) {
-                std::cerr << "SMZP content() test FAILED4" << std::endl;
-                std::cerr << "Content was negative but p's leading coefficient was not." << std::endl;
-            }
-            //change content to be positive here as maple's content is always positive.
-            pCont *= Integer(-1);
-        }
 
         inputs.clear();
         inputs.push_back(p.convertToExpressionTree().toMapleString());
@@ -2051,20 +2064,23 @@ void testContent() {
         inputs.push_back(varList);
 
         if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-            std::cerr << "SMZP content(Symbol) test: FAILED5" << std::endl;
-            std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
-            std::cerr << "p: " << p << std::endl;
-            exit(1);
+            pCont *= Integer(-1);
+            if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+                std::cerr << "SMZP content(Symbol) test: FAILED5" << std::endl;
+                std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
+                std::cerr << "p: " << p << std::endl;
+                exit(1);
+            }
         }
     }
 
-    std::cerr << "SMZP content() test: PASSED" << std::endl;
+    std::cerr << "SMZP content() test1: PASSED" << std::endl;
 }
 
 void testPrimitivePart() {
 
     SparseMultivariateIntegerPolynomial p;
-    
+
     p.zero();
     SparseMultivariateIntegerPolynomial primPart = p.primitivePart();
     if (!primPart.isZero()) {
@@ -2129,17 +2145,17 @@ void testPrimitivePart() {
         std::cerr << "p cont: " << p.content() << std::endl;
         std::cerr << "p prim: " << p.primitivePart() << std::endl;
 
-        exit(1); 
+        exit(1);
     }
 
     //test primpart and content together
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     Integer iCont;
-    primPart = p.primitivePart(iCont);    
+    primPart = p.primitivePart(iCont);
     if (p.leadingCoefficient() < 0) {
         //maple returns negative prim part if p is.
         primPart *= Integer(-1);
-    } 
+    }
     if (iCont < 0) {
         if (p.leadingCoefficient() > 0) {
             std::cerr << "SMZP primitivePart(content) test FAILED" << std::endl;
@@ -2148,7 +2164,7 @@ void testPrimitivePart() {
         //change content to be positive here as maple's content is always positive.
         iCont *= Integer(-1);
     }
-    
+
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(varList);
@@ -2163,7 +2179,7 @@ void testPrimitivePart() {
         std::cerr << "Expected " << iCont << " but got: " << retErr << std::endl;
         std::cerr << "p: " << p << std::endl;
         exit(1);
-    }    
+    }
 
 
     if (nvar == 0) {
@@ -2174,25 +2190,24 @@ void testPrimitivePart() {
     //test w.r.t some variable
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     vars = p.ringVariables();
-    
+
     std::vector<Symbol> contSyms;
     contSyms.push_back(vars[0]);
     primPart = p.primitivePart(contSyms);
-
-    if (p.leadingCoefficient() < 0) {
-        //maple returns negative prim part if p is.
-        primPart *= Integer(-1);
-    }
 
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(vars[0].toString());
 
     if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP primitivePart(Symbol) test: FAILED1" << std::endl;
-        std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        exit(1);
+        //maple returns negative prim part if p is.
+        primPart *= Integer(-1);
+        if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP primitivePart(Symbol) test: FAILED1" << std::endl;
+            std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            exit(1);
+        }
     }
 
     //test content w.r.t to some variable with (hopefully) a non-trivial content.
@@ -2205,86 +2220,71 @@ void testPrimitivePart() {
 
     primPart = p.primitivePart(contSyms);
 
-    if (p.leadingCoefficient() < 0) {
-        //maple returns negative prim part if p is.
-        primPart *= Integer(-1);
-    }
-
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(vars[0].toString());
 
     if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP primitivePart(Symbol) test: FAILED2" << std::endl;
-        std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        std::cerr << "p cont: " << p.content(contSyms) << std::endl;
-        std::cerr << "p prim: " << primPart << std::endl;
-        exit(1);
+        primPart *= Integer(-1);
+        if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP primitivePart(Symbol) test: FAILED2" << std::endl;
+            std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            std::cerr << "p cont: " << p.content(contSyms) << std::endl;
+            std::cerr << "p prim: " << primPart << std::endl;
+            exit(1);
+        }
     }
 
     //test primpart and content together
 
     SparseMultivariateIntegerPolynomial pCont;
     primPart = p.primitivePart(contSyms, pCont);
-    if (p.leadingCoefficient() < 0) {
-        //maple returns negative prim part if p is.
-        primPart *= Integer(-1);
-    }
-    if (pCont.leadingCoefficient() < 0) {
-        if (p.leadingCoefficient() > 0) {
-            std::cerr << "SMZP primitivePart(Symbol, content) test FAILED" << std::endl;
-            std::cerr << "Content was negative but p's leading coefficient was not." << std::endl;
-        }
-        //change content to be positive here as maple's content is always positive.
-        pCont *= Integer(-1);
-    }
 
     inputs.clear();
     inputs.push_back(p.convertToExpressionTree().toMapleString());
     inputs.push_back(vars[0].toString());
     if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP primitivePart(Symbol, content) test: FAILED1" << std::endl;
-        std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        exit(1);
+        primPart *= Integer(-1);
+        if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP primitivePart(Symbol, content) test: FAILED1" << std::endl;
+            std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            exit(1);
+        }
     }
     if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-        std::cerr << "SMZP primitivePart(Symbol, content) test: FAILED2" << std::endl;
-        std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
-        std::cerr << "p: " << p << std::endl;
-        exit(1);
-    }    
+        pCont *= Integer(-1);
+        if(mapleTest->testProcReturn("content", inputs, pCont.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+            std::cerr << "SMZP primitivePart(Symbol, content) test: FAILED2" << std::endl;
+            std::cerr << "Expected " << pCont << " but got: " << retErr << std::endl;
+            std::cerr << "p: " << p << std::endl;
+            exit(1);
+        }
+    }
 
     if (nvar > 1) {
         contSyms.clear();
         contSyms.push_back(vars[1]);
         primPart = p.primitivePart(contSyms);
-    
-        if (p.leadingCoefficient() < 0) {
-            //maple returns negative prim part if p is.
-            primPart *= Integer(-1);
-        }
 
         inputs.clear();
         inputs.push_back(p.convertToExpressionTree().toMapleString());
         inputs.push_back(vars[1].toString());
 
         if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-            std::cerr << "SMZP primitivePart(Symbol) test: FAILED3" << std::endl;
-            std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
-            std::cerr << "p: " << p << std::endl;
-            exit(1);
+            primPart *= Integer(-1);
+            if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+                std::cerr << "SMZP primitivePart(Symbol) test: FAILED3" << std::endl;
+                std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
+                std::cerr << "p: " << p << std::endl;
+                exit(1);
+            }
         }
 
         contSyms.push_back(vars[0]);
         primPart = p.primitivePart(contSyms);
 
-        if (p.leadingCoefficient() < 0) {
-            //maple returns negative prim part if p is.
-            primPart *= Integer(-1);
-        }
-        
         inputs.clear();
         inputs.push_back(p.convertToExpressionTree().toMapleString());
         std::string varList = "[";
@@ -2292,10 +2292,13 @@ void testPrimitivePart() {
         inputs.push_back(varList);
 
         if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
-            std::cerr << "SMZP primitivePart(Symbol) test: FAILED5" << std::endl;
-            std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
-            std::cerr << "p: " << p << std::endl;
-            exit(1);
+            primPart *= Integer(-1);
+            if(mapleTest->testProcReturn("primpart", inputs, primPart.convertToExpressionTree().toMapleString(), &retErr) == 0) {
+                std::cerr << "SMZP primitivePart(Symbol) test: FAILED5" << std::endl;
+                std::cerr << "Expected " << primPart << " but got: " << retErr << std::endl;
+                std::cerr << "p: " << p << std::endl;
+                exit(1);
+            }
         }
     }
 
@@ -2303,7 +2306,7 @@ void testPrimitivePart() {
 }
 
 void testSquareFree() {
-    
+
     //Test a specific example
     // SparseMultivariateRationalPolynomial qr(2);
     // int deg[2];
@@ -2440,7 +2443,7 @@ void testSquareFree() {
     }
 
     if (nvar >= 2){
-        
+
         std::vector<Symbol> ringVars = q.ringVariables();
         std::vector<Symbol> vars;
         vars.push_back(ringVars[0]);
@@ -2582,7 +2585,7 @@ void testSquareFreePart() {
     }
 
     if (nvar >= 2){
-        
+
         std::vector<Symbol> ringVars = q.ringVariables();
         std::vector<Symbol> vars;
         vars.push_back(ringVars[1]);
@@ -2650,7 +2653,7 @@ void testNumberOfVariables() {
 
     if (zero != 0 || one != 1 || two != 2 || three != 3) {
         std::cerr << "SMZP numberOfVariables() test: FAILED" << std::endl;
-        std::cerr << "zero: " << zero << " one: " << one << " two: " << two << " three: " << three << std::endl;  
+        std::cerr << "zero: " << zero << " one: " << one << " two: " << two << " three: " << three << std::endl;
         exit(1);
     }
 
@@ -2692,7 +2695,7 @@ void testDegree() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     std::vector<Symbol> vars = p.ringVariables();
-    
+
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
 
@@ -2733,7 +2736,7 @@ void testLeadingCoefficient() {
         std::cerr << "SMZP leadingCoefficient() test: FAILED" << std::endl;
         std::cerr << "Got " << retErr << " but expected " << leadingCoef << std::endl;
         std::cerr << p << std::endl;
-        exit(1); 
+        exit(1);
     }
 
     std::cerr << "SMZP leadingCoefficient() test: PASSED" << std::endl;
@@ -2780,7 +2783,7 @@ void testSetVariableNames() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
 
-    std::vector<Symbol> newVars; 
+    std::vector<Symbol> newVars;
     for(int i = 0; i < nvar; ++i) {
         std::string var = "x_" + std::to_string(i) ;
         newVars.push_back(Symbol(var));
@@ -2822,12 +2825,12 @@ void testSetVariableNames() {
         std::cerr << "SMZP setRingVariables() and ringVariables() test: FAILED" << std::endl;
         std::cerr << "Expected polynomials to be 'equal' after changing variable ordering" << std::endl;
         std::cerr << "But their difference is: " << retErr << std::endl;
-        exit(1); 
+        exit(1);
     }
 
     //now test expanding the ring
     newVars.push_back(Symbol("foo"));
-    
+
     pBefore = p.convertToExpressionTree();
     p.setRingVariables(newVars);
 
@@ -2841,12 +2844,12 @@ void testSetVariableNames() {
     }
 
     pBefore -= p.convertToExpressionTree();
- 
+
     if (mapleTest->testIfZero(pBefore, &retErr) == 0) {
         std::cerr << "SMZP setRingVariables() and ringVariables() test: FAILED" << std::endl;
         std::cerr << "Expected polynomials to be 'equal' after expanding polynomial ring" << std::endl;
         std::cerr << "But their difference is: " << retErr << std::endl;
-        exit(1); 
+        exit(1);
     }
 
 
@@ -2860,7 +2863,7 @@ void testSetVariableNames() {
     } else {
         newVars.insert(newVars.begin(), Symbol("foo"));
     }
-    
+
     pBefore = p.convertToExpressionTree();
     p.setRingVariables(newVars);
     gotVars = p.ringVariables();
@@ -2878,7 +2881,7 @@ void testSetVariableNames() {
         std::cerr << "SMZP setRingVariables() and ringVariables() test: FAILED" << std::endl;
         std::cerr << "Expected polynomials to be 'equal' after expanding and reordered polynomial ring" << std::endl;
         std::cerr << "But their difference is: " << retErr << std::endl;
-        exit(1); 
+        exit(1);
     }
 
     if (nvar > 0) {
@@ -2906,7 +2909,7 @@ void testSetVariableNames() {
             std::cerr << "SMZP setRingVariables() and ringVariables() test: FAILED" << std::endl;
             std::cerr << "Expected polynomials to be 'equal' after shrinking polynomial ring" << std::endl;
             std::cerr << "But their difference is: " << retErr << std::endl;
-            exit(1); 
+            exit(1);
         }
 
         //Test shrinking and reordering the number of variables;
@@ -2936,7 +2939,7 @@ void testSetVariableNames() {
             std::cerr << "SMZP setRingVariables() and ringVariables() test: FAILED" << std::endl;
             std::cerr << "Expected polynomials to be 'equal' after shrinking and reordering polynomial ring" << std::endl;
             std::cerr << "But their difference is: " << retErr << std::endl;
-            exit(1); 
+            exit(1);
         }
     }
 
@@ -2976,7 +2979,7 @@ void testSetVariableNames() {
         }
         exit(1);
     }
-    if (three.size() != 3 || std::find(three.begin(), three.end(), "x") == three.end() 
+    if (three.size() != 3 || std::find(three.begin(), three.end(), "x") == three.end()
                           || std::find(three.begin(), three.end(), "y") == three.end()
                           || std::find(three.begin(), three.end(), "z") == three.end()) {
         std::cerr << "SMZP ringVariables() test: FAILED" << std::endl;
@@ -2985,7 +2988,7 @@ void testSetVariableNames() {
             std::cerr << "sym: " << sym << std::endl;
         }
         exit(1);
-    } 
+    }
 
 
     std::cerr << "SMZP setRingVariables() and ringVariables() test: PASSED" << std::endl;
@@ -2997,7 +3000,7 @@ void testInitial() {
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
 
     SparseMultivariateIntegerPolynomial init = p.initial();
-  
+
     if (p.isConstant() || p.isZero()) {
         if (p != init) {
             std::cerr << "SMZP initial() test: FAILED" << std::endl;
@@ -3057,7 +3060,7 @@ void testHead() {
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
 
     SparseMultivariateIntegerPolynomial head = p.head();
-  
+
     if (p.isConstant() || p.isZero()) {
         if (p != head) {
             std::cerr << "SMZP head() test: FAILED" << std::endl;
@@ -3126,7 +3129,7 @@ void testTail() {
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
 
     SparseMultivariateIntegerPolynomial tail = p.tail();
-  
+
     if (p.isConstant() || p.isZero()) {
         if (!tail.isZero()) {
             std::cerr << "SMZP tail() test: FAILED" << std::endl;
@@ -3192,14 +3195,14 @@ void testIsEqual() {
         std::cerr << "SMZP isEqual() test: FAILED" << std::endl;
         std::cerr << "Expcted p and q to be equal: " << std::endl;
         std::cerr << "p: " << p << std::endl;
-        std::cerr << "q: " << q << std::endl;           
+        std::cerr << "q: " << q << std::endl;
         exit(1);
     }
     if (p.isEqual(r) || r.isEqual(p)) {
         std::cerr << "SMZP isEqual() test: FAILED" << std::endl;
         std::cerr << "Expcted p and r to NOT be equal: " << std::endl;
         std::cerr << "p: " << p << std::endl;
-        std::cerr << "r: " << r << std::endl;           
+        std::cerr << "r: " << r << std::endl;
         exit(1);
     }
 
@@ -3209,7 +3212,7 @@ void testIsEqual() {
         std::cerr << "SMZP == test: FAILED" << std::endl;
         std::cerr << "Expcted p and q to be equal: " << std::endl;
         std::cerr << "p: " << p << std::endl;
-        std::cerr << "q: " << q << std::endl;           
+        std::cerr << "q: " << q << std::endl;
         exit(1);
     }
 
@@ -3219,7 +3222,7 @@ void testIsEqual() {
         std::cerr << "SMZP != test: FAILED" << std::endl;
         std::cerr << "Expcted p and r to NOT be equal: " << std::endl;
         std::cerr << "p: " << p << std::endl;
-        std::cerr << "r: " << r << std::endl;           
+        std::cerr << "r: " << r << std::endl;
         exit(1);
     }
 
@@ -3234,11 +3237,11 @@ void testDerivative() {
     if (nvar == 0) {
         SparseMultivariateIntegerPolynomial dp = p.derivative(Symbol("x"));
         SparseMultivariateIntegerPolynomial d3p = p.derivative(Symbol("x"), 3);
-        
+
         SparseMultivariateIntegerPolynomial q = p;
         p.differentiate(Symbol("x"));
         q.differentiate(Symbol("x"), 2);
-        
+
 
         if (!dp.isZero() || !d3p.isZero() || !p.isZero() || !q.isZero()) {
             std::cerr << "SMZP derivative() test: FAILED" << std::endl;
@@ -3402,7 +3405,7 @@ void testIntegrate() {
             std::cerr << "Expected: " << q << " but got: " << retErr << std::endl;
             exit(1);
         }
-        
+
         std::cerr << "SMZP integrate() test: PASSED" << std::endl;
 
         return;
@@ -3555,7 +3558,7 @@ void testEvaluate() {
         std::vector<Symbol> vars;
         std::vector<Integer> vals;
         SparseMultivariateIntegerPolynomial val = p.evaluate(vars, vals);
-        
+
         if (val != Integer(27)) {
             std::cerr << "SMZP evaluate() test: FAILED:" << std::endl;
             std::cerr << "Got: " << val << " expected: 27/44";
@@ -3591,7 +3594,7 @@ void testEvaluate() {
     ExpressionTree pTree = p.convertToExpressionTree();
     ExpressionTree resTree = res.convertToExpressionTree();
 
-    std::vector<std::string> inputs; 
+    std::vector<std::string> inputs;
     inputs.push_back(pTree.toMapleString());
 
     std::stringstream varss;
@@ -3621,13 +3624,13 @@ void testEvaluate() {
         for (int i = 1; i < nvar; ++i) {
             subVars.push_back(vars[i]);
             vals.push_back(Integer(rand() % coefBound));
-        }        
-            
+        }
+
         varss.str("");
         varss.clear();
         varss << "[";
         for (int i = 0; i < subVars.size()-1; ++i) {
-            varss << subVars[i] << "=" << vals[i] << ", ";    
+            varss << subVars[i] << "=" << vals[i] << ", ";
         }
         varss << subVars[subVars.size()-1] << "=" << vals[subVars.size()-1] << "]";
 
@@ -3677,7 +3680,7 @@ void testEvaluate() {
         std::cerr << "Expected a constant: " << p << " but got: " << res << std::endl;
         exit(1);
     }
-    
+
     //test constant with nvar = 0
     p = SparseMultivariateIntegerPolynomial(0);
     p.zero();
@@ -3719,7 +3722,7 @@ void testInterpolate() {
             }
 
             points[i].push_back(t.leadingCoefficient());
-        
+
             t.randomPolynomial(1, 1, coefBound, 2, includeNeg); //use sparsity = 2 to ensure constant term
             vals.push_back(t.leadingCoefficient());
         }
@@ -3766,7 +3769,7 @@ void testInterpolate() {
             std::cerr << "SMZP interpolate() test: FAILED " << maxDeg[idx] << std::endl;
             std::cerr << "Expected " << p << " but got: " << retErr << std::endl;
             std::cerr << "Point vals: " << ss.str() << std::endl;
-            exit(1); 
+            exit(1);
         }
     }
 
@@ -3777,7 +3780,7 @@ void testDivide() {
 
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     q *= p;
@@ -3795,7 +3798,7 @@ void testDivide() {
         if (quoPoly != quo || remPoly != rem) {
             std::cerr << "SMZP divide() test: FAILED" << std::endl;
             exit(1);
-        } 
+        }
 
         std::cerr << "SMZP divide() test: PASSED" << std::endl;
         return;
@@ -3816,7 +3819,7 @@ void testDivide() {
     ExpressionTree remTree = rem.convertToExpressionTree();
 
     //Due to the way the divide operation works (by returning the value of
-    //interest in a new variable) we need some custom code to handle the 
+    //interest in a new variable) we need some custom code to handle the
     //variable naming and actually retrieving the value. Not just the proc return value.
 
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
@@ -3865,7 +3868,7 @@ void testDivide() {
     ALGEB result = EvalMapleProc(kv, testProc, 4, algebList[0], algebList[1], algebList[2], algebList[5]);
 
     char getQuoStr[] = "q2[1]:";
-    ALGEB mapleQuo = EvalMapleStatement(kv, getQuoStr); 
+    ALGEB mapleQuo = EvalMapleStatement(kv, getQuoStr);
 
     char compareFunc[] = "verify:";
     ALGEB cmpF = EvalMapleStatement(kv, compareFunc);
@@ -3883,7 +3886,7 @@ void testDivide() {
         std::cout << "Got quotient:" << retErr << std::endl;
         std::cout << "Expected: " << quo << std::endl;
         exit(1);
-    } 
+    }
 
     if (!comp2Bool) {
         std::string retErr = mapleTest->algebToString(kv, result);
@@ -3893,7 +3896,7 @@ void testDivide() {
         exit(1);
     }
 
-    //test divisor with 1 term 
+    //test divisor with 1 term
     p.randomPolynomial(nvar, 1, coefBound, sparsity, includeNeg);
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     q *= p;
@@ -3942,7 +3945,7 @@ void testDivide() {
     result = EvalMapleProc(kv, testProc, 4, algebList[0], algebList[1], algebList[2], algebList[5]);
 
     char getQuoStr2[] = "q3[1]:";
-    mapleQuo = EvalMapleStatement(kv, getQuoStr2); 
+    mapleQuo = EvalMapleStatement(kv, getQuoStr2);
 
     //algebList[3] is the quo, [4] is the rem, [5] is the namedVar.
     comp = EvalMapleProc(kv, cmpF, 2, mapleQuo, algebList[3]);
@@ -3957,7 +3960,7 @@ void testDivide() {
         std::cout << "Got quotient:" << retErr << std::endl;
         std::cout << "Expected: " << quo << std::endl;
         exit(1);
-    } 
+    }
 
     if (!comp2Bool) {
         std::string retErr = mapleTest->algebToString(kv, result);
@@ -3974,7 +3977,7 @@ void testRationalDivide() {
 
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     q *= p;
@@ -3992,7 +3995,7 @@ void testRationalDivide() {
         if (quoPoly != quo || remPoly != rem) {
             std::cerr << "SMZP rationalDivide() test: FAILED" << std::endl;
             exit(1);
-        } 
+        }
 
         std::cerr << "SMZP rationalDivide() test: PASSED" << std::endl;
         return;
@@ -4012,7 +4015,7 @@ void testRationalDivide() {
     ExpressionTree remTree = rem.convertToExpressionTree();
 
     //Due to the way the divide operation works (by returning the value of
-    //interest in a new variable) we need some custom code to handle the 
+    //interest in a new variable) we need some custom code to handle the
     //variable naming and actually retrieving the value. Not just the proc return value.
 
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
@@ -4061,7 +4064,7 @@ void testRationalDivide() {
     ALGEB result = EvalMapleProc(kv, testProc, 4, algebList[0], algebList[1], algebList[2], algebList[5]);
 
     char getQuoStr[] = "q2[1]:";
-    ALGEB mapleQuo = EvalMapleStatement(kv, getQuoStr); 
+    ALGEB mapleQuo = EvalMapleStatement(kv, getQuoStr);
 
     char compareFunc[] = "verify:";
     ALGEB cmpF = EvalMapleStatement(kv, compareFunc);
@@ -4079,7 +4082,7 @@ void testRationalDivide() {
         std::cout << "Got quotient:" << retErr << std::endl;
         std::cout << "Expected: " << quo << std::endl;
         exit(1);
-    } 
+    }
 
     if (!comp2Bool) {
         std::string retErr = mapleTest->algebToString(kv, result);
@@ -4096,7 +4099,7 @@ void testRationalDivide() {
 void testSMZPRemainder() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     q *= p;
@@ -4303,7 +4306,7 @@ void testSMZPRemainder() {
 void testSMZPRemainderAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     SparseMultivariateIntegerPolynomial q;
     q.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     q *= p;
@@ -4311,7 +4314,7 @@ void testSMZPRemainderAssignment() {
     q *= p;
 
     ExpressionTree qTree = q.convertToExpressionTree();
-    
+
     if (nvar == 0) {
         Integer pCoef = p.leadingCoefficient();
         Integer qCoef = q.leadingCoefficient();
@@ -4324,7 +4327,7 @@ void testSMZPRemainderAssignment() {
         std::cerr << "SMZP remainder assignment test: PASSED" << std::endl;
         return;
     }
- 
+
     q %= p;
 
     ExpressionTree pTree = p.convertToExpressionTree();
@@ -4508,8 +4511,8 @@ void testSMZPRemainderAssignment() {
 }
 
 void testPseudoDivide() {
- 
-    if (nvar == 0) {   
+
+    if (nvar == 0) {
         //pseudodivide is not defined then.
         return;
     }
@@ -4533,11 +4536,11 @@ void testPseudoDivide() {
 
     SparseMultivariateIntegerPolynomial quo, mult;
     SparseMultivariateIntegerPolynomial rem = c.pseudoDivide(b, &quo, &mult);
-   
+
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
-    
+
     ExpressionTree cTree = c.convertToExpressionTree();
     ExpressionTree bTree = b.convertToExpressionTree();
     ExpressionTree aTree = quo.convertToExpressionTree();
@@ -4581,10 +4584,10 @@ void testPseudoDivide() {
     ALGEB expandF = EvalMapleStatement(kv, expandFunc);
 
     //q vs a;
-    algebList[7] = EvalMapleProc(kv, expandF, 1, algebList[7]); 
+    algebList[7] = EvalMapleProc(kv, expandF, 1, algebList[7]);
     ALGEB comp = EvalMapleProc(kv, cmpF, 2, algebList[7], algebList[3]);
     //result vs r;
-    result = EvalMapleProc(kv, expandF, 1, result); 
+    result = EvalMapleProc(kv, expandF, 1, result);
     ALGEB comp2 = EvalMapleProc(kv, cmpF, 2, result, algebList[4]);
     //m vs e
     algebList[6] = EvalMapleProc(kv, expandF, 1, algebList[6]);
@@ -4600,7 +4603,7 @@ void testPseudoDivide() {
         std::cout << "Got quotient:" << retErr << std::endl;
         std::cout << "Expected: " << quo << std::endl;
         exit(1);
-    } 
+    }
 
     if (!comp3Bool) {
         std::string retErr = mapleTest->algebToString(kv, algebList[6]);
@@ -4672,10 +4675,10 @@ void testPseudoDivide() {
     result = EvalMapleProc(kv, testProc, 5, algebList[0], algebList[1], algebList[2], algebList[6], algebList[7]);
 
     //q vs a;
-    algebList[7] = EvalMapleProc(kv, expandF, 1, algebList[7]); 
+    algebList[7] = EvalMapleProc(kv, expandF, 1, algebList[7]);
     comp = EvalMapleProc(kv, cmpF, 2, algebList[7], algebList[3]);
     //result vs r;
-    result = EvalMapleProc(kv, expandF, 1, result); 
+    result = EvalMapleProc(kv, expandF, 1, result);
     comp2 = EvalMapleProc(kv, cmpF, 2, result, algebList[4]);
     //m vs e
     algebList[6] = EvalMapleProc(kv, expandF, 1, algebList[6]);
@@ -4691,7 +4694,7 @@ void testPseudoDivide() {
         std::cout << "Got quotient:" << retErr << std::endl;
         std::cout << "Expected: " << quo << std::endl;
         exit(1);
-    } 
+    }
 
     if (!comp3Bool) {
         std::string retErr = mapleTest->algebToString(kv, algebList[6]);
@@ -4755,10 +4758,10 @@ void testPseudoDivide() {
     result = EvalMapleProc(kv, testProc, 5, algebList[0], algebList[1], algebList[2], algebList[6], algebList[7]);
 
     //q vs a;
-    algebList[7] = EvalMapleProc(kv, expandF, 1, algebList[7]); 
+    algebList[7] = EvalMapleProc(kv, expandF, 1, algebList[7]);
     comp = EvalMapleProc(kv, cmpF, 2, algebList[7], algebList[3]);
     //result vs r;
-    result = EvalMapleProc(kv, expandF, 1, result); 
+    result = EvalMapleProc(kv, expandF, 1, result);
     comp2 = EvalMapleProc(kv, cmpF, 2, result, algebList[4]);
     //m vs e
     algebList[6] = EvalMapleProc(kv, expandF, 1, algebList[6]);
@@ -4774,7 +4777,7 @@ void testPseudoDivide() {
         std::cout << "Got quotient:" << retErr << std::endl;
         std::cout << "Expected: " << quo << std::endl;
         exit(1);
-    } 
+    }
 
     if (!comp3Bool) {
         std::string retErr = mapleTest->algebToString(kv, algebList[6]);
@@ -4799,7 +4802,7 @@ void testPseudoDivide() {
 void testMPZ_TAddition() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -4820,10 +4823,10 @@ void testMPZ_TAddition() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t addition test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t addition test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -4882,7 +4885,7 @@ void testMPZ_TAddition() {
 void testMPZ_TAdditionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -4904,15 +4907,15 @@ void testMPZ_TAdditionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t addition assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t addition assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p += r;
 
     pTree += rTree;
@@ -4947,7 +4950,7 @@ void testMPZ_TAdditionAssignment() {
 void testMPZ_TSubtraction() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -4968,10 +4971,10 @@ void testMPZ_TSubtraction() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t subtraction test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t subtraction test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -5006,7 +5009,7 @@ void testMPZ_TSubtraction() {
     }
 
     //test ratNum - polynomial (in that order);
-    
+
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     pTree = rTree;
     pTree -= p.convertToExpressionTree();
@@ -5028,7 +5031,7 @@ void testMPZ_TSubtraction() {
 void testMPZ_TSubtractionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -5050,16 +5053,16 @@ void testMPZ_TSubtractionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t subtraction assignment test 1: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t subtraction assignment test 1: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p -= r;
 
     pTree -= rTree;
@@ -5094,7 +5097,7 @@ void testMPZ_TSubtractionAssignment() {
 void testMPZ_TMultiplication() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -5115,10 +5118,10 @@ void testMPZ_TMultiplication() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t multiplication test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t multiplication test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -5153,7 +5156,7 @@ void testMPZ_TMultiplication() {
     }
 
     //test ratNum * polynomial (in that order);
-    
+
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     pTree = rTree;
     pTree *= p.convertToExpressionTree();
@@ -5175,7 +5178,7 @@ void testMPZ_TMultiplication() {
 void testMPZ_TMultiplicationAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -5197,16 +5200,16 @@ void testMPZ_TMultiplicationAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t multiplication assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t multiplication assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p *= r;
 
     pTree *= rTree;
@@ -5241,7 +5244,7 @@ void testMPZ_TMultiplicationAssignment() {
 void testMPZ_TDivision() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -5263,10 +5266,10 @@ void testMPZ_TDivision() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t division test 1: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t division test 1: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -5310,7 +5313,7 @@ void testMPZ_TDivision() {
 
     quo = r / p;
 
-    //note, here we do pTree = quo.convertToExpressionTree on purpose! 
+    //note, here we do pTree = quo.convertToExpressionTree on purpose!
     //maple allows for rational functions of polynomails, so the simple
     //expression of r/poly is valid, but here we know that the quo is in fact 0
     if (p.degree() > 0) {
@@ -5344,14 +5347,14 @@ void testMPZ_TDivision() {
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
-    
+
     std::cout << "SMZP mpz_t division test: PASSED" << std::endl;
 }
 
 void testMPZ_TDivisionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     unsigned long val = (unsigned long) rand() % coefBound + 1;
 
     mpz_t r;
@@ -5374,16 +5377,16 @@ void testMPZ_TDivisionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_t division assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_t division assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p /= r;
 
     pTree /= rTree;
@@ -5418,7 +5421,7 @@ void testMPZ_TDivisionAssignment() {
 void testMPZ_ClassAddition() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     mpz_class r(rand() % coefBound + 1);
 
     SparseMultivariateIntegerPolynomial sum = p+r;
@@ -5435,10 +5438,10 @@ void testMPZ_ClassAddition() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class addition test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class addition test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -5497,7 +5500,7 @@ void testMPZ_ClassAddition() {
 void testMPZ_ClassAdditionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-       
+
     mpz_class r(rand() % coefBound + 1);
 
     ExpressionTree pTree = p.convertToExpressionTree();
@@ -5515,14 +5518,14 @@ void testMPZ_ClassAdditionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class addition assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class addition assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p += r;
 
     pTree += rTree;
@@ -5557,7 +5560,7 @@ void testMPZ_ClassAdditionAssignment() {
 void testMPZ_ClassSubtraction() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     mpz_class r(rand() % coefBound + 1);
 
     SparseMultivariateIntegerPolynomial diff = p-r;
@@ -5574,10 +5577,10 @@ void testMPZ_ClassSubtraction() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class subtraction test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class subtraction test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -5612,7 +5615,7 @@ void testMPZ_ClassSubtraction() {
     }
 
     //test ratNum - polynomial (in that order);
-    
+
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     pTree = rTree;
     pTree -= p.convertToExpressionTree();
@@ -5634,7 +5637,7 @@ void testMPZ_ClassSubtraction() {
 void testMPZ_ClassSubtractionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     mpz_class r(rand() % coefBound + 1);
 
     ExpressionTree pTree = p.convertToExpressionTree();
@@ -5652,16 +5655,16 @@ void testMPZ_ClassSubtractionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class subtraction assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class subtraction assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p -= r;
 
     pTree -= rTree;
@@ -5696,7 +5699,7 @@ void testMPZ_ClassSubtractionAssignment() {
 void testMPZ_ClassMultiplication() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     mpz_class r(rand() % coefBound + 1);
 
     SparseMultivariateIntegerPolynomial prod = p*r;
@@ -5713,10 +5716,10 @@ void testMPZ_ClassMultiplication() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class multiplication test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class multiplication test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -5751,7 +5754,7 @@ void testMPZ_ClassMultiplication() {
     }
 
     //test ratNum * polynomial (in that order);
-    
+
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     pTree = rTree;
     pTree *= p.convertToExpressionTree();
@@ -5773,7 +5776,7 @@ void testMPZ_ClassMultiplication() {
 void testMPZ_ClassMultiplicationAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     mpz_class r(rand() % coefBound + 1);
 
     ExpressionTree pTree = p.convertToExpressionTree();
@@ -5791,16 +5794,16 @@ void testMPZ_ClassMultiplicationAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class multiplication assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class multiplication assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p *= r;
 
     pTree *= rTree;
@@ -5835,7 +5838,7 @@ void testMPZ_ClassMultiplicationAssignment() {
 void testMPZ_ClassDivision() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     mpz_class r(rand() % coefBound + 1);
     p *= r; //ensure exact division
 
@@ -5854,10 +5857,10 @@ void testMPZ_ClassDivision() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class division test 1: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class division test 1: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
@@ -5892,7 +5895,7 @@ void testMPZ_ClassDivision() {
     }
 
     //test ratNum + polynomial (in that order);
-    
+
     p = Integer(r);
     r *= r;
     rTree = ExpressionTree(new ExprTreeNode(mpz_class(r)));
@@ -5902,7 +5905,7 @@ void testMPZ_ClassDivision() {
 
     quo = r / p;
 
-    //note, here we do pTree = quo.convertToExpressionTree on purpose! 
+    //note, here we do pTree = quo.convertToExpressionTree on purpose!
     //maple allows for rational functions of polynomails, so the simple
     //expression of r/poly is valid, but here we know that the quo is in fact 0
     if (p.degree() > 0) {
@@ -5936,14 +5939,14 @@ void testMPZ_ClassDivision() {
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
     }
-    
+
     std::cout << "SMZP mpz_class division test: PASSED" << std::endl;
 }
 
 void testMPZ_ClassDivisionAssignment() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-    
+
     mpz_class r(rand() % coefBound + 1);
     p *= r;
 
@@ -5962,16 +5965,16 @@ void testMPZ_ClassDivisionAssignment() {
     std::string retErr;
     mapleTest->testIfZero(pTree, &retErr);
     if (retErr != "") {
-        std::cerr << "SMZP mpz_class division assignment test: FAILED" << std::endl; 
+        std::cerr << "SMZP mpz_class division assignment test: FAILED" << std::endl;
         std::cerr << ">>>> expected 0 but got: " << retErr << std::endl;
         exit(1);
-    } 
+    }
 
     //now test spcial cases, likeone one the poly is 0 or a const.
 
     p.zero();
     pTree = p.convertToExpressionTree();
-    
+
     p /= r;
 
     pTree /= rTree;
@@ -6023,8 +6026,8 @@ void testLeadingVariable() {
     std::cerr << "SMZP leadingVariable() test: PASSED" << std::endl;
 }
 
-//NOTE: this test assumed that degree(std::string var) and leadingVariable() works. 
-//If running tests in the order the tests are defined, then this is assured. 
+//NOTE: this test assumed that degree(std::string var) and leadingVariable() works.
+//If running tests in the order the tests are defined, then this is assured.
 void testLeadingVariableDegree() {
     SparseMultivariateIntegerPolynomial p;
     p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
@@ -6049,7 +6052,7 @@ void testIsConstantTermZero() {
         exit(1);
     }
 
-    p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg); 
+    p.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
     int* degs = (int*) calloc(nvar, sizeof(int));
     Integer coef = p.coefficient(nvar, degs);
     if ((coef == 0) != p.isConstantTermZero()) {
@@ -6099,7 +6102,7 @@ void testLeadingCoefficientInVariable() {
         std::cerr << "SMZP leadingCoefficientInVariable() test: FAILED" << std::endl;
         std::cerr << "Got " << retErr << " but expected " << leadingCoef << std::endl;
         std::cerr << p << std::endl;
-        exit(1); 
+        exit(1);
     }
 
     if (mapleTest->testProcReturn("degree", inputs, std::to_string(i), &retErr) == 0) {
@@ -6159,7 +6162,7 @@ void testConvertToSUP() {
 
     ExpressionTree supTree = SUPconvertToExpressionTree(sup);
 
-    std::vector<std::string> inputs; 
+    std::vector<std::string> inputs;
     inputs.push_back(p.convertToExpressionTree().toMapleString());
 
     //NOTE: we expand the SUP, because otherwise maple's verify will not properly
@@ -6238,7 +6241,7 @@ void testDeepCopy() {
     std::cerr << "SMZP deepCopy() test: PASSED" << std::endl;
 }
 
-void testStraightLineProgram() { 
+void testStraightLineProgram() {
 
 for(int testCase = 0; testCase < 4; ++testCase) {
 
@@ -6252,7 +6255,7 @@ for(int testCase = 0; testCase < 4; ++testCase) {
         case 1: {
             p = SparseMultivariateIntegerPolynomial(nvar);
             p.zero();
-            break;            
+            break;
         }
         case 2: {
             p = SparseMultivariateIntegerPolynomial(nvar);
@@ -6275,8 +6278,8 @@ for(int testCase = 0; testCase < 4; ++testCase) {
         vars.push_back(Symbol("x_1"));
         varsSize = 1;
     }
-    
-    //get its slp 
+
+    //get its slp
     p.straightLineProgram();
 
     //prepare maple proc
@@ -6330,7 +6333,7 @@ for(int testCase = 0; testCase < 4; ++testCase) {
         std::vector<ALGEB> algebList;
         for (int j = 0; j < varsSize; ++j) {
             if (i == 0) {
-                vals[j] = 0;    
+                vals[j] = 0;
             } else {
                 vals[j] = rand() % maxVal;
                 if (rand() % 2) {
@@ -6340,7 +6343,7 @@ for(int testCase = 0; testCase < 4; ++testCase) {
             algebList.push_back(ToMapleInteger(kv, vals[j]));
         }
         std::stringstream varss;
-        
+
         //build vars list for these vals
         varss << "[";
         for (int j = 0; j < varsSize-1; ++j) {
@@ -6406,9 +6409,9 @@ void testFromString() {
 
     std::stringstream ss;
     SparseMultivariateRationalPolynomial p;
-    
+
     //test "0"
-    
+
     std::string fromString = "0";
     p.fromString(fromString);
 
@@ -6472,6 +6475,483 @@ void testIstreamOperator() {
     std::cerr << "SMZP: istream operator test: PASSED!" << std::endl;
 }
 
+
+void testCoprimeHeuristic() {
+
+
+    const char* syms[] = {"x", "y", "z", "s", "t"};
+    int localnvar = 5;
+
+    AltArrZ_t* a, *b, *g, *tmp;
+    char* poly1, *poly2, *gpoly;
+    int coprime;
+
+    poly1 = "111808005574262*x0^1*x1^0*x2^1*x3^0*x4^1*x5^1*x6^0*x7^1*x8^1*x9^1 + 874266349517455*x0^1*x1^0*x2^1*x3^0*x4^1*x5^1*x6^0*x7^0*x8^0*x9^0 -949545433733953*x0^1*x1^0*x2^1*x3^0*x4^1*x5^0*x6^0*x7^1*x8^1*x9^1 -480193619378533*x0^1*x1^0*x2^1*x3^0*x4^1*x5^0*x6^0*x7^0*x8^0*x9^0 -836812249169337*x0^1*x1^0*x2^1*x3^0*x4^0*x5^1*x6^1*x7^0*x8^0*x9^1 -468481120129968*x0^1*x1^0*x2^1*x3^0*x4^0*x5^1*x6^0*x7^1*x8^0*x9^0 -82021356271064*x0^1*x1^0*x2^1*x3^0*x4^0*x5^0*x6^1*x7^1*x8^0*x9^1 + 817807058139453*x0^1*x1^0*x2^1*x3^0*x4^0*x5^0*x6^0*x7^1*x8^1*x9^0 -817255949732556*x0^1*x1^0*x2^0*x3^1*x4^1*x5^1*x6^1*x7^1*x8^1*x9^1 + 49521547566971*x0^1*x1^0*x2^0*x3^1*x4^1*x5^1*x6^1*x7^0*x8^0*x9^0 -326121970590349*x0^1*x1^0*x2^0*x3^1*x4^1*x5^1*x6^0*x7^0*x8^0*x9^1 -998047661820396*x0^1*x1^0*x2^0*x3^1*x4^1*x5^0*x6^1*x7^0*x8^1*x9^0 + 205070770841671*x0^1*x1^0*x2^0*x3^1*x4^1*x5^0*x6^0*x7^0*x8^0*x9^1 + 1096240890781868*x0^1*x1^0*x2^0*x3^1*x4^0*x5^1*x6^1*x7^1*x8^0*x9^0 + 687842748021512*x0^1*x1^0*x2^0*x3^1*x4^0*x5^1*x6^0*x7^1*x8^1*x9^0 + 39703541349987*x0^1*x1^0*x2^0*x3^1*x4^0*x5^1*x6^0*x7^0*x8^0*x9^0 -512909770471305*x0^1*x1^0*x2^0*x3^1*x4^0*x5^0*x6^1*x7^0*x8^0*x9^1 + 159249989587519*x0^1*x1^0*x2^0*x3^1*x4^0*x5^0*x6^0*x7^0*x8^0*x9^0 + 752926607658190*x0^1*x1^0*x2^0*x3^0*x4^1*x5^1*x6^1*x7^0*x8^0*x9^1 + 908815016918518*x0^1*x1^0*x2^0*x3^0*x4^1*x5^1*x6^0*x7^0*x8^0*x9^0 -1090918323960670*x0^1*x1^0*x2^0*x3^0*x4^1*x5^0*x6^0*x7^1*x8^1*x9^1 -638936177188553*x0^1*x1^0*x2^0*x3^0*x4^0*x5^1*x6^1*x7^1*x8^1*x9^0 + 225996870719141*x0^1*x1^0*x2^0*x3^0*x4^0*x5^1*x6^0*x7^1*x8^1*x9^0 -770304528175678*x0^1*x1^0*x2^0*x3^0*x4^0*x5^0*x6^1*x7^1*x8^1*x9^1 -1072641054395336*x0^1*x1^0*x2^0*x3^0*x4^0*x5^0*x6^0*x7^1*x8^1*x9^0 -757361106597040*x0^1*x1^0*x2^0*x3^0*x4^0*x5^0*x6^0*x7^0*x8^0*x9^1 + 402787083695495*x0^0*x1^1*x2^1*x3^1*x4^1*x5^1*x6^1*x7^0*x8^0*x9^0 + 674089071740867*x0^0*x1^1*x2^1*x3^1*x4^1*x5^1*x6^0*x7^0*x8^0*x9^0 + 206856516891882*x0^0*x1^1*x2^1*x3^1*x4^1*x5^0*x6^1*x7^0*x8^0*x9^1 -1042645847745238*x0^0*x1^1*x2^1*x3^1*x4^1*x5^0*x6^0*x7^0*x8^0*x9^1 + 374078664367726*x0^0*x1^1*x2^1*x3^1*x4^0*x5^1*x6^1*x7^0*x8^1*x9^0 + 161411319748758*x0^0*x1^1*x2^1*x3^1*x4^0*x5^1*x6^0*x7^1*x8^0*x9^0 -924735003364099*x0^0*x1^1*x2^1*x3^1*x4^0*x5^0*x6^1*x7^1*x8^0*x9^0 -453595080346598*x0^0*x1^1*x2^1*x3^1*x4^0*x5^0*x6^0*x7^1*x8^1*x9^0 -575125770990557*x0^0*x1^1*x2^1*x3^0*x4^1*x5^1*x6^1*x7^1*x8^1*x9^1 + 427732316177418*x0^0*x1^1*x2^1*x3^0*x4^1*x5^1*x6^0*x7^1*x8^1*x9^0 -954317588840337*x0^0*x1^1*x2^1*x3^0*x4^1*x5^1*x6^0*x7^0*x8^0*x9^1 -780901551889747*x0^0*x1^1*x2^1*x3^0*x4^1*x5^0*x6^1*x7^0*x8^1*x9^0 -530566605782673*x0^0*x1^1*x2^1*x3^0*x4^1*x5^0*x6^0*x7^0*x8^1*x9^0 + 184007998494133*x0^0*x1^1*x2^1*x3^0*x4^0*x5^1*x6^1*x7^0*x8^1*x9^0 + 444840669029977*x0^0*x1^1*x2^1*x3^0*x4^0*x5^1*x6^0*x7^0*x8^0*x9^1 + 45817425407414*x0^0*x1^1*x2^1*x3^0*x4^0*x5^0*x6^1*x7^1*x8^0*x9^0 + 55739640136407*x0^0*x1^1*x2^1*x3^0*x4^0*x5^0*x6^0*x7^0*x8^1*x9^1 + 182986085132592*x0^0*x1^1*x2^0*x3^1*x4^1*x5^1*x6^1*x7^0*x8^1*x9^1 -514106181763921*x0^0*x1^1*x2^0*x3^1*x4^1*x5^1*x6^0*x7^1*x8^0*x9^0 + 802272922967021*x0^0*x1^1*x2^0*x3^1*x4^1*x5^0*x6^1*x7^1*x8^0*x9^1 -530453831996418*x0^0*x1^1*x2^0*x3^1*x4^1*x5^0*x6^0*x7^1*x8^0*x9^0 + 916921269617152*x0^0*x1^1*x2^0*x3^1*x4^0*x5^1*x6^1*x7^1*x8^0*x9^0 -536587202039101*x0^0*x1^1*x2^0*x3^1*x4^0*x5^1*x6^0*x7^1*x8^0*x9^0 + 661067769940673*x0^0*x1^1*x2^0*x3^1*x4^0*x5^0*x6^1*x7^0*x8^1*x9^1 -503428859254865*x0^0*x1^1*x2^0*x3^1*x4^0*x5^0*x6^0*x7^1*x8^0*x9^1 + 586377992553459*x0^0*x1^1*x2^0*x3^0*x4^1*x5^1*x6^1*x7^1*x8^0*x9^1 + 841322231184827*x0^0*x1^1*x2^0*x3^0*x4^1*x5^1*x6^0*x7^1*x8^1*x9^0 -770856832681193*x0^0*x1^1*x2^0*x3^0*x4^1*x5^0*x6^1*x7^1*x8^1*x9^0 -749040498616370*x0^0*x1^1*x2^0*x3^0*x4^1*x5^0*x6^1*x7^0*x8^0*x9^0 + 309156516939975*x0^0*x1^1*x2^0*x3^0*x4^1*x5^0*x6^0*x7^0*x8^1*x9^1 + 384942404797179*x0^0*x1^1*x2^0*x3^0*x4^0*x5^1*x6^1*x7^1*x8^1*x9^0 -338408899808067*x0^0*x1^1*x2^0*x3^0*x4^0*x5^1*x6^1*x7^0*x8^0*x9^1 + 703834420203285*x0^0*x1^1*x2^0*x3^0*x4^0*x5^1*x6^0*x7^0*x8^0*x9^0 -1025383270165205*x0^0*x1^1*x2^0*x3^0*x4^0*x5^0*x6^1*x7^0*x8^1*x9^1 -15120825159469*x0^0*x1^1*x2^0*x3^0*x4^0*x5^0*x6^0*x7^0*x8^1*x9^1 + 579070995480603*x0^0*x1^0*x2^1*x3^1*x4^1*x5^1*x6^1*x7^1*x8^1*x9^0 -48488799727764*x0^0*x1^0*x2^1*x3^1*x4^1*x5^1*x6^0*x7^1*x8^1*x9^0 -787272530914844*x0^0*x1^0*x2^1*x3^1*x4^1*x5^0*x6^1*x7^1*x8^1*x9^0 -1103339873997020*x0^0*x1^0*x2^1*x3^1*x4^1*x5^0*x6^1*x7^0*x8^0*x9^0 -168060508907735*x0^0*x1^0*x2^1*x3^1*x4^1*x5^0*x6^0*x7^0*x8^0*x9^1 + 578599493665793*x0^0*x1^0*x2^1*x3^1*x4^0*x5^1*x6^1*x7^0*x8^1*x9^1 + 708235963135936*x0^0*x1^0*x2^1*x3^1*x4^0*x5^1*x6^0*x7^0*x8^1*x9^0 -302710476551875*x0^0*x1^0*x2^1*x3^1*x4^0*x5^0*x6^1*x7^0*x8^1*x9^0 + 875950651621228*x0^0*x1^0*x2^1*x3^1*x4^0*x5^0*x6^0*x7^1*x8^0*x9^1 -669693147132955*x0^0*x1^0*x2^1*x3^0*x4^1*x5^1*x6^1*x7^1*x8^0*x9^0 -273840068282880*x0^0*x1^0*x2^1*x3^0*x4^1*x5^1*x6^0*x7^1*x8^1*x9^0 + 1011197622465362*x0^0*x1^0*x2^1*x3^0*x4^1*x5^0*x6^1*x7^1*x8^1*x9^1 -437980211945193*x0^0*x1^0*x2^1*x3^0*x4^1*x5^0*x6^0*x7^1*x8^1*x9^0 + 62995762640465*x0^0*x1^0*x2^1*x3^0*x4^1*x5^0*x6^0*x7^0*x8^0*x9^1 + 482569621230856*x0^0*x1^0*x2^1*x3^0*x4^0*x5^1*x6^1*x7^1*x8^0*x9^0 + 524864252093855*x0^0*x1^0*x2^1*x3^0*x4^0*x5^1*x6^0*x7^1*x8^1*x9^0 -764850543329902*x0^0*x1^0*x2^1*x3^0*x4^0*x5^0*x6^1*x7^1*x8^1*x9^1 + 31717345205091*x0^0*x1^0*x2^1*x3^0*x4^0*x5^0*x6^1*x7^0*x8^1*x9^0 + 654988495088835*x0^0*x1^0*x2^1*x3^0*x4^0*x5^0*x6^0*x7^0*x8^0*x9^1 + 138111135742174*x0^0*x1^0*x2^0*x3^1*x4^1*x5^1*x6^1*x7^0*x8^1*x9^1 + 181147215435333*x0^0*x1^0*x2^0*x3^1*x4^1*x5^1*x6^0*x7^0*x8^1*x9^0 + 762692444034329*x0^0*x1^0*x2^0*x3^1*x4^1*x5^0*x6^1*x7^0*x8^1*x9^0 + 1018800142831823*x0^0*x1^0*x2^0*x3^1*x4^1*x5^0*x6^0*x7^1*x8^0*x9^0 -483497808380493*x0^0*x1^0*x2^0*x3^1*x4^0*x5^1*x6^1*x7^1*x8^1*x9^1 -163110359488237*x0^0*x1^0*x2^0*x3^1*x4^0*x5^1*x6^1*x7^0*x8^1*x9^0 + 961941894462918*x0^0*x1^0*x2^0*x3^1*x4^0*x5^1*x6^0*x7^0*x8^1*x9^0 + 954697044651267*x0^0*x1^0*x2^0*x3^1*x4^0*x5^0*x6^1*x7^0*x8^1*x9^1 + 450639176925570*x0^0*x1^0*x2^0*x3^1*x4^0*x5^0*x6^0*x7^1*x8^0*x9^0 -709594276061215*x0^0*x1^0*x2^0*x3^0*x4^1*x5^1*x6^1*x7^1*x8^1*x9^1 + 199202646257372*x0^0*x1^0*x2^0*x3^0*x4^1*x5^1*x6^1*x7^0*x8^1*x9^0 + 510879230156319*x0^0*x1^0*x2^0*x3^0*x4^1*x5^1*x6^0*x7^0*x8^1*x9^1 -941607367630409*x0^0*x1^0*x2^0*x3^0*x4^1*x5^0*x6^1*x7^1*x8^0*x9^1 -987480685143763*x0^0*x1^0*x2^0*x3^0*x4^1*x5^0*x6^0*x7^1*x8^0*x9^0 -446364464319940*x0^0*x1^0*x2^0*x3^0*x4^0*x5^1*x6^1*x7^1*x8^1*x9^1 + 828951946129814*x0^0*x1^0*x2^0*x3^0*x4^0*x5^1*x6^1*x7^0*x8^0*x9^1 -925562521233954*x0^0*x1^0*x2^0*x3^0*x4^0*x5^1*x6^0*x7^1*x8^0*x9^0 + 910480782682962*x0^0*x1^0*x2^0*x3^0*x4^0*x5^0*x6^1*x7^1*x8^1*x9^0 -1107662231314232*x0^0*x1^0*x2^0*x3^0*x4^0*x5^0*x6^1*x7^0*x8^0*x9^0 + 750770989966253";
+    poly2 = "-558720934404272*x0^1*x1^0*x2^1*x3^0*x4^1*x5^1*x6^0*x7^0*x8^1*x9^1 + 547817242590673*x0^1*x1^0*x2^1*x3^0*x4^1*x5^0*x6^1*x7^0*x8^1*x9^0 + 186904258690811*x0^1*x1^0*x2^1*x3^0*x4^1*x5^0*x6^0*x7^0*x8^1*x9^1 + 826626810213645*x0^1*x1^0*x2^1*x3^0*x4^0*x5^1*x6^1*x7^1*x8^0*x9^0 + 785078324152374*x0^1*x1^0*x2^1*x3^0*x4^0*x5^1*x6^0*x7^1*x8^1*x9^0 -524205736809142*x0^1*x1^0*x2^1*x3^0*x4^0*x5^1*x6^0*x7^0*x8^0*x9^1 -641500613368449*x0^1*x1^0*x2^1*x3^0*x4^0*x5^0*x6^1*x7^0*x8^0*x9^1 + 210357738486650*x0^1*x1^0*x2^1*x3^0*x4^0*x5^0*x6^0*x7^0*x8^0*x9^1 + 620437520033545*x0^1*x1^0*x2^0*x3^1*x4^1*x5^1*x6^1*x7^0*x8^1*x9^0 -685237295476232*x0^1*x1^0*x2^0*x3^1*x4^1*x5^1*x6^0*x7^0*x8^0*x9^1 -429165196447172*x0^1*x1^0*x2^0*x3^1*x4^1*x5^0*x6^1*x7^1*x8^0*x9^0 + 1014904634662530*x0^1*x1^0*x2^0*x3^1*x4^1*x5^0*x6^0*x7^1*x8^0*x9^1 + 194147196644069*x0^1*x1^0*x2^0*x3^1*x4^1*x5^0*x6^0*x7^0*x8^0*x9^0 + 653663780754980*x0^1*x1^0*x2^0*x3^1*x4^0*x5^1*x6^1*x7^0*x8^1*x9^0 + 1061550095694088*x0^1*x1^0*x2^0*x3^1*x4^0*x5^1*x6^0*x7^1*x8^0*x9^1 + 456693809975767*x0^1*x1^0*x2^0*x3^1*x4^0*x5^0*x6^1*x7^1*x8^1*x9^0 + 725242646075345*x0^1*x1^0*x2^0*x3^1*x4^0*x5^0*x6^0*x7^1*x8^1*x9^1 -478753400756879*x0^1*x1^0*x2^0*x3^0*x4^1*x5^1*x6^1*x7^1*x8^1*x9^1 -36453110001044*x0^1*x1^0*x2^0*x3^0*x4^1*x5^1*x6^1*x7^0*x8^0*x9^0 + 1048867001659473*x0^1*x1^0*x2^0*x3^0*x4^1*x5^1*x6^0*x7^0*x8^0*x9^1 + 632897858603461*x0^1*x1^0*x2^0*x3^0*x4^1*x5^0*x6^1*x7^0*x8^0*x9^0 -384832733660683*x0^1*x1^0*x2^0*x3^0*x4^1*x5^0*x6^0*x7^0*x8^0*x9^1 + 291170735789808*x0^1*x1^0*x2^0*x3^0*x4^0*x5^1*x6^1*x7^0*x8^0*x9^0 -625063949204499*x0^1*x1^0*x2^0*x3^0*x4^0*x5^1*x6^0*x7^0*x8^0*x9^0 -275367962895045*x0^1*x1^0*x2^0*x3^0*x4^0*x5^0*x6^0*x7^1*x8^1*x9^1 -816252270356922*x0^1*x1^0*x2^0*x3^0*x4^0*x5^0*x6^0*x7^0*x8^0*x9^0 -354687452450246*x0^0*x1^1*x2^1*x3^1*x4^1*x5^1*x6^1*x7^0*x8^0*x9^0 -403170655911480*x0^0*x1^1*x2^1*x3^1*x4^1*x5^0*x6^1*x7^1*x8^1*x9^1 + 218917984789714*x0^0*x1^1*x2^1*x3^1*x4^1*x5^0*x6^1*x7^0*x8^0*x9^0 -870770069510810*x0^0*x1^1*x2^1*x3^1*x4^0*x5^1*x6^1*x7^1*x8^1*x9^1 + 662853393434261*x0^0*x1^1*x2^1*x3^1*x4^0*x5^1*x6^0*x7^1*x8^1*x9^1 + 1060580927686503*x0^0*x1^1*x2^1*x3^1*x4^0*x5^1*x6^0*x7^0*x8^0*x9^0 -794261908795725*x0^0*x1^1*x2^1*x3^1*x4^0*x5^0*x6^1*x7^0*x8^1*x9^1 + 852175373390011*x0^0*x1^1*x2^1*x3^1*x4^0*x5^0*x6^0*x7^1*x8^1*x9^0 + 975501198438206*x0^0*x1^1*x2^1*x3^0*x4^1*x5^1*x6^1*x7^1*x8^0*x9^1 + 505948046464662*x0^0*x1^1*x2^1*x3^0*x4^1*x5^1*x6^0*x7^1*x8^1*x9^0 -234361280549512*x0^0*x1^1*x2^1*x3^0*x4^1*x5^0*x6^1*x7^1*x8^1*x9^1 -1110658667492514*x0^0*x1^1*x2^1*x3^0*x4^1*x5^0*x6^0*x7^1*x8^1*x9^0 + 93314372286217*x0^0*x1^1*x2^1*x3^0*x4^1*x5^0*x6^0*x7^0*x8^0*x9^0 + 9151841721925*x0^0*x1^1*x2^1*x3^0*x4^0*x5^1*x6^1*x7^0*x8^1*x9^0 + 975416366733342*x0^0*x1^1*x2^1*x3^0*x4^0*x5^1*x6^0*x7^1*x8^0*x9^1 + 731574721332880*x0^0*x1^1*x2^1*x3^0*x4^0*x5^0*x6^1*x7^1*x8^1*x9^0 + 1059485974794666*x0^0*x1^1*x2^1*x3^0*x4^0*x5^0*x6^0*x7^1*x8^1*x9^1 + 98438942949302*x0^0*x1^1*x2^0*x3^1*x4^1*x5^1*x6^1*x7^1*x8^1*x9^1 + 653180581332639*x0^0*x1^1*x2^0*x3^1*x4^1*x5^1*x6^1*x7^0*x8^1*x9^0 -162218228984853*x0^0*x1^1*x2^0*x3^1*x4^1*x5^1*x6^0*x7^1*x8^0*x9^1 + 634256796518787*x0^0*x1^1*x2^0*x3^1*x4^1*x5^0*x6^1*x7^1*x8^1*x9^1 -874222738612617*x0^0*x1^1*x2^0*x3^1*x4^1*x5^0*x6^1*x7^0*x8^0*x9^1 -922303255479225*x0^0*x1^1*x2^0*x3^1*x4^1*x5^0*x6^0*x7^0*x8^0*x9^0 + 443498760876940*x0^0*x1^1*x2^0*x3^1*x4^0*x5^1*x6^0*x7^1*x8^1*x9^1 -276051387496257*x0^0*x1^1*x2^0*x3^1*x4^0*x5^1*x6^0*x7^0*x8^1*x9^0 -43021916473219*x0^0*x1^1*x2^0*x3^1*x4^0*x5^0*x6^1*x7^0*x8^0*x9^1 + 252556104272820*x0^0*x1^1*x2^0*x3^1*x4^0*x5^0*x6^0*x7^0*x8^0*x9^0 -1011969293864621*x0^0*x1^1*x2^0*x3^0*x4^1*x5^1*x6^1*x7^0*x8^1*x9^0 + 422111978283232*x0^0*x1^1*x2^0*x3^0*x4^1*x5^1*x6^0*x7^0*x8^0*x9^1 + 1075041328210649*x0^0*x1^1*x2^0*x3^0*x4^1*x5^0*x6^1*x7^0*x8^1*x9^0 -445015771059886*x0^0*x1^1*x2^0*x3^0*x4^1*x5^0*x6^0*x7^1*x8^0*x9^0 -462692149656939*x0^0*x1^1*x2^0*x3^0*x4^0*x5^1*x6^1*x7^1*x8^0*x9^1 -869230336011844*x0^0*x1^1*x2^0*x3^0*x4^0*x5^1*x6^0*x7^1*x8^0*x9^1 + 182782193786959*x0^0*x1^1*x2^0*x3^0*x4^0*x5^0*x6^1*x7^1*x8^1*x9^0 -395838243465090*x0^0*x1^1*x2^0*x3^0*x4^0*x5^0*x6^1*x7^0*x8^0*x9^0 -272142631613942*x0^0*x1^1*x2^0*x3^0*x4^0*x5^0*x6^0*x7^0*x8^1*x9^1 + 947612401754906*x0^0*x1^0*x2^1*x3^1*x4^1*x5^1*x6^1*x7^1*x8^0*x9^0 -346841708813778*x0^0*x1^0*x2^1*x3^1*x4^1*x5^1*x6^0*x7^0*x8^1*x9^1 -975882268795691*x0^0*x1^0*x2^1*x3^1*x4^1*x5^0*x6^1*x7^1*x8^0*x9^1 -340552855248413*x0^0*x1^0*x2^1*x3^1*x4^1*x5^0*x6^0*x7^1*x8^0*x9^1 + 67836189278798*x0^0*x1^0*x2^1*x3^1*x4^1*x5^0*x6^0*x7^0*x8^0*x9^0 -265336342051117*x0^0*x1^0*x2^1*x3^1*x4^0*x5^1*x6^1*x7^0*x8^0*x9^1 -663680992834522*x0^0*x1^0*x2^1*x3^1*x4^0*x5^1*x6^0*x7^0*x8^0*x9^1 + 703070028158544*x0^0*x1^0*x2^1*x3^1*x4^0*x5^0*x6^1*x7^0*x8^1*x9^1 + 316658339708923*x0^0*x1^0*x2^1*x3^1*x4^0*x5^0*x6^0*x7^1*x8^0*x9^1 -986044331557619*x0^0*x1^0*x2^1*x3^0*x4^1*x5^1*x6^1*x7^1*x8^0*x9^0 -660061685978555*x0^0*x1^0*x2^1*x3^0*x4^1*x5^1*x6^0*x7^1*x8^1*x9^0 + 140318115073234*x0^0*x1^0*x2^1*x3^0*x4^1*x5^1*x6^0*x7^0*x8^0*x9^0 + 911405083169289*x0^0*x1^0*x2^1*x3^0*x4^1*x5^0*x6^1*x7^0*x8^1*x9^1 + 1123006664230666*x0^0*x1^0*x2^1*x3^0*x4^1*x5^0*x6^0*x7^0*x8^1*x9^1 + 50107806333250*x0^0*x1^0*x2^1*x3^0*x4^0*x5^1*x6^1*x7^0*x8^1*x9^1 -94247617732854*x0^0*x1^0*x2^1*x3^0*x4^0*x5^1*x6^0*x7^1*x8^1*x9^0 + 182145555536920*x0^0*x1^0*x2^1*x3^0*x4^0*x5^0*x6^1*x7^1*x8^0*x9^1 + 359558053997994*x0^0*x1^0*x2^1*x3^0*x4^0*x5^0*x6^0*x7^1*x8^1*x9^0 + 1038865329943457*x0^0*x1^0*x2^1*x3^0*x4^0*x5^0*x6^0*x7^0*x8^0*x9^0 -254993532517743*x0^0*x1^0*x2^0*x3^1*x4^1*x5^1*x6^1*x7^0*x8^1*x9^0 -271960525213230*x0^0*x1^0*x2^0*x3^1*x4^1*x5^1*x6^0*x7^1*x8^0*x9^0 -555911436206284*x0^0*x1^0*x2^0*x3^1*x4^1*x5^0*x6^1*x7^1*x8^0*x9^0 + 1120038985121201*x0^0*x1^0*x2^0*x3^1*x4^1*x5^0*x6^0*x7^1*x8^0*x9^1 + 561112771895521*x0^0*x1^0*x2^0*x3^1*x4^0*x5^1*x6^1*x7^1*x8^1*x9^1 + 442186590489925*x0^0*x1^0*x2^0*x3^1*x4^0*x5^1*x6^1*x7^0*x8^0*x9^0 + 1091825860209498*x0^0*x1^0*x2^0*x3^1*x4^0*x5^1*x6^0*x7^0*x8^1*x9^1 + 172521005840106*x0^0*x1^0*x2^0*x3^1*x4^0*x5^0*x6^1*x7^0*x8^1*x9^0 + 158442143137091*x0^0*x1^0*x2^0*x3^1*x4^0*x5^0*x6^0*x7^0*x8^1*x9^1 + 262171619226472*x0^0*x1^0*x2^0*x3^0*x4^1*x5^1*x6^1*x7^1*x8^1*x9^0 + 397495571065262*x0^0*x1^0*x2^0*x3^0*x4^1*x5^1*x6^0*x7^1*x8^1*x9^1 + 874178564305718*x0^0*x1^0*x2^0*x3^0*x4^1*x5^0*x6^1*x7^1*x8^1*x9^0 -1107371155744821*x0^0*x1^0*x2^0*x3^0*x4^1*x5^0*x6^0*x7^1*x8^1*x9^1 + 1030881646524629*x0^0*x1^0*x2^0*x3^0*x4^1*x5^0*x6^0*x7^0*x8^0*x9^1 -47984665506289*x0^0*x1^0*x2^0*x3^0*x4^0*x5^1*x6^1*x7^0*x8^1*x9^1 + 694867814860423*x0^0*x1^0*x2^0*x3^0*x4^0*x5^1*x6^0*x7^1*x8^1*x9^0 -63612564468825*x0^0*x1^0*x2^0*x3^0*x4^0*x5^0*x6^1*x7^1*x8^1*x9^0 + 12330616385777*x0^0*x1^0*x2^0*x3^0*x4^0*x5^0*x6^0*x7^1*x8^1*x9^0 -614960291176898";
+
+    a = generate_altarrZ_var_defined(poly1,  g_syms, 10);
+    b = generate_altarrZ_var_defined(poly2,  g_syms, 10);
+
+    coprime = coprimalityHeuristic_AAZ(a, b);
+    if (coprime != 1) {
+        std::cerr << "AAZ Coprimality Heuristic Test0: FAILED!\n";
+        std::cerr << "return: " << coprime << std::endl;
+        exit(1);
+    }
+
+    poly1 = "87*x^2*y*z^2+44*x*y^4-23*y*z";
+    poly2 = "91*x*y^3*z+68*y^5-81*x*y^2+40*x*z-47*y";
+    gpoly = "-8*x^2*z-61*x*y+10";
+
+    a = generate_altarrZ_var_defined(poly1,  syms, localnvar);
+    b = generate_altarrZ_var_defined(poly2,  syms, localnvar);
+    g = generate_altarrZ_var_defined(gpoly, syms, localnvar);
+
+    coprime = coprimalityHeuristic_AAZ(a, b);
+    if (coprime != 1) {
+        std::cerr << "AAZ Coprimality Heuristic Test1: FAILED!\n";
+        std::cerr << "return: " << coprime << std::endl;
+        exit(1);
+    }
+
+    tmp = multiplyPolynomials_AAZ(a, g, localnvar);
+    freePolynomial_AAZ(a);
+    a = tmp;
+    tmp = multiplyPolynomials_AAZ(b, g, localnvar);
+    freePolynomial_AAZ(b);
+    b = tmp;
+
+    coprime = coprimalityHeuristic_AAZ(a,b);
+    if (coprime != 0) {
+        std::cerr << "AAZ Coprimality Heuristic Test2: FAILED!\n";
+        std::cerr << "return: " << coprime << std::endl;
+        exit(1);
+    }
+    freePolynomial_AAZ(a);
+    freePolynomial_AAZ(b);
+
+    degree_t monomial[localnvar] = {2, 4, 1, 0, 0};
+    a = generate_altarrZ_var_defined(poly1,  syms, localnvar);
+    b = generate_altarrZ_var_defined(poly2,  syms, localnvar);
+    multiplyByMonomial_AAZ_inp(a, monomial);
+    multiplyByMonomial_AAZ_inp(b, monomial);
+
+    coprime = coprimalityHeuristic_AAZ(a,b);
+    if (coprime != 0) {
+        std::cerr << "AAZ Coprimality Heuristic Test3: FAILED!\n";
+        std::cerr << "return: " << coprime << std::endl;
+        exit(1);
+    }
+
+    freePolynomial_AAZ(a);
+    freePolynomial_AAZ(b);
+    freePolynomial_AAZ(g);
+
+    //with fewer terms, odds are higher that two random polys will have
+    //a non-trivial common divisor
+    if (numTerms > 4 && coefBound < 10000) {
+        a = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+        tryPackExponentVectors_AAZ_inp(a);
+
+        b = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+        tryPackExponentVectors_AAZ_inp(b);
+
+        g = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+        tryPackExponentVectors_AAZ_inp(g);
+
+        coprime = coprimalityHeuristic_AAZ(a,b);
+        //may or may not find that a and b are co-prime, either is fine
+        //as long as they do not bail out
+        if (coprime < 0) {
+            std::cerr << "AAZ Coprimality Heuristic Test4: FAILED!\n";
+            std::cerr << "return: " << coprime << std::endl;
+            std::cerr << "a: ";
+            printPoly_AAZ(stderr, a, g_syms, a->nvar);
+            std::cerr << "\nb: ";
+            printPoly_AAZ(stderr, b, g_syms, b->nvar);
+            std::cerr << "\n";
+            exit(1);
+        }
+
+        tmp = multiplyPolynomials_AAZ(a, g, nvar);
+        freePolynomial_AAZ(a);
+        a = tmp;
+        tmp = multiplyPolynomials_AAZ(b, g, nvar);
+        freePolynomial_AAZ(b);
+        b = tmp;
+
+        coprime = coprimalityHeuristic_AAZ(a,b);
+        if (coprime > 0) {
+            std::cerr << "AAZ Coprimality Heuristic Test: FAILED!\n";
+            std::cerr << "return: " << coprime << std::endl;
+            std::cerr << "a: ";
+            printPoly_AAZ(stderr, a, g_syms, a->nvar);
+            std::cerr << "\nb: ";
+            printPoly_AAZ(stderr, b, g_syms, b->nvar);
+            std::cerr << "\n";
+            exit(1);
+        }
+
+        freePolynomial_AAZ(a);
+        freePolynomial_AAZ(b);
+        freePolynomial_AAZ(g);
+    }
+
+    std::cerr << "AAZ Coprimality Heuristic Test: PASSED!\n";
+
+
+}
+
+void testHeuristicGCD() {
+
+    for (int k = 0; k < 2; ++k) {
+        AltArrZ_t* a = NULL;
+        AltArrZ_t* b = NULL;
+        AltArrZ_t* g = NULL;
+        AltArrZ_t* tmp = NULL;
+        if (numTerms > 4 && coefBound < 10000) {
+            while (a == NULL || (a->elems[a->size-1].degs != 0)) {
+                a = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+                tryPackExponentVectors_AAZ_inp(a);
+            }
+
+            while (b == NULL || (b->elems[b->size-1].degs != 0)) {
+                b = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+                tryPackExponentVectors_AAZ_inp(b);
+            }
+
+            while (g == NULL || (g->elems[g->size-1].degs != 0)) {
+                g = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+                tryPackExponentVectors_AAZ_inp(g);
+            }
+
+            primitivePart_AAZ_inp(a);
+            primitivePart_AAZ_inp(b);
+            primitivePart_AAZ_inp(g);
+
+            //since we have a specialized "unpacked" version, test that explicitly
+            if (k % 2 != 0) {
+                unpackExponentVectors_AAZ_inp(a);
+                unpackExponentVectors_AAZ_inp(b);
+                unpackExponentVectors_AAZ_inp(g);
+            }
+
+            tmp = heuristicPrimitiveGCD_AAZ(a,b);
+            //may or may not find that a and b are co-prime, either is fine
+            //as long as they do not bail out
+            if (isZero_AAZ(tmp)) {
+                std::cerr << "AAZ Heuristic GCD Test: PASSED! (too expensive)\n";
+                gmp_fprintf(stderr, "LT(a): %Zd*x^%llx\n", a->elems->coef, a->elems->degs);
+                gmp_fprintf(stderr, "LT(b): %Zd*x^%llx\n", b->elems->coef, b->elems->degs);
+                freePolynomial_AAZ(a);
+                freePolynomial_AAZ(b);
+                freePolynomial_AAZ(g);
+                continue;
+            }
+
+            if (!isOne_AAZ(tmp)) {
+                std::cerr << "AAZ Heuristic GCD Test" << 2*k + 1 << ": FAILED!\n";
+                std::cerr << "a: ";
+                printPoly_AAZ(stderr, a, g_syms, a->nvar);
+                std::cerr << "\nb: ";
+                printPoly_AAZ(stderr, b, g_syms, b->nvar);
+                std::cerr << "\nret GCD: ";
+                printPoly_AAZ(stderr, tmp, g_syms, tmp->nvar);
+                std::cerr << "\n";
+                exit(1);
+            }
+
+            tmp = multiplyPolynomials_AAZ(a, g, nvar);
+            freePolynomial_AAZ(a);
+            a = tmp;
+            tmp = multiplyPolynomials_AAZ(b, g, nvar);
+            freePolynomial_AAZ(b);
+            b = tmp;
+            primitivePart_AAZ_inp(a);
+            primitivePart_AAZ_inp(b);
+
+            //  std::cerr << "a: ";
+            // printPoly_AAZ(stderr, a, g_syms, a->nvar);
+            // std::cerr << "\nb: ";
+            // printPoly_AAZ(stderr, b, g_syms, b->nvar);
+            // std::cerr << "\ng: ";
+            // printPoly_AAZ(stderr, g, g_syms, g->nvar);
+            // std::cerr << "\n";
+
+            tmp = heuristicPrimitiveGCD_AAZ(a,b);
+            if (isZero_AAZ(tmp)) {
+                std::cerr << "AAZ Heuristic GCD Test: PASSED! (too expensive)\n";
+                // gmp_fprintf(stderr, "LT(a): %Zd*x^%llx\n", a->elems->coef, a->elems->degs);
+                // gmp_fprintf(stderr, "LT(b): %Zd*x^%llx\n", b->elems->coef, b->elems->degs);
+                freePolynomial_AAZ(a);
+                freePolynomial_AAZ(b);
+                freePolynomial_AAZ(g);
+                freePolynomial_AAZ(tmp);
+                continue;;
+            }
+            if (!isExactlyEqual_AAZ(tmp, g)) {
+                std::cerr << "AAZ Heuristic GCD Test" << 2*k + 2 << ": FAILED!\n";
+                std::cerr << "a: ";
+                printPoly_AAZ(stderr, a, g_syms, a->nvar);
+                std::cerr << "\nb: ";
+                printPoly_AAZ(stderr, b, g_syms, b->nvar);
+                std::cerr << "\ng: ";
+                printPoly_AAZ(stderr, g, g_syms, g->nvar);
+                std::cerr << "\nret GCD: ";
+                printPoly_AAZ(stderr, tmp, g_syms, tmp->nvar);
+                std::cerr << "\n";
+                exit(1);
+            }
+
+            freePolynomial_AAZ(a);
+            freePolynomial_AAZ(b);
+            freePolynomial_AAZ(g);
+            freePolynomial_AAZ(tmp);
+        }
+    }
+
+    std::cerr << "AAZ Heuristic GCD Test: PASSED!\n";
+}
+
+
+void testKroneckerMultiplication() {
+
+    AltArrZ_t* a = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+    tryPackExponentVectors_AAZ_inp(a);
+
+    AltArrZ_t* b = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+    tryPackExponentVectors_AAZ_inp(b);
+
+    // fprintf(stderr, "f := ");
+    // printPoly_AAZ(stderr, a, g_syms, nvar);
+    // fprintf(stderr, "\n\ng := " );
+    // printPoly_AAZ(stderr, b, g_syms, nvar);
+    // fprintf(stderr, "\n\n");
+
+    AltArrZ_t* p1 = multiplyPolynomials_AAZ(a,b, nvar);
+
+    AltArrZ_t* p2 = multiplyPolynomials_KS_AAZ(a, b);
+
+    // fprintf(stderr, "p1 := ");
+    // printPoly_AAZ(stderr, p1, g_syms, nvar);
+    // fprintf(stderr, "\n\np2 := " );
+    // printPoly_AAZ(stderr, p2, g_syms, nvar);
+    // fprintf(stderr, "\n\n");
+
+    if (!isExactlyEqual_AAZ(p1, p2)) {
+        std::cerr << "AAZ Kronecker Multiplication Test: FAILED!\n";
+        exit(1);
+    }
+
+    std::cerr << "AAZ Kronecker Multiplication Test: PASSED!\n";
+}
+
+
+void testContentInVars() {
+
+    const char* syms[] = {"x", "y", "z", "w"};
+    int localnvar = 4;
+
+    AltArrZ_t* a, *b, *tmp;
+    char* poly1, *poly2;
+    int active[] = {0, 0, 1, 1};
+
+    poly1 = "13*w^3*x^2*y*z^2+4*w^3*x*y*z^2+2*w^3*x*z^2+3*w^3*y*z^2";
+    poly2 = "13*x^2*y+4*x*y+2*x+3*y";
+    a = generate_altarrZ_var_defined(poly1, syms, localnvar);
+
+    for (int i = 0; i < 2; ++i) {
+        b = generate_altarrZ_var_defined(poly2, syms, localnvar);
+
+        fprintf(stderr, "a:= %p\n", a);
+        tmp = contentInVars_AAZ(a, active);
+        if (!isExactlyEqual_AAZ(tmp, b)) {
+            std::cerr << "AAZ Content In Vars Test" << 2*i << ": FAILED!\n";
+            std::cerr << "return: ";
+            printPoly_AAZ(stderr, tmp, syms, localnvar);
+            std::cerr << "\n";
+            exit(1);
+        }
+
+        freePolynomial_AAZ(b);
+        poly2 = "z^2*w^3";
+        b = generate_altarrZ_var_defined(poly2, syms, 4);
+        active[0] = active[1] = 1;
+        active[2] = active[3] = 0;
+        tmp = contentInVars_AAZ(a, active);
+        if (!isExactlyEqual_AAZ(tmp, b)) {
+            std::cerr << "AAZ Content In Vars Test" << 2*i +1 << ": FAILED!\n";
+            std::cerr << "return: ";
+            printPoly_AAZ(stderr, tmp, syms, localnvar);
+            std::cerr << "\n";
+            exit(1);
+        }
+
+        freePolynomial_AAZ(b);
+        unpackExponentVectors_AAZ_inp(a);
+    }
+
+    freePolynomial_AAZ(a);
+
+    std::cerr << "AAZ Content In Vars Test: PASSED!\n";
+}
+
+void testBivariateGCD() {
+    AltArrZ_t* a, *b, *g, *tmp;
+    // const Prime_ptr* Pptr = prime64_ptr + (rand() % n_prime64_ptr);
+    //shadow global nvar
+    int nvar = 2;
+    a = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+    b = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+    g = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+
+    degree_t lDegs[nvar];
+    tryPackExponentVectors_AAZ_inp(a);
+    tryPackExponentVectors_AAZ_inp(b);
+    tryPackExponentVectors_AAZ_inp(g);
+    removeLowDegrees_AAZ_inp(g, lDegs);
+    primitivePart_AAZ_inp(g);
+
+    tmp = multiplyPolynomials_AAZ(a, g, nvar);
+    freePolynomial_AAZ(a);
+    a = tmp;
+
+    tmp = multiplyPolynomials_AAZ(b, g, nvar);
+    freePolynomial_AAZ(b);
+    b = tmp;
+
+    primitivePart_AAZ_inp(a);
+    removeLowDegrees_AAZ_inp(a, lDegs);
+    primitivePart_AAZ_inp(b);
+    removeLowDegrees_AAZ_inp(b, lDegs);
+
+    const char* syms[] = {"x", "y"};
+    // fprintf((stderr), "a: ");
+    // printPoly_AAZ(stderr, a, syms, nvar);
+    // fprintf((stderr), "\nb: ");
+    // printPoly_AAZ(stderr, b, syms, nvar);
+    // fprintf((stderr), "\ng:");
+    // printPoly_AAZ(stderr, g, syms, nvar);
+    // fprintf((stderr), "\n");
+    AltArrZ_t* tmpG = bivariatePrimitiveGCD_AAZ(a, b);
+
+    if (!isExactlyEqual_AAZ(g, tmpG)) {
+        negatePolynomial_AAZ(tmpG);
+        if (!isExactlyEqual_AAZ(g, tmpG)) {
+
+            std::cerr << "Bivariate GCD test: FAILED!" << std::endl;
+            fprintf((stderr), "\ng   :");
+            printPoly_AAZ(stderr, g, syms, nvar);
+            fprintf((stderr), "\n");
+
+            fprintf((stderr), "\nretG:");
+            printPoly_AAZ(stderr, tmpG, syms, nvar);
+            fprintf((stderr), "\n");
+            exit(1);
+        }
+    }
+    std::cerr << "Bivariate GCD test: PASSED!" << std::endl;
+
+    freePolynomial_AAZ(tmpG);
+    freePolynomial_AAZ(g);
+    freePolynomial_AAZ(a);
+    freePolynomial_AAZ(b);
+}
+
+
+#if defined(WITH_NTL) && WITH_NTL
+void testHenselGCD() {
+    if (nvar < 3) {
+        return;
+    }
+
+    AltArrZ_t* a, *b, *g, *tmp;
+    int varMap[nvar];
+    int trueNvarA;
+    while(1) {
+        a = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+        b = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+        g = buildRandomPoly_AAZ_unpk(nvar, numTerms, coefBound, sparsity, includeNeg);
+
+        degree_t lDegs[nvar];
+        tryPackExponentVectors_AAZ_inp(a);
+        tryPackExponentVectors_AAZ_inp(b);
+        tryPackExponentVectors_AAZ_inp(g);
+
+        removeLowDegrees_AAZ_inp(g, lDegs);
+        primitivePart_AAZ_inp(g);
+
+        tmp = multiplyPolynomials_AAZ(a, g, nvar);
+        freePolynomial_AAZ(a);
+        a = tmp;
+
+        tmp = multiplyPolynomials_AAZ(b, g, nvar);
+        freePolynomial_AAZ(b);
+        b = tmp;
+
+        primitivePart_AAZ_inp(a);
+        removeLowDegrees_AAZ_inp(a, lDegs);
+        primitivePart_AAZ_inp(b);
+        removeLowDegrees_AAZ_inp(b, lDegs);
+
+        // fprintf((stderr), "a: ");
+        // printPoly_AAZ(stderr, a, g_syms, nvar);
+        // fprintf((stderr), "\nb: ");
+        // printPoly_AAZ(stderr, b, g_syms, nvar);
+        // fprintf((stderr), "\ng:");
+        // printPoly_AAZ(stderr, g, g_syms, nvar);
+        // fprintf((stderr), "\n");
+
+        // unpackExponentVectors_AAZ_inp(a);
+        // unpackExponentVectors_AAZ_inp(b);
+
+
+        trueNvarA = tryShrinkVariables_AAZ_inp(a, varMap);
+        int trueNvarB = tryShrinkVariables_AAZ_inp(b, varMap);
+        if (trueNvarA != trueNvarB) {
+            fprintf(stderr, "BPAS ERROR: Shrink maps not equivalent");
+        } else {
+            break;
+        }
+    }
+
+    if (trueNvarA < 3) {
+        return;
+    }
+
+    fprintf(stderr, "a->size: %d\n", a->size);
+    fprintf(stderr, "b->size: %d\n", b->size);
+    fprintf(stderr, "g->size: %d\n", g->size);
+
+    AltArrZ_t* tmpG = primitiveGCDHensel_AAZ(a, b);
+    reverseShrinkVariables_AAZ_inp(tmpG, nvar, varMap);
+
+    if (!isExactlyEqual_AAZ(g, tmpG)) {
+        negatePolynomial_AAZ(tmpG);
+        if (!isExactlyEqual_AAZ(g, tmpG)) {
+
+            std::cerr << "Hensel GCD test: FAILED!" << std::endl;
+            fprintf((stderr), "\ng   :");
+            printPoly_AAZ(stderr, g, g_syms, nvar);
+            fprintf((stderr), "\n");
+
+            fprintf((stderr), "\nretG:");
+            printPoly_AAZ(stderr, tmpG, g_syms, nvar);
+            fprintf((stderr), "\n");
+            exit(1);
+        }
+    }
+    std::cerr << "Hensel GCD test: PASSED!" << std::endl;
+
+    freePolynomial_AAZ(tmpG);
+    freePolynomial_AAZ(g);
+    freePolynomial_AAZ(a);
+    freePolynomial_AAZ(b);
+}
+#endif
+
+
+
 int main(int argc, char *argv[]) {
         std::cerr << "Time: " << time(NULL) << std::endl;
 
@@ -6479,7 +6959,7 @@ int main(int argc, char *argv[]) {
         if (argc > 1 && atol(argv[1]) >= 0) {
             nvar = atol(argv[1]);
         }
-        if (argc > 2 && atol(argv[2]) > 0) { 
+        if (argc > 2 && atol(argv[2]) > 0) {
             numTerms = atol(argv[2]);
         }
         if (argc > 3 && atol(argv[3]) > 0) {
@@ -6496,18 +6976,6 @@ int main(int argc, char *argv[]) {
             numTerms = 1;
         }
 
-
-        // initBLAD();
-        // SparseMultivariateIntegerPolynomial one;
-        // one.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-        // SparseMultivariateIntegerPolynomial two;
-        // two.randomPolynomial(nvar, numTerms, coefBound, sparsity, includeNeg);
-        // SparseMultivariateIntegerPolynomial prod = one*two;
-        // std::cerr << "Original: " << std::endl << one << std::endl << std::endl << two << std::endl << std::endl;
-
-        // Factors<SparseMultivariateIntegerPolynomial> facts = prod.factor();
-        // std::cerr << "Factors: " << std::endl << facts << std::endl;
-        // freeBLAD();
 
         testDefaultConstructor();
         testNvarConstructor();
@@ -6593,8 +7061,14 @@ int main(int argc, char *argv[]) {
         testStraightLineProgram();
         testFromString();
         testIstreamOperator();
+        testCoprimeHeuristic();
+        testHeuristicGCD();
+        testKroneckerMultiplication();
+        testContentInVars();
+        testBivariateGCD();
 
-
-
+#if defined(WITH_NTL) && WITH_NTL
+        testHenselGCD();
+#endif
         return 0;
 }

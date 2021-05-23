@@ -2,16 +2,18 @@
 #ifndef _TASK_SCHEDULER_HPP_
 #define _TASK_SCHEDULER_HPP_
 
-#if defined(SERIAL) && SERIAL
-#define TASK_SCHED_PARALLEL 0
-#else
-#define TASK_SCHED_PARALLEL 1
+#ifndef TASK_SCHED_PARALLEL
+	#if defined(SERIAL) && SERIAL
+	#define TASK_SCHED_PARALLEL 0
+	#else
+	#define TASK_SCHED_PARALLEL 1
+	#endif
 #endif
 
-#include <thread>
 #include <functional>
 
 #if TASK_SCHED_PARALLEL
+#include <thread>
 #include "ExecutorThreadPool.hpp"
 #else
 #include <deque>

@@ -386,6 +386,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 //    return passed
 // #elif defined(SERIAL) && SERIAL && defined(MAPLE_VALIDATE) && MAPLE_VALIDATE
 
+#if 0
     MapleTestTool* mapleTest = MapleTestTool::getMapleTestTool();
     mapleTest->restartMapleKernel();
     MKernelVector kv = mapleTest->getMKernelVector();
@@ -506,6 +507,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 //    std::cerr << "" << "\n";
 //    return true;
 //#endif
+#endif
 }
 
 bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symbol> vars, bool showOutput, bool isLazard) {
@@ -591,6 +593,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
     return true;
 #endif
 
+#if 0
 // #if defined(WITH_MAPLE) && WITH_MAPLE && defined(MAPLE_VALIDATE) && MAPLE_VALIDATE
 //    fs << "0\t0" << std::endl;
 //    fs2 << "0\t0" << std::endl;
@@ -721,6 +724,7 @@ bool triangularizeValidate(vector<SMQP> F, RegularChain<RN,SMQP> rc, vector<Symb
 //    std::cerr << "" << "\n";
 //    return true;
 //#endif
+#endif
 }
 
 void Sys126Test(bool showOutput, bool isLazard) {

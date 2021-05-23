@@ -4,6 +4,7 @@
 #include "../../../include/FFT/src/general_routine.h"
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#include <string.h>
 #define FFT_THRESHOLD 1024
 #define FFT_THRESHOLD_LOG 11
 #define MY_MASK1 2635249153387078802

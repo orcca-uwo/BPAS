@@ -1,12 +1,16 @@
-// -*- C++ -*- 
+// -*- C++ -*-
 // general_routine.cilk
 //@author Yuzhen Xie
 
 #include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
+
 #include<cmath>
 #include "../../../include/FFT/src/modpn.h"
 #include "../../../include/FFT/src/include/example_util_gettime.h"
 #include "../../../include/FFT/src/general_routine.h"
+#include <iostream>
+#include <string.h>
 
 //#include <reducer_opadd.h>
 
@@ -29,38 +33,38 @@ namespace PBPAS {
 	  exit (1);
 	}
   }
-  
+
   /**------------------------------------------------------------------
    * multi_mat_transpose for evaluation (forward FFT)
    * @N: number of dimensions of Matrix M. N>2
    * @n: number of entries in M.
    * @dm: dm-th dimension.
-   * @dims: dimensions vector. dims[i] keep the size of dimension i 
+   * @dims: dimensions vector. dims[i] keep the size of dimension i
    *        (dims[0] is not used). the size of dims[] is N+1.
    * @data: entries of M, stored in a consecutive memory space of type
    *        sfixn aligned by 16 bytes using my_calloc().
-   *        
-   * We transpose matrix M from dimension 'dm' to dimension 1. 
+   *
+   * We transpose matrix M from dimension 'dm' to dimension 1.
    * the rest size-2 dimensions remain.
    * dims array  should be changed corresponding to the matrix
    * tranposition, BUT not in this function. Do it after MultiD-FFT/TFT.
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
   void multi_mat_transpose_2DTran_eval(sfixn N, sfixn n, sfixn dm, sfixn * dims, sfixn * data){
 
 	//std::cout<<"dims[1], dims[2]: "<< dims[1] <<", "<< dims[2] <<std::endl;
 	//for(int j = 0; j < n; j++) std::cout<<data[j]<<", ";
 	//std::cout<<"----end of in data----" <<std::endl;
-	
+
 	if (dm==N) {
 	  sfixn nj = dims[dm];
 	  sfixn ni = n/nj;
 	  sfixn lda = nj;
 	  sfixn ldb = ni;
-		  
+
 	  if (ni==nj){
-		PBPAS::sqtranspose(data, lda, 0, ni, 0, 1, ni); 
+		PBPAS::sqtranspose(data, lda, 0, ni, 0, 1, ni);
 	  }else{
 		//std::cout<<"Matteo's rect-transpose" <<std::endl;
 		sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
@@ -74,10 +78,10 @@ namespace PBPAS {
 	  for (int i=1; i<dm; i++){
 		ni *= dims[i];
 	  }
-	  
+
 	  sfixn nj = dims[dm];
 	  sfixn lda = nj;
-	  sfixn ldb = ni;	  
+	  sfixn ldb = ni;
 	  sfixn s1 = ni*nj;
 	  //std::cout<<"n= "<<n<<std::endl;
 	  //std::cout<<"s1= "<<s1<<std::endl;
@@ -85,7 +89,7 @@ namespace PBPAS {
 
 	  if (ni==nj){
 		cilk_for (int i=0; i<s2; i++) {
-		  PBPAS::sqtranspose(data+s1*i, lda, 0, ni, 0, 1, ni); 
+		  PBPAS::sqtranspose(data+s1*i, lda, 0, ni, 0, 1, ni);
 		}
 	  }else{
 		size_t s = s1*sizeof(sfixn);
@@ -107,15 +111,15 @@ namespace PBPAS {
 	//std::cout<<"dims[1], dims[2]: "<< dims[1] <<", "<< dims[2] <<std::endl;
 	//for(int j = 0; j < n; j++) std::cout<<data[j]<<", ";
 	//std::cout<<"----end of in data----" <<std::endl;
-	
+
 	if (dm==1) {
 	  sfixn nj = dims[dm];
 	  sfixn ni = n/nj;
 	  sfixn lda = nj;
 	  sfixn ldb = ni;
-		  
+
 	  if (ni==nj){
-		PBPAS::sqtranspose(data, lda, 0, ni, 0, 1, ni); 
+		PBPAS::sqtranspose(data, lda, 0, ni, 0, 1, ni);
 	  }else{
 		//std::cout<<"Matteo's rect-transpose" <<std::endl;
 		sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
@@ -126,12 +130,12 @@ namespace PBPAS {
 	  }
 	}else{
 	  sfixn ni = 1;
-	  for (int i=dm+1; i<=N; i++){ 
+	  for (int i=dm+1; i<=N; i++){
 		ni *= dims[i];
 	  }
 	  sfixn nj = dims[dm];
 	  sfixn lda = nj;
-	  sfixn ldb = ni;	  
+	  sfixn ldb = ni;
 	  sfixn s1 = ni*nj;
 	  //std::cout<<"n= "<<n<<std::endl;
 	  //std::cout<<"s1= "<<s1<<std::endl;
@@ -139,7 +143,7 @@ namespace PBPAS {
 
 	  if (ni==nj){
 		cilk_for (int i=0; i<s2; i++) {
-		  PBPAS::sqtranspose(data+s1*i, lda, 0, ni, 0, 1, ni); 
+		  PBPAS::sqtranspose(data+s1*i, lda, 0, ni, 0, 1, ni);
 		}
 	  }else{
 		size_t s = s1*sizeof(sfixn);
@@ -160,17 +164,17 @@ namespace PBPAS {
    * @N: number of dimensions of Matrix M.
    * @n: number of entries in M.
    * @dm: dm-th dimension.
-   * @dims: dimensions vector. dims[i] keep the size of dimension i 
+   * @dims: dimensions vector. dims[i] keep the size of dimension i
    *        (dims[0] is not used). the size of dims[] is N+1.
    * @data: entries of M, stored in a consecutive memory space of type
    *        sfixn aligned by 16 bytes using my_calloc().
-   *        
-   * We transpose matrix M from dimension 'dm' to dimension 1. 
+   *
+   * We transpose matrix M from dimension 'dm' to dimension 1.
    * the rest size-2 dimensions remain.
    * dims array  should be changed corresponding to the matrix
    * tranposition, BUT not in this function. Do it after MultiD-FFT/TFT.
-   * 
-   * Return value: 
+   *
+   * Return value:
    **/
   void multi_mat_transpose(sfixn N, sfixn n, sfixn dm, sfixn * dims, sfixn * data){
 	//std::cout<<"dims[1], dims[2]: "<< dims[1] <<", "<< dims[2] <<std::endl;
@@ -184,7 +188,7 @@ namespace PBPAS {
 	  sfixn lda = nj;
 	  sfixn ldb = ni;
 	  if (ni==nj){
-		PBPAS::sqtranspose(data, lda, 0, ni, 0, 1, ni); 
+		PBPAS::sqtranspose(data, lda, 0, ni, 0, 1, ni);
 	  }else{
 		//std::cout<<"Matteo's rect-transpose" <<std::endl;
 		sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
@@ -200,9 +204,9 @@ namespace PBPAS {
 	  sfixn * accum, * tmpPtr;
 
 	  //std::cout <<"enter multi_mat_transpose" << std::endl;
-	  
+
 	  accum = (sfixn *)my_calloc(N+2, sizeof(sfixn));
-	  
+
 	  // accum[1] keeps dim_1's interval, which is 1.
 	  // accum[2] keeps dim_2's interval, which is #(dim_1);
 	  // accum[3] keeps dim_3's inverval, which is #(dim_1)*#(dim_2)
@@ -210,13 +214,13 @@ namespace PBPAS {
 	  accum[1] = 1;
 	  for(i = 2; i <= N+1; i++) accum[i] = dims[i-1] * accum[i-1];
 	  //n=accum[N]*dims[N];
-	  
+
 #ifdef TRACETRAN
 	  std::cout << "mat_tran N, n, dm: "<< N <<", "<<n <<", "<<dm <<", "<<std::endl;
 	  std::cout << "dims: ";
 	  for (i=1; i<=N; i++) {
 		std::cout << i <<" "<<dims[i] <<", ";
-	  } 
+	  }
 	  std::cout << std::endl;
 	  std::cout << "accums: ";
 	  for (i=1; i<=N+1; i++) {
@@ -228,15 +232,15 @@ namespace PBPAS {
 #ifdef TRACETRAN
 	  float decomposePar_time = 0.0;
 	  long start = example_get_time();
-#endif    
+#endif
 	  PBPAS::decompose(N, dm, accum, dims, tmpPtr, data);
-#ifdef TRACETRAN 
+#ifdef TRACETRAN
 	  long end = example_get_time();
 	  decomposePar_time += (end - start) / 1.f;
 	  std::cout << "decomposePar="<<decomposePar_time<< std::endl;
-#endif   
-	  //for(i = 0; i < n; i++) data[i] = tmpPtr[i]; 
-	  //cilk_for(int j = 0; j < n; j++) data[j] = tmpPtr[j]; 
+#endif
+	  //for(i = 0; i < n; i++) data[i] = tmpPtr[i];
+	  //cilk_for(int j = 0; j < n; j++) data[j] = tmpPtr[j];
 	  memcpy(data, tmpPtr, n*sizeof(sfixn));
 	  //std::cout <<"before exit multi_mat_transpose" << std::endl;
 	  my_free(accum);
@@ -244,22 +248,22 @@ namespace PBPAS {
 	  //std::cout <<"after free in multi_mat_transpose" << std::endl;
 	  //#ifdef MATTEOTRAN2
 	}
-	//#endif 
+	//#endif
 	//for(int j = 0; j < n; j++) std::cout<<data[j]<<", ";
 	//std::cout<<"----end of out data----" <<std::endl;
   }
-  
-  
+
+
   /**-----------------------------------------------------------
    * decompose:
    * @N: number of dimensions of a matrix M.
    * @dm: index for the dm_th dimension.
-   * @dims: The dimensions vector (dims[0] is not used). 
+   * @dims: The dimensions vector (dims[0] is not used).
    *        dims[i] keep the size on dimension i.
    * @data: entries of the matrix in a consecutive array.
-   * 
-   * We transpose matrix M from dimension 'dm' to dimension 1. 
-   * Return value: 
+   *
+   * We transpose matrix M from dimension 'dm' to dimension 1.
+   * Return value:
    **/
   void
   decompose(sfixn N, sfixn dm, sfixn * accum, sfixn * dims, sfixn * tmpPtr, sfixn * data){
@@ -268,11 +272,11 @@ namespace PBPAS {
 	  int ac = accum[N+1] / dims[1];
 	  sfixn acN = ac/dims[N];
 	  //cilk_for(int k=0; k<acN; k++) { //for works
-	  //for(int i = 0; i < dims[1]; i++){ 
-	  //change to 
-	  //cilk_for(int k=0; k<acN; k++) { 
-	  for(int k=0; k<acN; k++) { 
-		cilk_for(int i = 0; i < dims[1]; i++){ 
+	  //for(int i = 0; i < dims[1]; i++){
+	  //change to
+	  //cilk_for(int k=0; k<acN; k++) {
+	  for(int k=0; k<acN; k++) {
+		cilk_for(int i = 0; i < dims[1]; i++){
 		  for(int j = 0; j < dims[dm]; j++){
 			tmpPtr[j + i*ac + k*dims[N]] = data[j*accum[dm] + i + k*dims[1]];
 		  }
@@ -280,13 +284,13 @@ namespace PBPAS {
 	  }
 	  return;
 	}
-	
+
 	sfixn acN = accum[N+1]/accum[N];
 	cilk_for(int k=0; k<acN; k++) {
 	  PBPAS::decompose(N-1, dm, accum, dims, tmpPtr+k*accum[N], data+k*accum[N]);
-	}	
-  } 
-  
+	}
+  }
+
 
   /**---------------------------------------------------------
    * getDenseSiz:
@@ -298,23 +302,23 @@ namespace PBPAS {
    *
    * Data size of the C-Cube polynomial 'poly' minus all leading zeros in it.
    *
-   * Return value: SIZ(poly)- number of all nonleading zeros in the least variable. 
+   * Return value: SIZ(poly)- number of all nonleading zeros in the least variable.
    **/
   sfixn getDenseSiz(sfixn N, preFFTRep *poly, sfixn buszsN, sfixn *data, sfixn cumN){
-    sfixn deg, siz=0;  
-    
-    deg = shrinkDeg(buszsN, data, cumN);       
-    
+    sfixn deg, siz=0;
+
+    deg = shrinkDeg(buszsN, data, cumN);
+
     if(N==1) return deg +1;
-    
+
     if(deg>0) return (deg+1)*CUMI(poly, N);
-    
+
     if(deg ==0){
-  
+
       siz = PBPAS::getDenseSiz(N-1, poly, BUSZSI(poly, N-1), data, CUMI(poly, N-1));
-      return siz; 
+      return siz;
     }
-    
+
     return -1;
   }
 
@@ -325,18 +329,18 @@ namespace PBPAS {
    * @N: The number of variables.
    * @M: The number of polynomials to multiply (poly1* poly2 * ... * polyM.
    * @pPtr: The information of the prime p.
-   * 
+   *
    * Create 'kPtr' -- a data structure of type KroFFTRep.
    * This data structure will be used for Kronecker-based FFT multiplicaiton.
    *
-   * Return value: 
+   * Return value:
    **/
   void
   InitKroFFTRep(KroFFTRep * kPtr, sfixn * resDgs, sfixn N, sfixn M,   MONTP_OPT2_AS_GENE * pPtr){
 	register int j;
-	N(kPtr)=N;     
+	N(kPtr)=N;
 	M(kPtr)=M;
-	ES(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn)); 
+	ES(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
 	//
 	DIMS(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
 	//
@@ -347,7 +351,7 @@ namespace PBPAS {
 	for(j=1;j<=N;j++){
 	  ESI(kPtr, j)=logceiling(resDgs[j]+1);
 	  DIMSI(kPtr, j)=1<<(ESI(kPtr, j));
-	  SIZ(kPtr)*=DIMSI(kPtr, j); 
+	  SIZ(kPtr)*=DIMSI(kPtr, j);
 	  if(j>=2){CUMI(kPtr, j)=CUMI(kPtr, j-1)*DIMSI(kPtr, j-1);}
 	}
 
@@ -361,7 +365,7 @@ namespace PBPAS {
 	KN(kPtr)=1; KE(kPtr)=0;
 
 	for(j=1;j<=N;j++) {
-	  KN(kPtr)*=DIMSI(kPtr, j); 
+	  KN(kPtr)*=DIMSI(kPtr, j);
 	  KE(kPtr)+=ESI(kPtr, j);
 	}
 
@@ -377,7 +381,7 @@ namespace PBPAS {
 	if(ES(x) !=NULL) {my_free(ES(x)); ES(x)=NULL;}
 	if(DIMS(x) !=NULL) {my_free(DIMS(x)); DIMS(x)=NULL;}
 	if(DATS(x) != NULL){
-	  for(int i=0; i<M(x); i++) 
+	  for(int i=0; i<M(x); i++)
 		if(DATSI(x, i) !=NULL) {my_free(DATSI(x, i)); DATSI(x, i)=NULL;}
 	  my_free(DATS(x));
 	  DATS(x)=NULL;}
@@ -390,14 +394,14 @@ namespace PBPAS {
   void
   InitKroTFTRep_multiplier_1(KroTFTRep * kPtr, sfixn * resDgs, sfixn N, sfixn M,   MONTP_OPT2_AS_GENE * pPtr){
     register int j;
-    N(kPtr)=N;     
+    N(kPtr)=N;
     M(kPtr)=M;
-    ES(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn)); 
+    ES(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     //
     DIMS(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     //
     LS(kPtr)=(sfixn *)my_calloc(N+1,sizeof(sfixn));
-    
+
     CUM(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     //
     CUMI(kPtr, 1)= 1; SIZ(kPtr)=1;
@@ -405,12 +409,12 @@ namespace PBPAS {
       ESI(kPtr, j)=logceiling(resDgs[j]+1);
       DIMSI(kPtr, j)=1<<(ESI(kPtr, j));
       LSI(kPtr, j)=resDgs[j]+1;
-      SIZ(kPtr)*=LSI(kPtr, j); 
+      SIZ(kPtr)*=LSI(kPtr, j);
       if(j>=2){CUMI(kPtr, j)=CUMI(kPtr, j-1)*LSI(kPtr, j-1);}
     }
     //initialize only one data array for 2nd multiplier
 	//use the data struct of result poly for 1st poly data
-	//result is directly in the data struct of result poly :) 
+	//result is directly in the data struct of result poly :)
     DATS(kPtr)=(sfixn **)my_calloc(1, sizeof(sfixn *));
     //
 	DATSI(kPtr, 0)=(sfixn * )my_calloc(SIZ(kPtr), sizeof(sfixn));
@@ -425,14 +429,14 @@ namespace PBPAS {
   void
   InitKroTFTRep(KroTFTRep * kPtr, sfixn * resDgs, sfixn N, sfixn M,   MONTP_OPT2_AS_GENE * pPtr){
     register int j;
-    N(kPtr)=N;     
+    N(kPtr)=N;
     M(kPtr)=M;
-    ES(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn)); 
+    ES(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     //
     DIMS(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     //
     LS(kPtr)=(sfixn *)my_calloc(N+1,sizeof(sfixn));
-    
+
     CUM(kPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     //
     CUMI(kPtr, 1)= 1; SIZ(kPtr)=1;
@@ -440,10 +444,10 @@ namespace PBPAS {
       ESI(kPtr, j)=logceiling(resDgs[j]+1);
       DIMSI(kPtr, j)=1<<(ESI(kPtr, j));
       LSI(kPtr, j)=resDgs[j]+1;
-      SIZ(kPtr)*=LSI(kPtr, j); 
+      SIZ(kPtr)*=LSI(kPtr, j);
       if(j>=2){CUMI(kPtr, j)=CUMI(kPtr, j-1)*LSI(kPtr, j-1);}
     }
-    
+
     DATS(kPtr)=(sfixn **)my_calloc(M,sizeof(sfixn *));
     //
     for(j=0;j<M;j++){
@@ -455,7 +459,7 @@ namespace PBPAS {
     KROOTS(kPtr)=NULL;
     kPtr->Defsize=SIZ(kPtr);
   }
-  
+
   //----------------------------
   void freeKroTFTRep(KroTFTRep * x){
 	//std::cout<<"enter freeKroTFTRep"<<std::endl;
@@ -465,14 +469,14 @@ namespace PBPAS {
     if(LS(x) !=NULL) {my_free(LS(x)); LS(x)=NULL;}
     if(ES(x) !=NULL) {my_free(ES(x)); ES(x)=NULL;}
     if(DIMS(x) !=NULL) {my_free(DIMS(x)); DIMS(x)=NULL;}
-	//std::cout<<"before DATS"<<std::endl; 
-	//std::cout<<"M(x) "<<M(x) <<std::endl; 
+	//std::cout<<"before DATS"<<std::endl;
+	//std::cout<<"M(x) "<<M(x) <<std::endl;
     if(DATS(x) != NULL){
-      for(i=0; i<M(x); i++) 
+      for(i=0; i<M(x); i++)
 		if(DATSI(x, i) !=NULL) {my_free(DATSI(x, i)); DATSI(x, i)=NULL;}
       my_free(DATS(x));
       DATS(x)=NULL;}
-	//std::cout<<"after DATS"<<std::endl; 
+	//std::cout<<"after DATS"<<std::endl;
   }
 
   //cutoff=8
@@ -487,21 +491,21 @@ namespace PBPAS {
 	}
 	return 1;
   }
-  
+
   /**
    * InitResPoly:
    * @rPtr: (output) A C-Cube polynomial.
    * @N: Number of variables.
    * @p1dgs: A degree vector for some C-Cube polynomial p1.
    * @p2dgs: A degree vector for some C-Cube polynomial p2.
-   * 
+   *
    * Initialized a 'clean' (all zero-coefficients) C-Cube polynomial whose
    * data space can exactly keep the product of p1 and p2.
    *
-   * Return value: 
+   * Return value:
    **/
   void
-  InitResPoly(preFFTRep * rPtr, sfixn N, sfixn * p1dgs, sfixn * p2dgs){  
+  InitResPoly(preFFTRep * rPtr, sfixn N, sfixn * p1dgs, sfixn * p2dgs){
 	register int j;
     N(rPtr)=N;
     BUSZS(rPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
@@ -529,37 +533,37 @@ namespace PBPAS {
     //BUSZSI(rPtr, 0)=BUSZSI(rPtr, N);
 	//std::cout<<"InitResPoly, SIZ="<<SIZ(rPtr)<<std::endl;
   }
-  
-  
+
+
   // copy elements 0..d.
   /**
    * copyVec_0_to_d:
    * @n:
    * @desV:
-   * @srcV: 
+   * @srcV:
    * assignment:
-   * desV[0..d] = srcV[0..d]. 
-   * Return value: 
+   * desV[0..d] = srcV[0..d].
+   * Return value:
    **/
   void copyVec_0_to_d(int d, sfixn * desV, sfixn * srcV){
 	//register int i;
 	//cilk_for(int i=0; i<=d; i++) { desV[i] = srcV[i]; }  //cilk_for slows down
 	memcpy(desV, srcV, (d+1)*sizeof(sfixn));
   }
-  
+
   // copy elements 1..n.
   /**
    * copyVec_1_to_n:
    * @n:
    * @desV:
-   * @srcV: 
+   * @srcV:
    * assignment:
-   * desV[1..n] = srcV[1..n]. 
-   * Return value: 
+   * desV[1..n] = srcV[1..n].
+   * Return value:
    **/
   void copyVec_1_to_n(int n, sfixn * desV, sfixn * srcV){
 	//register int i;
-	//cilk_for(int i=1; i<=n; i++) desV[i]=srcV[i]; 
+	//cilk_for(int i=1; i<=n; i++) desV[i]=srcV[i];
 	sfixn * desV0 = desV + 1;
 	sfixn * srcV0 = srcV + 1;
 	memcpy(desV0, srcV0, n*sizeof(sfixn));
@@ -575,7 +579,7 @@ namespace PBPAS {
    * @vec2: a vector.
    * To compare two input vectors 'vec1' and 'vec2'.
    * if they are equal returns 1 otherwise return 0.
-   * Return value: 
+   * Return value:
    **/
   int
   compareVec(sfixn deg, sfixn * vec1, sfixn * vec2){
@@ -590,14 +594,14 @@ namespace PBPAS {
 	}
 	return 1;
   }
-  
+
   // 1 -- yes they are euqal.
   // 0 -- No they are NOT equal.
   /**
    * EX_IsEqualPoly:
    * @Ptr1: a C-Cube polynomial 'P1'.
    * @Ptr2: a C-Cube polynomial 'P2'.
-   * 
+   *
    * To compare if two polynomials are equal.
    *
    * Return value: if 'P1' is equal to 'P2', then return 1. Otherwise return 0.
@@ -609,11 +613,11 @@ namespace PBPAS {
 	if (! PBPAS::compareVec(SIZ(Ptr1)-1, DAT(Ptr1), DAT(Ptr2))) return 0;
 	return 1;
   }
-  
-  
+
+
   // suppose y>x
   // m rows, n columns
-  // dgs is always the smaller one.  
+  // dgs is always the smaller one.
   void fromtofftRepMultiD(sfixn N, sfixn * rccum, sfixn * res, sfixn * ccum,  sfixn * dgs, sfixn * coeffs){
 	//int i;
 	int d;
@@ -622,7 +626,7 @@ namespace PBPAS {
 	  res[0]=coeffs[0];
 	  return;
 	}
-		
+
 	if(N==1){
 	  d=shrinkDeg(dgs[1], coeffs, 1);
 	  cilk_for(int i=0; i<=d; i++){
@@ -630,7 +634,7 @@ namespace PBPAS {
 	  }
 	  return;
 	}
-		
+
 	d=shrinkDeg(dgs[N], coeffs, ccum[N]);
 	//   for(i=0; i<=d; i++){
 	//     tmpCoeffs=i*ccum[N];
@@ -641,15 +645,15 @@ namespace PBPAS {
 	  PBPAS::fromtofftRepMultiD(N-1, rccum, res+i*rccum[N], ccum, dgs, coeffs+i*ccum[N]);
 	}
   }
-  
+
   /**
    * reverseUni:
    * @deg: 'deg'+1 is the size for both 'vec1', and 'vec2'.
    * @vec1: a destination vector.
    * @vec2: a source vector.
-   * 
+   *
    * copy the data in 'vec2' in a reverse order into 'vec1'.
-   * 
+   *
    * Return value: 'vec1'
    **/
   sfixn *
@@ -671,32 +675,32 @@ namespace PBPAS {
   /**
    * InitOneRevInv:
    * @N: number of variables for the output polynomial
-   * @tRIPtr: (output) buffer for the inverse (in reversed order)  
-   *          of the N-th polynomial in a triangular set 
+   * @tRIPtr: (output) buffer for the inverse (in reversed order)
+   *          of the N-th polynomial in a triangular set
    *          with partial degrees strictly bounded by `bounds`
-   * @bounds: vector 
-   * @di: the truncation degree for the inverse 
-   * 
+   * @bounds: vector
+   * @di: the truncation degree for the inverse
+   *
    *   Initializes a buffer for a modular inverse computation
    *   of a polynomial modulo a triangular set.
-   * 
-   * Return value: 
-   **/   
+   *
+   * Return value:
+   **/
   // degree of RevInv is always power of 2 which is slightly more than enough.
   void
   InitOneRevInv(sfixn N, preFFTRep * tRIPtr, sfixn * bounds, sfixn di){
     register int j;
 
     sfixn eidi2 = di ;
-	if(eidi2<=0) { 
-	  std::cout<<"The truncation degree for the inverse <= 0."<<std::endl; 
+	if(eidi2<=0) {
+	  std::cout<<"The truncation degree for the inverse <= 0."<<std::endl;
 	  exit(1);
 	}
 
     N(tRIPtr)=N;
     BUSZS(tRIPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     CUTS(tRIPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
-    CUM(tRIPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn)); 
+    CUM(tRIPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     CUMI(tRIPtr, 1)=1;
     for(j=1; j<=N; j++) {
       BUSZSI(tRIPtr, j)=bounds[j];
@@ -704,7 +708,7 @@ namespace PBPAS {
       if(j>=2){
 		CUMI(tRIPtr, j)=CUMI(tRIPtr, j-1)*(BUSZSI(tRIPtr, j-1)+1);}
     }
-	
+
     BUSZSI(tRIPtr, N)=(1<<((logceiling(eidi2))))-1;
 
     CUTSI(tRIPtr, N)=BUSZSI(tRIPtr, N);
@@ -715,14 +719,14 @@ namespace PBPAS {
     DFSIZ(tRIPtr)=SIZ(tRIPtr);
     DEFDAT(tRIPtr)=DAT(tRIPtr);
   }
-  
+
   /**
    * reverseMulti:
    * @deg: ('deg'+1)*'sizOfCoef' is the size for both 'outVec', and 'inVec'.
-   * @sizOfCoef: An integer number. 
+   * @sizOfCoef: An integer number.
    * @outVec: A destination vector.
    * @inVec: A source vector.
-   * 
+   *
    * Copy 'deg'+1 data blocks from 'outVec' in a reverse order into 'outVec'.
    * each data blocks have size 'sizOfCoef'.
    * Return value: 'outVec'
@@ -734,7 +738,7 @@ namespace PBPAS {
 // 	for(i=0; i<=end; i+=sizOfCoef){
 // 	  for(int j=0; j<sizOfCoef; j++) outVec[end-i+j]=inVec[i+j];
 // 	}
-	
+
 	sfixn end = deg*sizOfCoef;
 	cilk_for(int k=0; k<=deg; k++) {
 	  sfixn i = k*sizOfCoef;
@@ -787,34 +791,34 @@ namespace PBPAS {
 // 	  sfixn * tmp1Ptr=vec + i*sizOfCoef;
 // 	  sfixn * tmp2Ptr=vec + sizOfCoef*deg - i*sizOfCoef;
 // 	  sfixn * tmpCoef=(sfixn * )my_malloc(sizOfCoef*sizeof(sfixn));
-// 	  //increase memory usage, 
-// 	  //cause memo swap for cilkscreen ./normalform 2 1000 1000 2 
+// 	  //increase memory usage,
+// 	  //cause memo swap for cilkscreen ./normalform 2 1000 1000 2
 // 	  //4581ms for ./normalform 2 1000 1000 2
 
 // 	  cilk_for(int j=0; j<sizOfCoef; j++) tmpCoef[j]=tmp1Ptr[j];
 // 	  cilk_for(int j=0; j<sizOfCoef; j++) tmp1Ptr[j]=tmp2Ptr[j];
 // 	  cilk_for(int j=0; j<sizOfCoef; j++) tmp2Ptr[j]=tmpCoef[j];
-	  
+
 // 	  my_free(tmpCoef);
 // 	}
 
 	return vec;
-  }  
-  
+  }
+
   /**inline before
    * PolyCleanData:
    * @prePtr:  A C-Cube polynomial.
-   * 
+   *
    * make prePtr a zero polynomial.
-   * Return value: 
+   * Return value:
    **/
   void PolyCleanData(preFFTRep * prePtr){
 	sfixn size = SIZ(prePtr);
-	
+
 	cilk_for(int i=0; i<size; i++){
 	  DATI(prePtr, i)=0;
 	}
-  }  
+  }
 
 
   // cannot decrease dimension, only es, dims, siz, aacum.
@@ -825,18 +829,18 @@ namespace PBPAS {
 	for(j=1;j<=N(kPtr);j++){
 	  ESI(kPtr, j)=logceiling(resDgs[j]+1);
 	  DIMSI(kPtr, j)=1<<(ESI(kPtr, j));
-	  SIZ(kPtr)*=DIMSI(kPtr, j); 
+	  SIZ(kPtr)*=DIMSI(kPtr, j);
 	  if(j>=2) {
 		CUMI(kPtr, j)=CUMI(kPtr, j-1)*DIMSI(kPtr, j-1);
 	  }
 	}
-	
+
 	KN(kPtr)=1; KE(kPtr)=0;
 	for(j=1;j<=N(kPtr);j++) {
-	  KN(kPtr)*=DIMSI(kPtr, j); 
+	  KN(kPtr)*=DIMSI(kPtr, j);
 	  KE(kPtr)+=ESI(kPtr, j);
 	}
-    
+
 	//
 	for(i=0;i<M(kPtr);i++){
 	  for(j=0;j<kPtr->Defsize;j++){
@@ -844,7 +848,7 @@ namespace PBPAS {
 	  }
 	}
 	if(KROOTS(kPtr)!=NULL) {
-	  my_free(KROOTS(kPtr)); 
+	  my_free(KROOTS(kPtr));
 	  KROOTS(kPtr)=NULL;
 	}
   }
@@ -857,13 +861,13 @@ namespace PBPAS {
 	}
   }
 }
- 
+
   //=====================================================
   //  copying data from one dense multivariate polynomial
   //  in coeffs to the one in res.
   //=====================================================
   void fromtofftRep(sfixn N, sfixn * rccum, sfixn * res, sfixn * ccum,  sfixn * dgs, sfixn * coeffs){
-	
+
 	sfixn d;
 
 	if(N==0){
@@ -873,7 +877,7 @@ namespace PBPAS {
 
 	d=dgs[N];
 	if(N==1){
-	  //cilk_for(int i=0; i<=d; i++){ 
+	  //cilk_for(int i=0; i<=d; i++){
 	  //	res[i]=coeffs[i];
 	  //}
 	  memcpy(res, coeffs, (d+1)*sizeof(sfixn));
@@ -891,11 +895,11 @@ namespace PBPAS {
 		PBPAS::fromtofftRep(N-1, rccum, res+i*rccum[N], ccum, dgs, coeffs+i*ccum[N]);
 	  }
 	}
-	
+
   }
 
-  void InitOneReducedPoly(preFFTRep * rPtr, sfixn N, sfixn * p1dgs){  
-	register int j; 
+  void InitOneReducedPoly(preFFTRep * rPtr, sfixn N, sfixn * p1dgs){
+	register int j;
 	//std::cout<<"enter PBPAS::InitOneReducedPoly, N="<<N<<std::endl;
 	//std::cout<<"enter PBPAS::InitOneReducedPoly, rPtr="<<rPtr<<std::endl;
 	//std::cout<<"PBPAS::InitOneReducedPoly, p1dgs[N]="<<p1dgs[N]<<std::endl;
@@ -911,7 +915,7 @@ namespace PBPAS {
     for(j=1;j<=N;j++){
 	  //std::cout<<"PBPAS::InitOneReducedPoly, for j="<<j<<std::endl;
       BUSZSI(rPtr, j)=p1dgs[j];
-      CUTSI (rPtr, j)=p1dgs[j];   
+      CUTSI (rPtr, j)=p1dgs[j];
       SIZ(rPtr)=SIZ(rPtr)*(BUSZSI(rPtr,j)+1);
       if(j>=2){
 		CUMI(rPtr, j)=CUMI(rPtr, j-1)*(BUSZSI(rPtr,j-1)+1);
@@ -919,21 +923,21 @@ namespace PBPAS {
     }
 	//std::cout<<"InitOneReducedPoly, after for"<<std::endl;
     OFST(rPtr)=0;
-    DAT(rPtr)=(sfixn * )my_calloc( SIZ(rPtr),sizeof(sfixn));  
+    DAT(rPtr)=(sfixn * )my_calloc( SIZ(rPtr),sizeof(sfixn));
     //
     //BUSZSI(rPtr, 0)=BUSZSI(rPtr, N);
     DFN(rPtr)=N(rPtr);
     DFSIZ(rPtr)=SIZ(rPtr);
     DEFDAT(rPtr)=DAT(rPtr);
   }
-  
+
   void
   initCopyOneRevInv(preFFTRep * outPtr, preFFTRep * inPtr){
     register int j;
     N(outPtr)=N(inPtr);
-    BUSZS(outPtr)=(sfixn * )my_calloc(N(inPtr)+1,sizeof(sfixn)); 
-    CUTS(outPtr)=(sfixn * )my_calloc(N(inPtr)+1,sizeof(sfixn)); 
-    CUM(outPtr)=(sfixn * )my_calloc(N(inPtr)+1,sizeof(sfixn)); 
+    BUSZS(outPtr)=(sfixn * )my_calloc(N(inPtr)+1,sizeof(sfixn));
+    CUTS(outPtr)=(sfixn * )my_calloc(N(inPtr)+1,sizeof(sfixn));
+    CUM(outPtr)=(sfixn * )my_calloc(N(inPtr)+1,sizeof(sfixn));
     for(j=1;j<=N(inPtr);j++){ BUSZSI(outPtr, j)=BUSZSI(inPtr, j);
                               CUTSI(outPtr, j)=CUTSI(inPtr, j);
                               CUMI(outPtr, j)=CUMI(inPtr, j);}
@@ -954,7 +958,7 @@ namespace PBPAS {
    * @Ptr1: A C-Cube polynomial.
    * @Ptr2: A C-Cube polynomial.
    * @p: A prime number.
-   * 
+   *
    * Suppose 'Ptr1' has the same dimension and larger(or equal) size on each dimension.
    * Compute the difference of them.
    * Return value: Ptr1 = Ptr1 - Ptr2;
@@ -962,9 +966,9 @@ namespace PBPAS {
   void subPoly_1(sfixn N, preFFTRep * Ptr1, preFFTRep * Ptr2, sfixn p){
 	PBPAS::subPoly_inner_1(N, CUM(Ptr1), BUSZS(Ptr2), CUM(Ptr2), DAT(Ptr1), DAT(Ptr2), p);
   }
-  
 
-  // we will use the smaller dgs which are 2nd. 
+
+  // we will use the smaller dgs which are 2nd.
   // but accums should used prepectively.
   void subPoly_inner_1 (sfixn N, sfixn * accum1, sfixn * dgs2, sfixn * accum2, sfixn * data1, sfixn * data2, sfixn p)
   {
@@ -978,7 +982,7 @@ namespace PBPAS {
 	  //offset1=accum1[N]*i;
 	  //offset2=accum2[N]*i;
 	  PBPAS::subPoly_inner_1(N-1, accum1, dgs2, accum2, data1+accum1[N]*i, data2+accum2[N]*i, p);
-	} 	
+	}
   }
 
   //--------------------------------
@@ -996,7 +1000,7 @@ namespace PBPAS {
 	cilk_for(int i=0; i<=dgs[N]; i++){
 	  //offset=accum[N]*i;
 	  subEqDgPoly_inner_1(N-1, dgs, accum, data1+accum[N]*i, data2+accum[N]*i, p, selector);
-	} 
+	}
   }
 
   //-------------------------------------
@@ -1017,7 +1021,7 @@ namespace PBPAS {
 	for(i=0; i<=dgs[N]; i++){
 	  offset=accum[N]*i;
 	  addEqDgPoly_inner(N-1, dgs, accum, data1+offset, data2+offset, p);
-	} 
+	}
   }
 
   //------------------------------------
@@ -1027,7 +1031,7 @@ namespace PBPAS {
    * @Ptr1: A C-Cube polynomial.
    * @Ptr2: A C-Cube polynomial.
    * @p: A prime number.
-   * 
+   *
    * Suppose 'Ptr1' and 'Ptr2' has the same dimension and size.
    * Compute the sum of them.
    * Return value: Ptr1 = Ptr1 + Ptr2;
@@ -1040,27 +1044,27 @@ namespace PBPAS {
    * copyPolyPointers:
    * @D: Destination C-cube polynomial.
    * @S: Source C-cube polynomial.
-   * 
-   * Assume 'D' has type of preFFTRep *, but its sub-fields 
-   * have not been initialized.  
+   *
+   * Assume 'D' has type of preFFTRep *, but its sub-fields
+   * have not been initialized.
    * This function copies S's fields to 'D'.
    *
-   * Return value: 
+   * Return value:
    **/
-  void 
+  void
   copyPolyPointers(preFFTRep *D, preFFTRep *S)
   {
-	D->N=S->N; 
+	D->N=S->N;
 	D->defN=S->defN;
 	D->bufSizs=S->bufSizs;
-	D->cuts=S->cuts; 
+	D->cuts=S->cuts;
 	D->accum=S->accum;
-	D->size=S->size;  
+	D->size=S->size;
 	D->defSize=S->defSize;
 	D->offset=S->offset;
 	D->data=S->data;
-	D->tmpData=S->tmpData; 
-	D->defData=S->defData; 
+	D->tmpData=S->tmpData;
+	D->defData=S->defData;
   }
 
   /**
@@ -1070,12 +1074,12 @@ namespace PBPAS {
    * @f: A C-Cube polynomial in `N` variables
    * @i: An index.
    * Make a copy of the i-th coefficient of 'f' and save the copy in co.
-   * Return value: The copy of i-th coefficient of 'f'. 
+   * Return value: The copy of i-th coefficient of 'f'.
    **/
   preFFTRep *
   getCoefMulti(sfixn N, preFFTRep* co, preFFTRep* f, sfixn i){
 	decreaseOneDim(f);
-	backupData(f); 
+	backupData(f);
 	nextMCoefData(f,N,i);
 	PBPAS::fromtofftRep(N-1,  CUM(co), DAT(co), CUM(f), BUSZS(f), DAT(f));
 	increaseOneDim(f);
@@ -1085,18 +1089,18 @@ namespace PBPAS {
 
   /**
    * initTriRevInvSet:
-   * @dgs: A sfixn vector which keeps the truncation degrees for the 
+   * @dgs: A sfixn vector which keeps the truncation degrees for the
    *         modular inverses. Except for normal form computations,
    *        these should be paritial degrees of the input triangualr set 'tPtr' .
    * @N: Number of variables.
-   * @tRevInvPtr: (output) The buffers for the inverses (reverse-ordered) 
+   * @tRevInvPtr: (output) The buffers for the inverses (reverse-ordered)
    *            of the input triangular set 'tPtr'.
    * @tPtr: A triangular set in dimension-zero.
-   * 
+   *
    * Create the buffers for the inverses (reverse-ordered) of the intput
    *         triangular set 'tPtr'.
    *
-   * Return value: 
+   * Return value:
    **/
   void initTriRevInvSet(sfixn *dgs, sfixn N, TriRevInvSet *tRevInvPtr, TriSet * tPtr){
 	register int i;
@@ -1107,12 +1111,12 @@ namespace PBPAS {
 	ELEM(tRevInvPtr)=(preFFTRep **)my_calloc((N+1),sizeof(preFFTRep *) );
 	for(i=1; i<=N; i++){
 	  ELEMI(tRevInvPtr, i)=(preFFTRep *)my_calloc(1,sizeof(preFFTRep));
-	  PBPAS::InitOneRevInv(i, ELEMI(tRevInvPtr, i), BDS(tPtr), dgs[i]);    
+	  PBPAS::InitOneRevInv(i, ELEMI(tRevInvPtr, i), BDS(tPtr), dgs[i]);
 	  (NLB(tRevInvPtr))[i]= BUSZSI(ELEMI(tRevInvPtr, i), i);
 	  (NSB(tRevInvPtr))[i]=BDSI(tPtr, i)-1;
 	}
   }
-  
+
 
   /**
    * EX_initRandomTriSet:
@@ -1122,7 +1126,7 @@ namespace PBPAS {
    * @pPtr: Information of the prime number.
    * Create an randome Lazard trianuglar set in dimension zero
    *       with `N` variables and partial degrees strictly bounded by `degbound`
-   * Return value:  an randome Lazard trianuglar set in dimension 
+   * Return value:  an randome Lazard trianuglar set in dimension
    **/
   TriSet *
   EX_initRandomTriSet( sfixn N, sfixn dgbound, MONTP_OPT2_AS_GENE * pPtr){
@@ -1131,7 +1135,7 @@ namespace PBPAS {
 	PBPAS::initRandomTriSet(N, dgbound, tPtr, pPtr);
 	return tPtr;
   }
-  
+
   // Subroutine of the above function
   void initRandomTriSet( sfixn N, sfixn dgbound, TriSet * tPtr,  MONTP_OPT2_AS_GENE * pPtr){
 	int i;
@@ -1141,7 +1145,7 @@ namespace PBPAS {
 	BDS(tPtr)=(sfixn *) my_calloc((N+1),sizeof(sfixn));
 	srand(getSeed());
 	//for(i=1;i<=N;i++) {while(! BDSI(tPtr,i) ) BDSI(tPtr, i)=rand()%dgbound;}
-	
+
 	for(i=1;i<=N;i++) {while( BDSI(tPtr,i)<=0 ) BDSI(tPtr, i)=rand()%dgbound;}
 	for(i=1; i<=N; i++){
 	  ELEMI(tPtr, i)=(preFFTRep *)my_calloc(1,sizeof(preFFTRep));
@@ -1156,10 +1160,10 @@ namespace PBPAS {
     N(p1Ptr)=N;
     BUSZS(p1Ptr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     CUTS(p1Ptr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
-    CUM(p1Ptr)=(sfixn * )my_calloc(N+1,sizeof(sfixn)); 
+    CUM(p1Ptr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     CUMI(p1Ptr, 1)= 1;
     SIZ(p1Ptr)=1;
-    OFST(p1Ptr)=0; 
+    OFST(p1Ptr)=0;
     srand(getSeed());
     for(j=1;j<=N;j++){
       BUSZSI(p1Ptr, j)=bounds[j];
@@ -1179,10 +1183,10 @@ namespace PBPAS {
     DEFDAT(p1Ptr)=DAT(p1Ptr);
     //BUSZSI(p1Ptr, 0)=BUSZSI(p1Ptr, N);
   }
-  
+
   //---------------------------
   void randomMonicPoly(preFFTRep * Ptr, sfixn p){
-	PBPAS::randomMonicPoly_inner(N(Ptr), N(Ptr), BUSZS(Ptr), CUM(Ptr), DAT(Ptr), p);  
+	PBPAS::randomMonicPoly_inner(N(Ptr), N(Ptr), BUSZS(Ptr), CUM(Ptr), DAT(Ptr), p);
   }
 
   // Subroutine for the above function
@@ -1195,20 +1199,20 @@ namespace PBPAS {
 	  if(N==1) data[dgs[N]]=1;
 	  return;
 	}
-	
+
 	if(N==N1){
 	  for(i=0; i<dgs[N1]; i++){
 		offset=accum[N1]*i;
 		randomMonicPoly_inner(N, N1-1, dgs, accum, data+offset, p);
 	  }
 	  (data+accum[N]*dgs[N])[0]=1;}
-	
+
 	else{
 	  for(i=0; i<=dgs[N1]; i++){
 		offset=accum[N1]*i;
 		PBPAS::randomMonicPoly_inner(N, N1-1, dgs, accum, data+offset, p);
 	  }
-	  
+
 	}
   }
 
@@ -1216,7 +1220,7 @@ namespace PBPAS {
    * EX_randomPoly:
    * @N: Number of variables.
    * @dgs: A partial-degree vector of size N.
-   * @p: A prime number. 
+   * @p: A prime number.
    *
    * To initialize a C-Cube polynomial whoes partial degrees are defined in 'dgs'.
    * Then generate random coefficients in Z/pZ for this C-Cube polynomial.
@@ -1229,13 +1233,13 @@ namespace PBPAS {
 	PBPAS::randomPoly(poly, p);
 	return poly;
   }
-  
+
   /**
    * EX_InitOnePoly:
    * @N: Number of variables.
    * @dgs: A partial-degree vector of size N.
-   * 
-   * To initialize a C-Cube polynomial whoes partial 
+   *
+   * To initialize a C-Cube polynomial whoes partial
    * degrees are defined in 'dgs'.
    *
    * Return value: A newly created C-Cube polynomial
@@ -1246,10 +1250,10 @@ namespace PBPAS {
 	PBPAS::InitOnePoly(poly, N, dgs);
 	return poly;
   }
-  
+
   // Subroutine for the above one
-  void InitOnePoly(preFFTRep * rPtr, sfixn N, sfixn * p1dgs){  
-	register int j; 
+  void InitOnePoly(preFFTRep * rPtr, sfixn N, sfixn * p1dgs){
+	register int j;
     N(rPtr)=N;
     BUSZS(rPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
     CUTS(rPtr)=(sfixn * )my_calloc(N+1,sizeof(sfixn));
@@ -1258,41 +1262,41 @@ namespace PBPAS {
     CUMI(rPtr, 1)= 1;
     for(j=1;j<=N;j++){
       BUSZSI(rPtr, j)=p1dgs[j];
-      CUTSI (rPtr, j)=p1dgs[j];   
+      CUTSI (rPtr, j)=p1dgs[j];
       SIZ(rPtr)=SIZ(rPtr)*(BUSZSI(rPtr,j)+1);
       if(j>=2){
 		CUMI(rPtr, j)=CUMI(rPtr, j-1)*(BUSZSI(rPtr,j-1)+1);
       }
     }
     OFST(rPtr)=0;
-    DAT(rPtr)=(sfixn * )my_calloc( SIZ(rPtr),sizeof(sfixn));  
+    DAT(rPtr)=(sfixn * )my_calloc( SIZ(rPtr),sizeof(sfixn));
     //
     //BUSZSI(rPtr, 0)=BUSZSI(rPtr, N);
     DFN(rPtr)=N(rPtr);
     DFSIZ(rPtr)=SIZ(rPtr);
     DEFDAT(rPtr)=DAT(rPtr);
   }
-  
+
   /**
    * randomPoly:
    * @Ptr: A C-Cube polynomial.
    * @p: A prime number.
-   * 
-   * The input 'Ptr' is an 'clean' C-Cube polynomial, i.e. 
+   *
+   * The input 'Ptr' is an 'clean' C-Cube polynomial, i.e.
    * 'Ptr' is initialized with zero coefficients and partial degrees.
-   * This routine fills random numbers in Z/pZ into 'Ptr's 
+   * This routine fills random numbers in Z/pZ into 'Ptr's
    * coefficient vector.
    *
-   * Return value: 
+   * Return value:
    **/
   void randomPoly(preFFTRep * Ptr, sfixn p){
-	PBPAS::randomPoly_inner(N(Ptr), BUSZS(Ptr), CUM(Ptr), DAT(Ptr), p);  
+	PBPAS::randomPoly_inner(N(Ptr), BUSZS(Ptr), CUM(Ptr), DAT(Ptr), p);
   }
-  
+
   // Subroutine for the above function
   void randomPoly_inner(sfixn N, sfixn * dgs, sfixn * accum, sfixn * data, sfixn p){
 	int i, offset=0;
-	
+
 	if(N==1){
 	  srand(getSeed());
 	  for(i=0; i<=dgs[N]; i++){
@@ -1301,33 +1305,33 @@ namespace PBPAS {
 	  if (! data[dgs[N]]) data[dgs[N]]=1;
 	  return;
 	}
-	
-	
+
+
 	for(i=0; i<=dgs[N]; i++){
 	  offset=accum[N]*i;
 	  PBPAS::randomPoly_inner(N-1, dgs, accum, data+offset, p);
-	} 	
+	}
   }
-  
+
   /**
    * CopyOnePoly:
    * @rPtr: Destination polynomial.
    * @fPtr: Source polynomial.
-   * 
+   *
    * Make a deep copy of 'fPtr' and save the copy in 'rPtr'.
    *
    * Return value: 'rPtr'.
    **/
-  void CopyOnePoly(preFFTRep * rPtr, preFFTRep * fPtr ){  
+  void CopyOnePoly(preFFTRep * rPtr, preFFTRep * fPtr ){
 	register int j;
     sfixn N=N(rPtr);
     N(rPtr)=N;
     SIZ(rPtr)=1;
     for(j=1;j<=N;j++){
-      BUSZSI(rPtr, j)=BUSZSI(fPtr, j);    
+      BUSZSI(rPtr, j)=BUSZSI(fPtr, j);
       CUMI(rPtr, j)=CUMI(fPtr, j);
       SIZ(rPtr)=SIZ(rPtr)*(BUSZSI(rPtr, j)+1);
-    } 
+    }
     OFST(rPtr)=0;
     for(j=0; j<SIZ(rPtr);j++) DATI(rPtr, j)=DATI(fPtr, j);
     //BUSZSI(rPtr, 0)=BUSZSI(rPtr, N);
@@ -1335,8 +1339,8 @@ namespace PBPAS {
     DFSIZ(rPtr)=SIZ(rPtr);
     DEFDAT(rPtr)=DAT(rPtr);
   }
-  
-  //return index t in ls such that the difference of 
+
+  //return index t in ls such that the difference of
   //ls[1]*...*ls[i] and ls[i+1]*...*ls[N] is minimum
   sfixn noExtensionBalancedBivar(sfixn N, sfixn* ls) {
 	sfixn diff, difft, sl, sr, slt, srt, t, tt;
@@ -1373,7 +1377,7 @@ namespace PBPAS {
 		  sl = slt;
 		  tt = i-1;
 		}
-		
+
 		difft = abs(sl-sr);
 		if (difft<diff) {
 		  diff = difft;
@@ -1385,9 +1389,9 @@ namespace PBPAS {
 	}else{
 	  std::cout<<"Number of variables is less than 1"<<std::endl;
 	  exit(1);
-	} 
+	}
   }
-  
+
   /*-------------------------------------
    *assume max(deg) <= 1000,000
    *size of array factor is log2(1000000) <= 20
@@ -1398,27 +1402,27 @@ namespace PBPAS {
   void ReductionToBalancedBivar(sfixn N, sfixn* ls, sfixn *factm) {
 	sfixn factor[NUMFACT];
 	sfixn diff, difft, m, ml, mr, sl, sr, slt, srt, nf, mnf;
-	
+
 	if (N>=1) {
 	  sl = 1;
 	  sr = 1;
 	  for (int i=2; i<=N; i++) sr *= ls[i];
 	  slt = sl;
 	  srt = sr;
-	  
+
 	  prime_factorization(ls[1], factor);
 	  nf = factor[0]; //number of prime factors
 	  for (int j=nf; j>0; j--) {
-		if (slt <= srt) 
+		if (slt <= srt)
 		  slt = slt*factor[j];
 		else
-		  srt = srt*factor[j];		
+		  srt = srt*factor[j];
 	  }
 	  m = 1;
 	  ml = slt/sl;
 	  mr = srt/sr;
 	  diff = abs(slt-srt);
-	  
+
 	  for (int i=2; i<=N; i++) {
 		sl *= ls[i-1];
 		sr /= ls[i];
@@ -1428,10 +1432,10 @@ namespace PBPAS {
 		prime_factorization(ls[i], factor);
 		nf = factor[0];
 		for (int j=1; j<=nf; j++) {
-		  if (slt <= srt) 
+		  if (slt <= srt)
 			slt = slt*factor[j];
 		  else
-			srt = srt*factor[j];		
+			srt = srt*factor[j];
 		}
 		difft = abs(slt-srt);
 		if (difft < diff) {
@@ -1451,12 +1455,12 @@ namespace PBPAS {
 	  exit(1);
 	}
   }
-	  
+
   //size of fact is 20
   void prime_factorization(sfixn x, sfixn fact[]) {
 	sfixn i, j, k;			/* counter */
 	sfixn c;			/* remaining product to factor */
-	  
+
 	c = x;
 	j = 1;
 	k = 0;
@@ -1468,9 +1472,9 @@ namespace PBPAS {
 	  k++;
 	  c = c / 2;
 	}
-	
+
 	i = 3;
-	
+
 	while (i <= (sqrt(c)+1) && j<NUMFACT-1) {
 	  if ((c % i) == 0) {
 		//printf("%ld\n",i);
@@ -1482,7 +1486,7 @@ namespace PBPAS {
 	  else
 		  i = i + 2;
 	}
-	
+
 	if (c > 1) {
 	  fact[j]=c;//printf("%ld\n",c);
 	  k++;
@@ -1494,8 +1498,8 @@ namespace PBPAS {
 	  std::cout<<fact[m]<<";";
 
 	std::cout<<std::endl;
-  }  
-  
+  }
+
   //------------------------
   //compute the b for two univariate polynomial
   //with partial degrees d1 and d2
@@ -1516,7 +1520,7 @@ namespace PBPAS {
 	  return b;
 	}
 	sfixn s1 = 2*(d1-r1+d2-r2)+diffs1+1;
-	
+
 	b = k;
 	r1 = d1 % b;
 	r2 = d2 % b;
@@ -1538,7 +1542,7 @@ namespace PBPAS {
 	  }
 	  else {
 		//std::cout<<"s1>s2, k+1="<<s1<<";"<<s2<<";"<<k<<std::endl;
-		return k;		
+		return k;
 	  }
 	}
 	else {
@@ -1551,7 +1555,7 @@ namespace PBPAS {
 	  }
 	}
   }
- 
+
   //---------------------------------------------------------
   //deg1 and deg2 are partial degrees of poly f and g w.r.t 1st var
   //assumption they are far more than the other degrees
@@ -1561,9 +1565,9 @@ namespace PBPAS {
 	  std::cout << "Degree of var 1 is too small" <<std::endl;
 	  exit(1);
 	}
-	  
+
 	sfixn k = floor(sqrt( (sigma+1)*(sigma+1) + 8*(deg1+deg2)*sigma ));
-	
+
 	sfixn bt[27];
 	sfixn size[27];
 	sfixn diffDim[27];
@@ -1571,7 +1575,7 @@ namespace PBPAS {
 
 	for (int i=-102; i<=5; i++) {
 	  bf = sigma+k+i;
-	  if ( (sigma+k+i) >=8 && (bf%4) == 0 ) { 
+	  if ( (sigma+k+i) >=8 && (bf%4) == 0 ) {
 		pos1 = i;
 		b = bf/4;
 		s1 = 2*b-1;
@@ -1580,7 +1584,7 @@ namespace PBPAS {
 		minpos = 0;
 		bt[0]=b;
 		diffDim[0]=s1-s2;
-		if ( diffDim[0]==0 ) 
+		if ( diffDim[0]==0 )
 		  posDiff0 = 0;
 
 		break;
@@ -1589,11 +1593,11 @@ namespace PBPAS {
 	sfixn pos = 0;
 	for (int i=pos1+1; i<=5; i++) {
 	  bf = sigma+k+i;
-	  if ( (bf%4) == 0 ) { 
+	  if ( (bf%4) == 0 ) {
 		b = bf/4;
 		s1 = 2*b-1;
 		s2 = ((deg1 - deg1 % b)/b + (deg2 - deg2 % b)/b + 1)*sigma;
-		
+
 		pos++;
 		bt[pos]=b;
 		diffDim[pos]=s1-s2;
@@ -1604,7 +1608,7 @@ namespace PBPAS {
 
 		if (size[pos]<size[minpos])
 		  minpos=pos;
-		
+
 	  }
 	}
 	if ( posDiff0 >=0 ) {
@@ -1624,7 +1628,7 @@ namespace PBPAS {
 	sfixn sigma = 1;
 	for (int i=2; i<=N; i++)
 	  sigma *= degs1[i]+degs2[i]+1;
-	
+
 	std::cout<<"multi_V1to2V_pivot, sigma= "<<sigma<<std::endl;
 	std::cout<<"multi_V1to2V_pivot, sigma quo 2= "<<(sigma-sigma%2)/2<<std::endl;
 
@@ -1636,7 +1640,7 @@ namespace PBPAS {
 	  bf = sigma+k+i;
 
 	  std::cout<<"multi_V1to2V_pivot, bf= "<<bf<<std::endl;
-	  if ( (bf%4) == 0 ) { 
+	  if ( (bf%4) == 0 ) {
 		pos1 = i;
 		b = bf/4;
 		std::cout<<"multi_V1to2V_pivot, first b= "<<b<<std::endl;
@@ -1654,7 +1658,7 @@ namespace PBPAS {
 	}
 	for (int i=pos1+1; i<=5; i++) {
 	  bf = sigma+k+i;
-	  if ( bf%4 == 0 ) { 
+	  if ( bf%4 == 0 ) {
 		bt = bf/4;
 		std::cout<<"multi_V1to2V_pivot, bt= "<<bt<<std::endl;
 		s1 = 2*bt-1;
@@ -1688,36 +1692,36 @@ namespace PBPAS {
   //
   void InitKroTFTRep_1V2V(KroTFTRep * kPtr, sfixn b, sfixn d1, sfixn d2){
     register int j;
-    N(kPtr)=2;     
+    N(kPtr)=2;
     M(kPtr)=2;
-    ES(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn)); 
+    ES(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn));
     //
     DIMS(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn));
     //
     LS(kPtr)=(sfixn *)my_calloc(3,sizeof(sfixn));
-    
+
     CUM(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn));
     //
     CUMI(kPtr, 1)= 1; SIZ(kPtr)=1;
-	
+
 	sfixn resDgs1 = 2*b-2;
 	sfixn resDgs2 = (d1-d1%b)/b + (d2-d2%b)/b;
 	std::cout<<resDgs1<<" "<<resDgs2<<" ";
 	//std::cout<<"resDgs1 ="<<resDgs1<<std::endl;
 	//std::cout<<"resDgs2 ="<<resDgs2<<std::endl;
-	
+
 	ESI(kPtr, 1)=logceiling(resDgs1+1);
 	ESI(kPtr, 2)=logceiling(resDgs2+1);
 
 	LSI(kPtr, 1)=resDgs1+1;
 	LSI(kPtr, 2)=resDgs2+1;
-	
-    for(j=1;j<=2;j++){     
+
+    for(j=1;j<=2;j++){
       DIMSI(kPtr, j)=1<<(ESI(kPtr, j));
-      SIZ(kPtr)*=LSI(kPtr, j); 
+      SIZ(kPtr)*=LSI(kPtr, j);
       if(j>=2){CUMI(kPtr, j)=CUMI(kPtr, j-1)*LSI(kPtr, j-1);}
     }
-    
+
     DATS(kPtr)=(sfixn **)my_calloc(2, sizeof(sfixn *));
     //
     for(j=0; j<2; j++){
@@ -1736,18 +1740,18 @@ namespace PBPAS {
   //q1f = deg(f,v1) quo b;
   void InitKroTFTRep_1V2V_multi(KroTFTRep *kPtr, sfixn b, sfixn sigma, sfixn q1f, sfixn q1g ) {
 	register int j;
-	N(kPtr)=2;     
+	N(kPtr)=2;
     M(kPtr)=2;
-    ES(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn)); 
+    ES(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn));
     //
     DIMS(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn));
     //
     LS(kPtr)=(sfixn *)my_calloc(3,sizeof(sfixn));
-    
+
     CUM(kPtr)=(sfixn * )my_calloc(3,sizeof(sfixn));
     //
     CUMI(kPtr, 1)= 1; SIZ(kPtr)=1;
-	
+
 	sfixn resDgs1 = 2*b-2;
 	sfixn resDgs2 = (q1f + q1g + 1)*sigma - 1;
 	std::cout<<resDgs1<<" "<<resDgs2<<" ";
@@ -1757,13 +1761,13 @@ namespace PBPAS {
 
 	LSI(kPtr, 1)=resDgs1+1;
 	LSI(kPtr, 2)=resDgs2+1;
-	
-    for(j=1;j<=2;j++){     
+
+    for(j=1;j<=2;j++){
       DIMSI(kPtr, j)=1<<(ESI(kPtr, j));
-      SIZ(kPtr)*=LSI(kPtr, j); 
+      SIZ(kPtr)*=LSI(kPtr, j);
       if(j>=2){CUMI(kPtr, j)=CUMI(kPtr, j-1)*LSI(kPtr, j-1);}
     }
-    
+
     DATS(kPtr)=(sfixn **)my_calloc(2, sizeof(sfixn *));
     //
     for(j=0; j<2; j++){
@@ -1774,7 +1778,7 @@ namespace PBPAS {
     KN(kPtr)=1; KE(kPtr)=0;
     for(j=1;j<=2;j++) {KN(kPtr)*=DIMSI(kPtr, j); KE(kPtr)+=ESI(kPtr, j);}
     KROOTS(kPtr)=NULL;
-    kPtr->Defsize=SIZ(kPtr);	
+    kPtr->Defsize=SIZ(kPtr);
 
   }
 
@@ -1789,14 +1793,14 @@ namespace PBPAS {
 	sfixn d2 = (d-d%b)/b;
 
 	//std::cout<<"from1Vto2VtoTFTRep, d2="<<d2<<std::endl;
-	
+
 	cilk_for (int i=0; i<d2; i++) {
 	  //sfixn pos1 = i*b;
 	  //sfixn pos2 = i*rccum2;
-	  for (int j=0; j<b; j++) 
+	  for (int j=0; j<b; j++)
 		data[i*rccum2+j] = coeffs[i*b+j];
 	}
-	
+
 	//when i=d2, d2*b+b could be larger than d
 	sfixn pos3 = d2*b;
 	sfixn pos4 = d2*rccum2;
@@ -1804,15 +1808,15 @@ namespace PBPAS {
 	  if ( (pos3 + j) <= d )
 		data[pos4+j] = coeffs[pos3+j];
 	}
-	
+
 	//for (int i=0; i<=d; i++)
 	//std::cout<<coeffs[i]<<";";
-	
+
 	//std::cout<<"----f coeffs----"<<std::endl;
-	
+
 	//for (int i=0; i<s; i++)
 	//std::cout<<data[i]<<";";
-	
+
 	//std::cout<<"----res f coeffs----"<<std::endl;
 
   }
@@ -1829,7 +1833,7 @@ namespace PBPAS {
 	sfixn num_boxes_M1 = 1;
 	for (int i=2; i<=N; i++)
 	  num_boxes_M1 *= pdegs[i]+1;
-	
+
 	sfixn block_size_B = 2*b-1;
 	sfixn box_size_B = block_size_B * num_blocks_B;
 	std::cout<<"copy forward, num_boxes_M1= "<<num_boxes_M1<<std::endl;
@@ -1840,19 +1844,19 @@ namespace PBPAS {
 	cilk_for (int box=0; box<num_boxes_M1; box++) {
 	  for (int block=0; block<q1; block++) {
 		for (int slot=0; slot<b; slot++){
-		  B[ box*box_size_B + block*block_size_B + slot ] = 
+		  B[ box*box_size_B + block*block_size_B + slot ] =
 			M1[ box*box_size_M1 + block*block_size_M1 + slot ];
 		}
 	  }
-	   
-	  for (int slot=0; slot <=pdegs[1]%b; slot++) 
-		B[ box*box_size_B + q1*block_size_B + slot ] = 
+
+	  for (int slot=0; slot <=pdegs[1]%b; slot++)
+		B[ box*box_size_B + q1*block_size_B + slot ] =
 			M1[ box*box_size_M1 + q1*block_size_M1 + slot ];
 	}
 
 	for (int i=0; i<num_boxes_M1*box_size_M1; i++)
 	  std::cout << M1[i]<<" ";
-	std::cout <<"---M1---" <<std::endl;	
+	std::cout <<"---M1---" <<std::endl;
 
 	for (int i=0; i<box_size_B*num_boxes_B; i++)
 	  std::cout << B[i]<<" ";
@@ -1861,32 +1865,32 @@ namespace PBPAS {
 
   //-----------------------------------------------
   /**
-   * @n: the number of variables. 
+   * @n: the number of variables.
    * @degs_M1: partial degree vector of poly f
    * @degs_M2: partial degree vector of poly g
-   * size of degs_M1 and degs_M2 are n+1. 
-   * degs_M1[0] and degs_M2[0] are not used. 
+   * size of degs_M1 and degs_M2 are n+1.
+   * degs_M1[0] and degs_M2[0] are not used.
    * the other slots store the partial degrees.
-   * copy coefficients in M1 to B while extending x1 to x1 and y 
+   * copy coefficients in M1 to B while extending x1 to x1 and y
    * s.t. deg(f,x1)=degs_M1 rem b, deg(f,y)=degs_M1 quo b,
-   * contract y and the rest variables into y 
+   * contract y and the rest variables into y
    * @q1f: = degs_M1[1] quo b
    * @q1g: = degs_M2[1] quo b
    *
    *#ifdef LINUXINTEL64
    *typedef int sfixn;
    **/
- void fromMulti_1Vto2VTFTRep(sfixn n, sfixn b, sfixn q1f, sfixn q1g, sfixn *degs_M1, sfixn *M1, sfixn *degs_M2, sfixn *B) { 
+ void fromMulti_1Vto2VTFTRep(sfixn n, sfixn b, sfixn q1f, sfixn q1g, sfixn *degs_M1, sfixn *M1, sfixn *degs_M2, sfixn *B) {
 
    //sfixn degs_B[n];
-   //degs_B[0]=0;   
-   sfixn *degs_B = (sfixn * ) my_calloc(n, sizeof(sfixn));   
+   //degs_B[0]=0;
+   sfixn *degs_B = (sfixn * ) my_calloc(n, sizeof(sfixn));
    degs_B[1]=(2*b-1)*(q1f +q1g +1)-1;
 
    //sfixn psize_B[n+1];
    //psize_B[0] = 0;
-   sfixn * psize_B = (sfixn * ) my_calloc(n+1, sizeof(sfixn)); 
-   psize_B[1] = degs_B[1] +1; 
+   sfixn * psize_B = (sfixn * ) my_calloc(n+1, sizeof(sfixn));
+   psize_B[1] = degs_B[1] +1;
    sfixn xn_size_B = psize_B[1];
    for (int i=2; i<n; i++) {
 	 degs_B[i] = degs_M1[i] +degs_M2[i];
@@ -1894,7 +1898,7 @@ namespace PBPAS {
 	 xn_size_B *= psize_B[i];
    }
    psize_B[n] = degs_M1[n] +degs_M2[n] +1;
-	
+
    //sfixn psize_M1[n+1];
    //psize_M1[0] = 0;
    sfixn * psize_M1 = (sfixn * ) my_calloc(n+1, sizeof(sfixn));
@@ -1904,12 +1908,12 @@ namespace PBPAS {
 	 xn_size_M1 *= psize_M1[i];
    }
    psize_M1[n] = degs_M1[n] +1;
-	
+
    sfixn block_size_M1 = b;
    sfixn block_size_B = 2*b-1;
    sfixn r1 = degs_M1[1] % b;//=============
 
-// 	std::cout <<"---xn_size_M1= " <<xn_size_M1<<std::endl;	
+// 	std::cout <<"---xn_size_M1= " <<xn_size_M1<<std::endl;
 // 	std::cout <<"---xn_size_B= " <<xn_size_B<<std::endl;
 // 	for (int i=0; i<xn_size_B*(degs_M1[n]+degs_M2[n]+1); i++)
 // 	  std::cout << B[i]<<" ";
@@ -1917,10 +1921,10 @@ namespace PBPAS {
 
 // 	for (int i=0; i<xn_size_M1*(degs_M1[n]+1); i++)
 // 	  std::cout << M1[i]<<" ";
-// 	std::cout <<"---M1---" <<std::endl;	
+// 	std::cout <<"---M1---" <<std::endl;
 
-	//can not use cilk_for, nextPosition, internal compiler error: 
-	//in gimplify_addr_expr, at gimplify.c:3904 
+	//can not use cilk_for, nextPosition, internal compiler error:
+	//in gimplify_addr_expr, at gimplify.c:3904
 	cilk_for (int en=0; en<=degs_M1[n]; en++) {
 	  //sfixn p_M1[n+1];
 	  //sfixn p_B[n+1];
@@ -1944,21 +1948,21 @@ namespace PBPAS {
 		  for (int slot=0; slot<b; slot++) {
 			B[ p_B[0] + block*block_size_B +slot ] = M1[ p_M1[0] + block*block_size_M1 +slot ];
 		  }
-		}	
-	 
+		}
+
 		for (int slot=0; slot<=r1; slot++) {
 		  B[ p_B[0] + q1f*block_size_B +slot ] = M1[ p_M1[0] + q1f*block_size_M1 +slot ];
 		}
-		
+
 // 		for (int i=0; i<xn_size_B*(degs_M1[n]+degs_M2[n]+1); i++)
 // 		  std::cout << B[i] <<" ";
 // 		std::cout <<"---B, en, p_B[0], p_M1[0]=---" <<en<<", "<<p_B[0]<<", "<<p_M1[0]<<std::endl;
-		
+
 		nextPosition(p_M1, degs_M1, n, psize_M1);
-		if (p_M1[0]==-1) 
+		if (p_M1[0]==-1)
 		  notdone = -1; //false
 		else {
-		  nextPosition(p_B, degs_M1, n, psize_B); 
+		  nextPosition(p_B, degs_M1, n, psize_B);
 // 		  for (int i=0; i<=n; i++)
 // 			std::cout<<p_M1[i]<<" ";
 // 		  std::cout <<"---p_M1, en=---" <<en<<std::endl;
@@ -1982,21 +1986,21 @@ namespace PBPAS {
 	int found = -1;
 	int notdone = 0; //true
 	int i=2;
-	while (notdone==0 && i<n) {	  
+	while (notdone==0 && i<n) {
 	  //for (int i=2; i<n; i++) {
 	  if (exp[i]<deg[i]) {
 		exp[i]++;
-		if (i==2) 
+		if (i==2)
 		  exp[0] += size[1];
 		else{
 		  for (int k=2; k<i; k++) //k<=i-1
 			exp[k]=0;
-		  
+
 		  sfixn acc = 1;
 		  exp[0] = 0;
-		  for (int k=1; k<i; k++) 
+		  for (int k=1; k<i; k++)
 			acc *= size[k];
-		  
+
 		  for (int k=i; k<=n; k++) {
 			exp[0] = exp[0] + acc*exp[k];
 			acc *= size[k];
@@ -2010,7 +2014,7 @@ namespace PBPAS {
 	  i++;
 	}
 	if (found==-1) exp[0]=-1;
-	
+
   }
 
   //-------------------
@@ -2060,7 +2064,7 @@ namespace PBPAS {
 	}
 
 	//for (int i=0; i<siz; i++)
-	//  std::cout<<coeffs[i]<<";";	
+	//  std::cout<<coeffs[i]<<";";
 	//std::cout<<"----first coeffs----"<<std::endl;
 
 	sfixn pos = delt2*b;
@@ -2081,12 +2085,12 @@ namespace PBPAS {
 
 	//for (int i=0; i<s; i++)
 	//  std::cout<<data[i]<<";";
-	
+
 	//std::cout<<"----data----"<<std::endl;
 
     //for (int i=0; i<siz; i++)
 	//  std::cout<<coeffs[i]<<";";
-	
+
 	//std::cout<<"----coeffs----"<<std::endl;
   }
 
@@ -2112,7 +2116,7 @@ namespace PBPAS {
 	  sfixn X = w*b;
 	  sfixn Y =(w-1)*(2*b-1)+b;
 	  sfixn Z = w*(2*b-1);
-	  
+
 	  for (int u=0; u<=b-2; u++) {
 		coeffs[X + u] = AddMod(data[Y + u], data[Z + u], pPtr->P);
 	  }
@@ -2138,12 +2142,12 @@ namespace PBPAS {
 	//  std::cout<<coeffs[i]<<";";
 	//std::cout<<"----coeffs----"<<std::endl;
   }
- 
+
   //---------------------------------------
   //num_block_B = q1 + q1'+1
   //box_size_M = d1 + d1'+1
   void from2VTFTReptoMultiV(sfixn b, sfixn sigma, sfixn num_block_B, sfixn *B, sfixn box_size_M, sfixn *M, MONTP_OPT2_AS_GENE *pPtr){
-	
+
 	sfixn num_box_M = sigma;
 	sfixn block_size_B = 2*b -1;
 	sfixn box_size_B = block_size_B * num_block_B;
@@ -2158,12 +2162,12 @@ namespace PBPAS {
 // 	for (int i=0; i<block_size_B*num_block_B*sigma; i++)
 // 	  std::cout<<B[i]<<";";
 // 	std::cout<<"---2V result---"<<std::endl;
-	
-	
+
+
 	cilk_for (int box=0; box<num_box_B; box++) {
 	  sfixn p_B = box * box_size_B;
 	  sfixn p_M = box * box_size_M;
-	  
+
 	  for (int u=0; u<b; u++) {
 		M[p_M+u] = B[p_B+u];
 	  }
@@ -2182,4 +2186,4 @@ namespace PBPAS {
   }
 
 }//end of PBPAS
-  
+

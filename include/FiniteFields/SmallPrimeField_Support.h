@@ -35,6 +35,63 @@ long long int smallprimefield_PrimitiveRootofUnity(long long int n,const Prime_p
 long long int smallprimefield_exp(long long int a, long long int e,const Prime_ptr* Pptr);
 Prime_ptr* smallprimefield_get_prime_constants(long long int prime);
 
+static long long int smallprimefield_AddMod(long long int a, long long int b, long long int prime){
+  a = a + b;
+  a -= prime;
+  a += (a >> 63) & prime;
+  return a;
+}
+
+static long long int smallprimefield_SubMod(long long int a, long long int b, long long int prime){
+   a = a - b;
+   a += (a >> 63) & prime;
+   return a;
+ }
+
+ //compute a* b / R mod prime
+static inline long long int smallprimefield_Mul_INLINE(long long int a, long long int b, long long int pinverse, long long int prime){
+  __asm__(
+      "mulq %2\n\t"
+      "movq %%rax,%%rsi\n\t"
+      "movq %%rdx,%%rdi\n\t"
+      "imulq %3,%%rax\n\t"
+      "mulq %4\n\t"
+      "add %%rsi,%%rax\n\t"
+      "adc %%rdi,%%rdx\n\t"
+      "subq %4,%%rdx\n\t"
+      "mov %%rdx,%%rax\n\t"
+      "sar $63,%%rax\n\t"
+      "andq %4,%%rax\n\t"
+      "addq %%rax,%%rdx\n\t"
+      : "=&d" (a)
+      : "a"(a),"rm"(b),"b"((unsigned long long int)pinverse),"c"(prime)
+      :"rsi","rdi");
+  return a;
+}
+
+static inline long long int smallprimefield_Mul_INLINE2(long long int a,long long int b, long long int pinverse, long long int prime){
+	asm("mulq %2\n\t"
+		"movq %%rax,%%rsi\n\t"
+		"movq %%rdx,%%rdi\n\t"
+		"imulq %3,%%rax\n\t"
+		"mulq %4\n\t"
+		"add %%rsi,%%rax\n\t"
+		"adc %%rdi,%%rdx\n\t"
+		"subq %4,%%rdx\n\t"
+		"mov %%rdx,%%rax\n\t"
+		"sar $63,%%rax\n\t"
+		"andq %4,%%rax\n\t"
+		"addq %%rax,%%rdx\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		"nop\n\t"
+		: "=d" (a)
+		: "a"(a),"d"(b),"b"((long long int) pinverse),"c"((long long int) prime)
+		:"rsi","rdi");
+	return a;
+}
+
+
 //for primes that fit in "int"
 int smallprimefield_convert_in32(int a, const Prime_ptr32* Pptr);
 int smallprimefield_convert_out32(int a, const Prime_ptr32* Pptr);

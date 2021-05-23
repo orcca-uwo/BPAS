@@ -9,7 +9,10 @@ extern "C" {
 #include "SMZP_Support.h"
 #include "SMZP_Support_Recursive_Unpacked.h"
 #include "../RationalNumberPolynomial/SMQP_Support_Recursive-AA.h"
+
 #include "DUZP_Support.h"
+#include "DBZP_Support.h"
+
 #include "../Utils/Unix_Timer.h"
 
 typedef struct RecArrElemZ {
@@ -48,22 +51,22 @@ static inline void freeRecArrayZAndCoef(RecArrZ_t* rArr) {
 			free(rArr->elems->coef);
 			free(rArr->elems);
 		}
-		free(rArr);
 		if (rArr->origAA != NULL) {
 			free(rArr->origAA);
 		}
+		free(rArr);
 	}
 }
 
 
 AltArrZ_t* buildRandomAltArrZPoly_MvarSparse(int univarSparsity, int nvar, int nterms, unsigned long int coefBound, degree_t sparsity, int includeNeg, time_t seed);
 
-/** 
+/**
  * Build a random recursive polynomial.
- * Nterms is the number of terms wrt the main variable. 
+ * Nterms is the number of terms wrt the main variable.
  * coefNTerms is the number of terms in the coefficients (when viewed recursively, and nvar > 1);
  * coefBound is the absolute upper limit on the rational numbers in the polynomial.
- * sparsity is the upper limit on the difference between degrees of successive recursive terms. 
+ * sparsity is the upper limit on the difference between degrees of successive recursive terms.
  * sparsity is also passed when constructing coefficient polynomials.
  */
 RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned long int coefBound, degree_t sparsity, int includeNeg);
@@ -77,7 +80,7 @@ RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned
  * Convert a polynomial to a recursively viewed polynomial using the variable
  * of highest precedence (index 0) as the main variable.
  *
- * Note this conversion is done INPLACE. And therefore the input Node* is 
+ * Note this conversion is done INPLACE. And therefore the input Node* is
  * invalidated by this operation.
  *
  * returns teh recursively viewed polynomial.
@@ -85,10 +88,10 @@ RecArrZ_t* buildRandomRecArrZPoly(int nvar, int nterms, int coefNterms, unsigned
 RecArrZ_t* convertToRecursiveArrayZ(AltArrZ_t* aa);
 
 /**
- * Convert a recursively viewed polynomial to it's distributed form. 
+ * Convert a recursively viewed polynomial to it's distributed form.
  * This conversion is done INPLACE and therefore the original recursively
  * viewed polynomial is then invalidated.
- * 
+ *
  * returns the distributed polynomial.
  */
 AltArrZ_t* convertFromRecursiveArrayZ(RecArrZ_t* poly, int nvar);
@@ -106,10 +109,10 @@ RecArrZ_t* deepCopyRecArrayZPolynomial(RecArrZ_t* poly, int nvar);
  * within the exponent vector of the variable to become the "main variable"
  * of the recursive view.
  *
- * Note this conversion is not done INPLACE. And therefore the output polynomial is 
+ * Note this conversion is not done INPLACE. And therefore the output polynomial is
  * independent of the input one.
  *
- * returns the recursively viewed polynomial. 
+ * returns the recursively viewed polynomial.
  */
 RecArrZ_t* convertToRecursiveArrayZAtIdx (AltArrZ_t* aa, int idx);
 
@@ -118,21 +121,21 @@ RecArrZ_t* convertToRecursiveArrayZAtIdx (AltArrZ_t* aa, int idx);
  * within the exponent vector of the variable to become the "main variable"
  * of the recursive view.
  *
- * Note this conversion is not done INPLACE. And therefore the output polynomial is 
+ * Note this conversion is not done INPLACE. And therefore the output polynomial is
  * independent of the input one.
  *
- * returns the recursively viewed polynomial. 
+ * returns the recursively viewed polynomial.
  */
 AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nvar);
 
 
-    
+
 
 /***********
  * Pesudo Division
  ***********/
 
-// Since we are using integer indices, we can use SMQP RecProdHeap definition. 
+// Since we are using integer indices, we can use SMQP RecProdHeap definition.
 // The below is just kept for reference. We will use the SMQP methodf.
 //
 
@@ -156,10 +159,10 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
 // } RecProdHeap_AA;
 
 // /**
-//  * Create a new element to be inserted into the heap. 
-//  * Takes one term of the multiplied and the entire multiplicand. 
+//  * Create a new element to be inserted into the heap.
+//  * Takes one term of the multiplied and the entire multiplicand.
 //  *
-//  * Returns an element ready to be inserted in the RecProdHeap. 
+//  * Returns an element ready to be inserted in the RecProdHeap.
 //  */
 // static inline RecProdHeapChain_AA* recProdHeapMakeChain_AA(int a , int b, RecProdHeapChain_AA* next) {
 // 	RecProdHeapChain_AA* chain = (RecProdHeapChain_AA*) malloc(sizeof(RecProdHeapChain_AA));
@@ -179,7 +182,7 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
 // }
 
 // /**
-//  * Create an empty product heap. 
+//  * Create an empty product heap.
 //  */
 // static inline RecProdHeap_AA* recProdHeapCreate_AA(int nvar) {
 // 	RecProdHeap_AA* h = (RecProdHeap_AA*) malloc(sizeof(RecProdHeap_AA));
@@ -192,7 +195,7 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
 
 // *
 //  * Allocate space for a maximum of newAllocSize elements in the heap
-  
+
 // static inline void recProdheapResize_AA(RecProdHeap_AA* h, int newAllocSize) {
 // 	h->elements = (RecProdHeapElem_AA*) realloc(h->elements, sizeof(RecProdHeapElem_AA)*newAllocSize);
 // 	h->maxHeapSize  = newAllocSize;
@@ -205,11 +208,11 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
 // 		recProdHeapFreeChain_AA(elems[i].chain);
 // 	}
 // 	free(h->elements);
-// 	free(h); 
+// 	free(h);
 // }
 
 // /**
-//  * Insert an RecProdHeap element into the heap h.  
+//  * Insert an RecProdHeap element into the heap h.
 //  */
 // void recProdHeapInsert_AA(RecProdHeap_AA* h, RecProdHeapChain_AA* chain, register degree_t insertExp);
 
@@ -231,7 +234,7 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
 /**
  * Get the coefficient of the next term to be produced in the multiplication.
  * Terms are produced in decreasing order by degree.
- * Note that this may return NULL to indicate that term whose degree was 
+ * Note that this may return NULL to indicate that term whose degree was
  * identified as maximum by recProdHeapPeek, ended up being cancelled to 0
  * when combining like terms.
  *
@@ -239,9 +242,9 @@ AltArrZ_t* convertFromRecursiveArrayZAtIdx (RecArrZ_t* recPoly, int idx, int nva
  */
 AltArrZ_t* recProdHeapGetNextCoef_AAZ(RecProdHeap_AA* h, const RecArrElemZ_t* __restrict__ aElems, const RecArrElemZ_t* __restrict__ bElems, const int* aUnpacked, int bUnpacked);
 
-/** 
+/**
  * Do the pesudo division of c by b. Quotient is returned in res_a, and remainder
- * in res_r. 
+ * in res_r.
  *
  * If e is not NULL then it returns the exact number of division steps which occurred.
  *
@@ -254,52 +257,52 @@ void pesudoDivide_RecArrayZ(RecArrZ_t* c, RecArrZ_t* b, AltArrZ_t** res_a, AltAr
 // Multi-divisor (Pseudo-)division
 //////////////////////////////////
 
-/** 
+/**
  * Do the pseudo division of c by b when the idx-th member
- * of exponent vectors is the main variable. 
- * Quotient is returned in res_a, and remainder in res_r. 
+ * of exponent vectors is the main variable.
+ * Quotient is returned in res_a, and remainder in res_r.
  * If e is not NULL then it returns the exact number of division steps which occurred.
  * If hPow is not NULL then *hPow is set to the initial of b to the power of e.
  */
 void pesudoDivideAtIdx_AAZ (int idx, AltArrZ_t* c, AltArrZ_t* b, AltArrZ_t** res_a, AltArrZ_t** res_r, int* e, AltArrZ_t** hPow, int nvar, int lazy);
 
-/** 
+/**
  * Do the pseudo division of c by the triangular-set of B
  * such that hPow*f = quoSet_0 * B_0 + ... + quoSet_{nSet-1} * B_{nSet-1} + rem.
- * Quotients are returned in quoSet, and remainder in rem. 
- * If hPow is not NULL then *hPow is set to the initial of b to the power of 
+ * Quotients are returned in quoSet, and remainder in rem.
+ * If hPow is not NULL then *hPow is set to the initial of b to the power of
  * the exact number of division steps which occurred..
  * nvar : size of exponent vectors
- * nSet : the size of the divisor set 
+ * nSet : the size of the divisor set
  *
  * Note this algorithm is based on both naive and recursive principles.
  */
 void multiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t** quoSet, AltArrZ_t** rem, AltArrZ_t** hPow, int nvar, int lazy, int nSet);
 
-/** 
+/**
  * Do the pseudo division of c by the triangular-set of B in the naive principle
  * such that hPow*f = quoSet_0 * B_0 + ... + quoSet_{nSet-1} * B_{nSet-1} + rem.
- * Quotients are returned in quoSet, and remainder in rem. 
- * If hPow is not NULL then *hPow is set to the initial of b to the power of 
+ * Quotients are returned in quoSet, and remainder in rem.
+ * If hPow is not NULL then *hPow is set to the initial of b to the power of
  * the exact number of division steps which occurred..
  * nvar : size of exponent vectors
- * nSet : the size of the divisor set 
+ * nSet : the size of the divisor set
  */
 void naiveMultiDivisorPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t** quoSet, AltArrZ_t** rem, AltArrZ_t** hPow, int nvar, int lazy, int nSet);
 
 
-/** 
- * Do the pseudo division of c by the normalized triangular-set of B in the recursive principle 
+/**
+ * Do the pseudo division of c by the normalized triangular-set of B in the recursive principle
  * such that hPow*f = quoSet_0 * B_0 + ... + quoSet_{nSet-1} * B_{nSet-1} + rem.
- * Quotients are returned in quoSet, and remainder in rem. 
- * If hPow is not NULL then *hPow is set to the initial of b to the power of 
+ * Quotients are returned in quoSet, and remainder in rem.
+ * If hPow is not NULL then *hPow is set to the initial of b to the power of
  * the exact number of division steps which occurred..
  * nvar : size of exponent vectors
- * nSet : the size of the divisor set 
+ * nSet : the size of the divisor set
  */
 void normalizedTriangularSetPseudoDivide_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** quoSet, AltArrZ_t** rem, AltArrZ_t** hPow, int nvar, int lazy, int nSet);
 
-/** 
+/**
  * Multi-Divisor Division (MDD) where the divisor-set is a Triangular Set
  * Given the  dividend, f, and a divisor-set of polynomials of size s,
  * G[s] = {g_0, ..., g_{s-1}} to compute the reduce polynomial (remainder) r with respect to the G[s],
@@ -311,8 +314,9 @@ void recursiveTriangularSetMDD_AAZ (AltArrZ_t* c, AltArrZ_t** B, AltArrZ_t*** qu
 //////////////////////////
 // Subresultant Chains
 //////////////////////////
+
 /*
- *a linked list of AltArrZ_t 
+ *a linked list of AltArrZ_t
  */
 typedef struct AltArrsZ {
     AltArrZ_t* poly;
@@ -324,8 +328,8 @@ static inline int Log2_AAZ (int n)
     return (n > 1) ? 1 + Log2_AAZ (n/2) : 0;
 }
 
-/** 
- * free an AltArrsZ_t 
+/**
+ * free an AltArrsZ_t
  */
 static inline void freeAltArrsZ (AltArrsZ_t* AAs)
 {
@@ -341,16 +345,16 @@ static inline void freeAltArrsZ (AltArrsZ_t* AAs)
 	}
 	free (AAs);
 }
-    
+
 /**
- * Lazard Optimization (L. Docus, Optimizations of the Subresultant Algorithm, p4)  
+ * Lazard Optimization (L. Docus, Optimizations of the Subresultant Algorithm, p4)
  * Input Sd, Sdm
  * Output Se
- */ 
+ */
 AltArrZ_t* LazardOptZ (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s);
 
 /**
- * Ducos Optimization (L. Docus, Optimizations of the Subresultant Algorithm, p7)  
+ * Ducos Optimization (L. Docus, Optimizations of the Subresultant Algorithm, p7)
  * Input A, Sdm, Se, sd
  * Output Sem
 */
@@ -367,7 +371,7 @@ AltArrZ_t* CFDucosOptZ_new (AltArrZ_t* A, AltArrZ_t* Sdm, AltArrZ_t* Se, AltArrZ
 AltArrZ_t* mainTailPolynomial_AAZ (AltArrZ_t* a, AltArrZ_t** lc);
 
 /**
- * Ducos SubresultantChain (L. Docus, Optimizations of the Subresultant Algorithm, p8)  
+ * Ducos SubresultantChain (L. Docus, Optimizations of the Subresultant Algorithm, p8)
  * given two polynomials P and Q, this algorithm computes the resultantchain
  * and store them on linked-list, AltArrsZ_t.
  * SC is the resultantchain and len is the size.
@@ -377,23 +381,22 @@ void DucosSubresultantChainZ (AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, int* 
 
 /**
  * Ducos SubresultantChain At Idx
- * given two polynomials P and Q, and idx, this algorithm computes the idx-th and 
+ * given two polynomials P and Q, and idx, this algorithm computes the idx-th and
  * idx+1-th resultantchain
  * Ex: if idx=0: SC_idx = resultant(P,Q) and SC_idx1 = upper polynomial in the chain.
- * @note Our motivation is making use of speculative subresultant chain algorithms to get better performance. 
+ * @note Our motivation is making use of speculative subresultant chain algorithms to get better performance.
  */
 void DucosSubresultantChainAtIdxZ (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_t** SC_idx, AltArrZ_t** SC_idx1);
 
 /**
  * Ducos SubresultantChain At Idx
- * given two polynomials P and Q, and idx, this algorithm computes the idx-th and 
+ * given two polynomials P and Q, and idx, this algorithm computes the idx-th and
  * idx+1-th resultantchain
  * Ex: if idx=0: SC_idx = resultant(P,Q) and SC_idx1 = upper polynomial in the chain.
- * @note Our motivation is making use of speculative subresultant chain algorithms to get better performance. 
+ * @note Our motivation is making use of speculative subresultant chain algorithms to get better performance.
  * @note this function returns a list of mainLeadningCoefs of subresultants before idx, stored in principle_coefs of size pcSize.
  */
 void DucosSubresultantChainAtIdxZ_withPrincipleCoefs (AltArrZ_t* P, AltArrZ_t* Q, int idx, AltArrZ_t** SC_idx, AltArrZ_t** SC_idx1, AltArrsZ_t** principle_coefs, int* pcSize);
-
 
 /**
  * Resultant of two polynomials by DucosSubresultantChain
@@ -409,14 +412,176 @@ AltArrZ_t* DucosResultantZ (AltArrZ_t* P, AltArrZ_t* Q);
 */
 AltArrZ_t* DucosGCDZ (AltArrZ_t* P, AltArrZ_t* Q);
 
-/** 
+/**
  * Return the last non-zero polynomial in subresultant chain of two polynomials P and Q.
-*/	
+*/
 AltArrZ_t* lastNonZeroChain_AAZ (AltArrZ_t* P, AltArrZ_t* Q);
+
+/*****************************
+ * Subresultant Chain Wrapper 
+******************************/
+
+typedef enum SubresultantChainMode {
+	SIGNAL = -1,  // -1
+	AUTO,         // 0: choose the best routine by calling ChooseTheBestSubresultantChainModeZ
+	DUCOS,        // 1: multivariate cache-friendly DUCOS algorithm 
+	ModUnivar,    // 2: univariate CRT-based algorithm
+	ModBivar,     // 3: bivariate Lagrange-based CRT-based algorithm
+	ModBivarFFT,  // 4: bivariate FFT-based CRT-based algorithm
+	OldDUCOS,     // 5: Docus's first implementation
+} SubresultantChainMode;
+
+/**
+ * Choose the best subresultant chain algorithm for P and Q 
+ * and return the SubresultantChainMode mode. 
+ * @note this is a sub-routine for SubresultantChainWrapperZ_rev
+ */
+SubresultantChainMode ChooseTheBestSubresultantChainModeZ (AltArrZ_t* P, AltArrZ_t* Q);
+
+/**
+ * The wrapper function for subresultant chain algorithms (see SubresultantChainMode) 
+ * @param mode is a SubresultantChainMode mode 
+ * @param P a SMZP polynomial 
+ * @param Q a SMZP polynomial 
+ * @param SC the returned subresultant chain 
+ * @param len the returned size of SC
+ * @note if mode = AUTO, ChooseTheBestSubresultantChainModeZ will decide witch algortihm must call
+ * @note if mode != AUTO, the user must take care of corner cases...
+ * @note to get more information see ./developers/Ali/SUBRES/doc/benchmarks-2020/ 
+ */
+SubresultantChainMode SubresultantChainWrapperZ_rev (SubresultantChainMode mode, AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, int* len);
+
+/**
+ * Subresultant chain algorithm 
+ * returns the chain in an increasing order w.r.t. mdeg(P)
+ * @note it calls SubresultantChainWrapperZ_rev
+ */
+void SubresultantChainZ (SubresultantChainMode mode, AltArrZ_t* P, AltArrZ_t* Q, AltArrsZ_t** SC, int* len); 
+
+/**
+ * Speculative Subresultant Object Type 
+ *
+ * @param types [5] [0: sr_mode, 1: idx, 2: gsize, 3: usize, 4: bsize]
+ * @param sr_mode result mode 0: entire polynomial -- 1: only mainleadingCoefficient 
+ * @param idx index of the last call 
+ * @param gsize size of mspecInfo for polynomials with arbitrary no. vars 
+ * @param usize size of uspecInfo for univariate polynomials 
+ * @param bsize size of bspecInfo for bivariate polynomials 
+ * @param gspecInfo information required to compute the rest of subresutlants and principle coefficients efficiently (general case)
+ * @param uspecInfo information required to compute the rest of subresutlants and principle coefficients efficiently (univariate polys.)
+ * @param mspecInfo information required to compute the rest of subresutlants and principle coefficients efficiently (bivariate polys.)
+*/
+typedef struct {
+	int types[5]; // [0: sr_mode, 1: idx, 2: gsize, 3: usize, 4: bsize] 
+	AltArrsZ_t *gspecInfo;
+	specAQR_spX_t **uspecInfo;
+	specAQR_spXY_t **bspecInfo;
+} specSRC_AAZ;
+
+/**
+ * Polynomial Pair struct 
+ * @param poly AAZ polynomial
+ * @param d poly's main degree 
+ */ 
+typedef struct {
+	AltArrZ_t *poly;
+	degree_t d; 
+} PolyPairZ_t;
+
+/**
+ * Create a polynomial pair PolyPairZ_t 
+ */ 
+static inline PolyPairZ_t * createPolyPair_AAZ (AltArrZ_t *poly, degree_t mdeg) 
+{
+	PolyPairZ_t *a = (PolyPairZ_t *) malloc (sizeof (PolyPairZ_t));
+	a->poly = deepCopyPolynomial_AAZ (poly);
+	a->d = mdeg;
+	return a;
+}
+
+/**
+ * Create a polynomial pair PolyPairZ_t in-place
+ */ 
+static inline PolyPairZ_t * createPolyPair_AAZ_inp (AltArrZ_t *poly, degree_t mdeg) 
+{
+	PolyPairZ_t *a = (PolyPairZ_t *) malloc (sizeof (PolyPairZ_t));
+	a->poly = poly;
+	a->d = mdeg;
+	return a;
+}
+
+/**
+ * Free PolyPairZ_t 
+ */
+static inline void freePolyPair_AAZ (PolyPairZ_t *a)
+{
+	if (a == NULL) { return; }
+	if (a->poly != NULL) {
+		freePolynomial_AAZ (a->poly);
+	}
+	free (a);
+}
+
+/**
+ * Free specSRC_AAZ 
+ */
+static inline void freeSpecSRC_AAZ (specSRC_AAZ *srcType) {
+	if (srcType == NULL) { return; }
+	if (srcType->gspecInfo != NULL) {
+		AltArrsZ_t *cur = srcType->gspecInfo;
+		while (cur != NULL) {
+			freePolynomial_AAZ (cur->poly);
+			cur = cur->next;
+		}
+	}
+	if (srcType->uspecInfo != NULL && srcType->types[3]) {
+		for (int i = 0; i < srcType->types[3]; ++i) {
+			freeSpecA_spX (srcType->uspecInfo[i]->A);
+			freeSpecQ_spX (srcType->uspecInfo[i]->Q);
+			freeSpecR_spX (srcType->uspecInfo[i]->R);
+		}
+		free (srcType->uspecInfo);
+	}
+	if (srcType->bspecInfo != NULL && srcType->types[4]) {
+		for (int i = 0; i < srcType->types[4]; ++i) {
+			freeSpecA_spXY (srcType->bspecInfo[i]->An);
+			freeSpecQ_spXY (srcType->bspecInfo[i]->Qn);
+			freeSpecR_spXY (srcType->bspecInfo[i]->Rn);
+		}
+		free (srcType->bspecInfo);
+	}
+	free (srcType);
+}
+
+/**
+ * Computing Subresultants at Idx and Idx+1
+ * 
+ * @param mode SubresultantChainMode (must be AUTO if you are not testing)
+ * @param P SMZP polynomial 
+ * @param Q SMZP polynomial 
+ * @param idx index of returned subresultant sr_idx1 : mdeg(sr_idx1) > idx // sr_idx : mdeg(SC_idx) <= idx
+ * @param srcType a specSRC_AAZ (must be NULL for the first call)
+ */
+void SubresultantChainAtIdxZ (SubresultantChainMode mode, AltArrZ_t* P, AltArrZ_t* Q, int idx, 
+							AltArrZ_t **sr_idx, AltArrZ_t **sr_idx1, specSRC_AAZ **srcType);
+
+/**
+ * Computing Init of subresultants at Idx and Idx+1
+ *  
+ * @param mode SubresultantChainMode (must be AUTO if you are not testing)
+ * @param P SMZP polynomial 
+ * @param Q SMZP polynomial 
+ * @param idx index of returned subresultant sr_idx1 : mdeg(sr_idx1) > idx // sr_idx : mdeg(SC_idx) <= idx
+ * @param srcType a specSRC_AAZ (must be NULL for the first call)
+ * 
+ * @note check srcType->mdegs for the degrees of the associated subresultants
+ */
+void SubresultantInitAtIdxZ (SubresultantChainMode mode, AltArrZ_t* P, AltArrZ_t* Q, int idx, 
+								PolyPairZ_t **s_idx, PolyPairZ_t **s_idx1, specSRC_AAZ **srcType);
 
 
 ///////////////////////////////
-// Extended Subresultant Chain 
+// Extended Subresultant Chain
 ///////////////////////////////
 
 /**
@@ -458,14 +623,14 @@ AltArrZ_t* semiLazardOpt_AAZ  (AltArrZ_t* Sd, AltArrZ_t* Sdm, AltArrZ_t* s);
 AltArrZ_t* exLazardOpt_AAZ (AltArrZ_t* Sd, exgcdsZ_t* VSdm, AltArrZ_t* s, AltArrZ_t** hc, AltArrZ_t** qc);
 
 /**
- * Extended Ducos Optimization  
+ * Extended Ducos Optimization
  * Input A, VSdm(= [Sdm, VSdm->a, VSdm->b]), Se, sd
- * Output Sem, and return by reference hc and qc. 
+ * Output Sem, and return by reference hc and qc.
 */
 AltArrZ_t* exDucosOpt_AAZ (exgcdsZ_t* VSd, exgcdsZ_t* VSdm, AltArrZ_t* Se, AltArrZ_t* sd, AltArrZ_t** hb, AltArrZ_t** qb);
 
 /**
- * Extended Ducos SubresultantChain  
+ * Extended Ducos SubresultantChain
  * given two polynomials P and Q, this algorithm computes the resultantchain
  * with all partial Bezout Coefficients and store them on linked-list, exgcdsZ_t.
  * SC is the resultantchain and len is the size.
@@ -490,7 +655,7 @@ AltArrZ_t* exDucosResultant_AAZ (AltArrZ_t* P, AltArrZ_t* Q, AltArrZ_t** a, AltA
  * T is a zero-dimensional triangular set.
  * This algorithm returns (r, q) s.t. q is invertible module <T>,
  * qp = r mod <T>, and r is normalized w.r.t T.
- * r is normalized w.r.t T if and only if r \in Q or 
+ * r is normalized w.r.t T if and only if r \in Q or
  * mvar(r) not \in mvar(T) and init(r) is normalized w.r.t <T>
  */
 AltArrZ_t* normalizePolynomial_AAZ (AltArrZ_t* P, AltArrZ_t** T, AltArrZ_t** A, int s, int nvar);
@@ -515,8 +680,8 @@ AltArrZ_t* gcd_AAZ_Z (AltArrZ_t* P, mpz_t c);
 
 /**
  * GCD of two polynomials
- * given two polynomials P and Q with the same main variable, 
- * this algorithm computes the gcd of them w.r.t the main 
+ * given two polynomials P and Q with the same main variable,
+ * this algorithm computes the gcd of them w.r.t the main
  * variable and return a polynomial.
 */
 AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q);
@@ -526,7 +691,7 @@ AltArrZ_t* gcd_AAZ (AltArrZ_t* P, AltArrZ_t* Q);
  * given a polynomial, P, this algorithm computes the primitive part
  * and the content of P w.r.t the main variable.
 */
-AltArrZ_t* mainPrimitiveFactorization_AAZ (AltArrZ_t* P, AltArrZ_t** cont);
+AltArrZ_t* mainPrimitiveFactorization_AAZ (const AltArrZ_t* P, AltArrZ_t** cont);
 
 /**
  * Primitive Part w.r.t the main variable
@@ -543,9 +708,9 @@ AltArrZ_t* mainPrimitivePart_AAZ (AltArrZ_t* P, int mvar);
 */
 AltArrZ_t* mainContent_AAZ (AltArrZ_t* P);
 
-    
+
 /******************
- * Square Free 
+ * Square Free
  *****************/
 
 /**
@@ -554,12 +719,12 @@ AltArrZ_t* mainContent_AAZ (AltArrZ_t* P);
 AltArrZ_t* squareFreePart_AAZ (AltArrZ_t* aa, int nvar);
 
 
-/** 
+/**
  * Compute the square free factorization of aa.
  * The factorization is returned in two parts, u is the content of aa
  * and facts is a list of the factors such that facts[i] is a primitive square free factor
  * of aa with exponent exps[i].
- * If facts_p points to NULL then an array of factors is allocated, otherwise, it 
+ * If facts_p points to NULL then an array of factors is allocated, otherwise, it
  * is assumed to be a pre-allocated array with size *nfacts; the same is true for exps_p.
  *
  * @note the exponents returned may not be unique since partial and trivial factorizations are
@@ -567,21 +732,65 @@ AltArrZ_t* squareFreePart_AAZ (AltArrZ_t* aa, int nvar);
  *
  * @param aa the polynomial to factorization
  * @param[out] u the "content" of aa
- * @param[out] facts_p a pointer in which the array of factors is returned. 
+ * @param[out] facts_p a pointer in which the array of factors is returned.
  * @param[out] exps_p a pointer in which the array of exponents is returned.
- * @param[in,out] nfacts a pointer in which the number of factors/exponents is returned, 
+ * @param[in,out] nfacts a pointer in which the number of factors/exponents is returned,
  *                on entry if *facts_p or *exps_p is not NULL, *nfacts is the size of the pre-allocated array.
  *
  */
 void squareFree_AAZ(const AltArrZ_t* aa, mpz_t u, AltArrZ_t*** facts_p, degree_t** exps_p, int* nfacts);
 
 
-void biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subres, int* chain_size);
+/*******************************
+ * CRT-based SubresultantChain
+*******************************/
+/**
+ * Bivariate Modular Subresultant Chain computation 
+ * 
+ * @param a SMZP polynomial 
+ * @param b SMZP polynomial
+ * @param Subres return a linked-list of subresultants in Subres
+ * @param chain_size return size of Subres 
+ * @param no_prime return the number of primes used in CRT  
+ */
+int biModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subres, int* chain_size, int* no_prime);
+int biModularFFTSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subres, int* chain_size, int* no_prime);
+int biModularFFT4SubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, AltArrsZ_t** Subres, int* chain_size, int* no_prime);
+
+/**
+ * Bivariate Modular Subresultant Chain using Half-GCD 
+ * 
+ * @param a SMZP polynomial 
+ * @param b SMZP polynomial 
+ * @param kk index of the returned subresutlant 
+ * @param ksubres return a linked-list of speculative subresultants 
+ * @param chain_size return size of ksubres
+ */
+int hgcdBiModularSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, int kk, AltArrsZ_t** ksubres, int* chain_size);
+int hgcdBiModularFFTSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, int kk, AltArrsZ_t** ksubres, int* chain_size);
+int hgcdBiModularFFT4SubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, int kk, AltArrsZ_t** ksubres, int* chain_size);
+
+/**
+ * Bivariate Lazy Modular Subresultant Chain using Half-GCD  
+ * 
+ * @param a SMZP polynomial 
+ * @param b SMZP polynomial 
+ * @param kk index of the returned subresutlant 
+ * @param ksubres return a linked-list of speculative subresultants 
+ * @param chain_size return size of ksubres
+ * @param mdegs [2] return main degrees of returned speculative subresultants 
+ * @param bspecInfoArray used to store lazy information to compute other subresultants 
+ * @param info_size size of bspecInfoArray 
+ * @param results_mode 0: return entire speculative subresultants in ksubres, 
+ * 					1: return only mainLeaadingCoefficient of speculative subresultants in ksubres 
+ */
+int regularGCDBiModularFFTSubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, int kk, AltArrsZ_t** ksubres, int* chain_size, 
+											polysize_t *mdegs, specAQRArray_spXY_t **bspecInfoArray, int *info_size, int results_mode);
+int regularGCDBiModularFFT4SubresultantChainZ (AltArrZ_t* a, AltArrZ_t* b, int kk, AltArrsZ_t** ksubres, int* chain_size, 
+											polysize_t *mdegs, specAQRArray_spXY_t **bspecInfoArray, int *info_size, int results_mode);
 
 #ifdef __cplusplus
 }
 #endif
 
-
 #endif
-

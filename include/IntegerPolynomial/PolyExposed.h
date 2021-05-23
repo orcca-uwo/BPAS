@@ -12,7 +12,7 @@
 #include "Multiplication/Multiplication.h"
 #include "Poly.h"
 
-class DensedUnivariateIntegerPolynomial : public BPASUnivariatePolynomial{
+class DensedUnivariateIntegerPolynomial {
 	private:
 
 		UnivariateIntegerPolynomial p;
@@ -70,6 +70,15 @@ class DensedUnivariateIntegerPolynomial : public BPASUnivariatePolynomial{
 		DensedUnivariateIntegerPolynomial(int s){
 			p = UnivariateIntegerPolynomial(s);
 		}
+
+		/**
+ 		 * Polynomial construction. 
+		 * Instantiate this polynomial by copying the input DUZP_t C struct.
+		 */
+		DensedUnivariateIntegerPolynomial(DUZP_t* duzp) {
+			p = UnivariateIntegerPolynomial(duzp);
+		}
+	
 
 		/**
 		 * Polynomial Constructor.
@@ -366,7 +375,6 @@ class DensedUnivariateIntegerPolynomial : public BPASUnivariatePolynomial{
 		        for(int i = 1; i < b.size(); ++i)
 		                out << " + " << b.coefficient(i) << v << "^" << i;
 			out << "\n";
-			out << "FINITO\n";
 		}
 
 		/**
@@ -516,4 +524,9 @@ class DensedUnivariateIntegerPolynomial : public BPASUnivariatePolynomial{
 				throw std::runtime_error("b is too small\n");
 			return p.getBigIntegerSigned(b);
 		}
+
+		inline DUZP_t* convertToDUZP() {
+			return p.convertToDUZP();
+		}
+
 };

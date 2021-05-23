@@ -1,59 +1,63 @@
-// -*- C++ -*- 
+// -*- C++ -*-
 // general_routine.cilk
 //@author Yuzhen Xie
 
+#include "../../../include/global.h"
+
 #include "../../../include/FFT/src/general_routine.h"
+
 #include "malloc.h"
+#include <string.h>
 namespace PBPAS {
 
   /**-----------------------------------------------------------
    * EX_Mont_GetNthRoots_OPT2_AS_GENE:
-   * @e: 
+   * @e:
    * @n: equals 2^e and divides p-1
    * @rootsPtr: (output) an array of size n which contains the powers of the primitive root
    * @pPtr: prime number structire for the prime number p
-   * 
+   *
    *  Use the special code (for p-1 is a power of 2) if applicable
    *  otherwise use the generic code.
-   * 
+   *
    * Return value: returns `rootsPtr`
    **/
-  void EX_Mont_GetNthRoots_OPT2_AS_GENE(sfixn e, sfixn n, 
-					sfixn * rootsPtr, 
+  void EX_Mont_GetNthRoots_OPT2_AS_GENE(sfixn e, sfixn n,
+					sfixn * rootsPtr,
 					MONTP_OPT2_AS_GENE * pPtr)
   {//---------------------------------------------------------------
     if((pPtr->c_pow==0) || ((pPtr->c_pow+pPtr->Rpow)>=BASE) ){
       Mont_GetNthRoots_OPT2_AS_GENE(e, n, rootsPtr, pPtr);
     }
     else{
-      Mont_GetNthRoots_OPT2_AS_GENE_SPE(e, n, rootsPtr, pPtr); 
+      Mont_GetNthRoots_OPT2_AS_GENE_SPE(e, n, rootsPtr, pPtr);
     }
   }
   //======================================================================
-  // get the n-th root of unity. 
+  // get the n-th root of unity.
   //======================================================================
-  
+
   // type: local.
   // note: good for all machine word Fourier Prime.
   /**
    * Mont_GetNthRoots_OPT2_AS_GENE:
-   * @e: 
+   * @e:
    * @n: equals 2^e and divides p-1
    * @rootsPtr: (output) an array of size n which contains the powers of the primitive root
    * @pPtr: prime number structire for the prime number p
-   *  
+   *
    * Return value: in place of `rootsPtr`
    **/
-  void Mont_GetNthRoots_OPT2_AS_GENE(sfixn e, sfixn n, sfixn * rootsPtr, 
+  void Mont_GetNthRoots_OPT2_AS_GENE(sfixn e, sfixn n, sfixn * rootsPtr,
 				     MONTP_OPT2_AS_GENE * pPtr)
   {//--------------------------------------------------------------------
-   //std::cout<<"Mont_GetNthRoots_OPT2_AS_GENE\n"; 
+   //std::cout<<"Mont_GetNthRoots_OPT2_AS_GENE\n";
    register int j;
     sfixn root, rootR, R=(1L<<pPtr->Rpow)%pPtr->P, R_2=MulMod(R, R, pPtr->P), BRsft=pPtr->Base_Rpow;
     //std::cout<<"R_2: "<<R_2<<"\n";
     //std::cout<<"BRsft: "<<BRsft<<"\n";
     // printf("The input FFT-N:%ld, this p:%ld can handle at most: %ld. !!!\n\n\n\n",n,pPtr->P, (1L<<pPtr->Npow));
-    
+
     //root=EX_GetPrimitiveNthRoot(e, n, pPtr->P);
     root=PowerMod(pPtr->Max_Root, 1L<<((pPtr->Npow)-e), pPtr->P);
     //std::cout<<"root: "<<root<<"\n";
@@ -61,7 +65,7 @@ namespace PBPAS {
     rootsPtr[0]=R<<BRsft;
     rootsPtr[1]=rootR;
     //std::cout<<"rootR: "<<rootR<<"\n";
-    for(j=2; j<n; j++) { //data dependence 
+    for(j=2; j<n; j++) { //data dependence
       rootsPtr[j] = MontMulMod_OPT2_AS_GENE(rootsPtr[j-1], rootR<<BRsft, pPtr);
       rootsPtr[j-1] <<= BRsft;
     }
@@ -70,16 +74,16 @@ namespace PBPAS {
 
   /**
    * Mont_GetNthRoots_OPT2_AS_GENE_SPE:
-   * @e: 
+   * @e:
    * @n: equals 2^e and divides p-1
    * @rootsPtr: (output) an array of size n which contains the powers of the primitive root
    * @pPtr: prime number structure for the prime number p
-   * 
+   *
    *  Assume p is p=N-1, where N is a power of 2.
    *
    * Return value: returns `rootsPtr`
    **/
-  void Mont_GetNthRoots_OPT2_AS_GENE_SPE(sfixn e, sfixn n, sfixn * rootsPtr, 
+  void Mont_GetNthRoots_OPT2_AS_GENE_SPE(sfixn e, sfixn n, sfixn * rootsPtr,
 					 MONTP_OPT2_AS_GENE * pPtr)
   {//-------------------------------------------------------------------------
     //std::cout<<"Mont_GetNthRoots_OPT2_AS_GENE_SPE\n";
@@ -101,23 +105,23 @@ namespace PBPAS {
     }
     rootsPtr[n-1]<<=BRsft;
   }
-  
+
   /**
    * EX_Mont_PairwiseMul_OPT2_AS:
    * @n: the FFT size
    * @APtr: coefficient vector of polynomial A
    * @BPtr: coefficient vector of polynomial B
    * @p: prime number
-   * 
+   *
    * Pairwise multiplicaiton. Exported. No worries about the big R.
-   * 
-   * Return value: 
-   **/    
+   *
+   * Return value:
+   **/
   void EX_Mont_PairwiseMul_OPT2_AS(sfixn n, sfixn * APtr, sfixn * BPtr, sfixn p)
   {//------------------------------------------------------------------------
     //register int i;
     //#pragma cilk_grainsize = 2*n/__cilkrts_get_nworkers(); //8192; //need tune
-    cilk_for (sfixn i=0; i<n; i++) 
+    cilk_for (sfixn i=0; i<n; i++)
       APtr[i] = MulMod(APtr[i], BPtr[i], p); //?why not MontMulMod_OPT2_AS_GENE
   }
 
@@ -127,16 +131,16 @@ namespace PBPAS {
    * @APtr: coefficient vector of polynomial A
    * @BPtr: coefficient vector of polynomial B
    * @pPtr: prime number structure
-   * 
-   * Pairwise multiplicaiton. Big R issue *NOT* handled. 
+   *
+   * Pairwise multiplicaiton. Big R issue *NOT* handled.
    * This function is for expert usage only.
-   * 
-   * Return value: 
-   **/    
-  void EX_Mont_PairwiseMul_OPT2_AS_R(sfixn n, sfixn * APtr, sfixn * BPtr, 
+   *
+   * Return value:
+   **/
+  void EX_Mont_PairwiseMul_OPT2_AS_R(sfixn n, sfixn * APtr, sfixn * BPtr,
 				     MONTP_OPT2_AS_GENE * pPtr)
   {//---------------------------------------------------------------------
-     
+
     if((pPtr->c_pow==0) || ((pPtr->c_pow+pPtr->Rpow)>=BASE) ){
       PBPAS::Mont_PairwiseMul_OPT2_AS_R(n, APtr, BPtr, pPtr);
     }
@@ -147,34 +151,34 @@ namespace PBPAS {
 
   //======================================================================
   // pairwise mul
-  //====================================================================== 
-  void Mont_PairwiseMul_OPT2_AS_R(sfixn n, sfixn * APtr, sfixn * BPtr, 
+  //======================================================================
+  void Mont_PairwiseMul_OPT2_AS_R(sfixn n, sfixn * APtr, sfixn * BPtr,
 				  MONTP_OPT2_AS_GENE * pPtr)
   {//------------------------------------------------------------
     //register int i;
     sfixn BRsft=pPtr->Base_Rpow;
-    cilk_for(sfixn i=0; i<n; i++) 
+    cilk_for(sfixn i=0; i<n; i++)
       APtr[i]=MontMulMod_OPT2_AS_GENE(APtr[i], BPtr[i]<<BRsft, pPtr);
 
   }
 
   //------------------------------
-  void Mont_PairwiseMul_OPT2_AS_SPE_R(sfixn n, sfixn * APtr, sfixn * BPtr, 
+  void Mont_PairwiseMul_OPT2_AS_SPE_R(sfixn n, sfixn * APtr, sfixn * BPtr,
 				      MONTP_OPT2_AS_GENE * pPtr)
   {//---------------------------------------------------------------
     //register int i;
     sfixn BRsft=pPtr->Base_Rpow;
-    cilk_for(int i=0; i<n; i++) 
+    cilk_for(int i=0; i<n; i++)
       APtr[i]=MontMulMod_OPT2_AS_GENE_SPE(APtr[i], BPtr[i]<<BRsft, pPtr);
   }
- 
+
   //Matteo's rectangular matrix transpose---------------
   //out-of-place transpose A[i0..i1][j0..j1] into B[j0..j1][i0..i1]
   //then copy back to A
   // n: size of A
   //row major layout
   void transpose(sfixn *A, sfixn lda, sfixn *B, sfixn ldb,
-		 sfixn i0, sfixn i1, sfixn j0, sfixn j1) 
+		 sfixn i0, sfixn i1, sfixn j0, sfixn j1)
   {//--------------------------------------------------------
     //const int THRESHOLD = 8; //cagnode18, cache size 4096 KB
     const int THRESHOLD = 16; //tune?
@@ -192,7 +196,7 @@ namespace PBPAS {
 	  j0 = jm; goto tail;
 	} else {
 	  for (int i = i0; i < i1; ++i)
-		for (int j = j0; j < j1; ++j) 
+		for (int j = j0; j < j1; ++j)
 		  B[j * ldb + i] = A[i * lda + j];
 	}
 	//cilk_for(int j = 0; j < n; j++) A[j] = B[j];
@@ -200,14 +204,14 @@ namespace PBPAS {
 
   /* Matteo: Traverse the trapezoidal space (i, j) where
    i0 <= i < i1
-   j0 + (i - i0) * dj0 <= j < j1 
+   j0 + (i - i0) * dj0 <= j < j1
  */
   //square matrix A in place transposition
   void sqtranspose(sfixn *A, sfixn lda,
 		   sfixn i0, sfixn i1,
 		   sfixn j0, sfixn dj0, sfixn j1 /*, int dj1 = 0 */)
   {//------------------------------------------------------------------
-    //const int THRESHOLD = 8; 
+    //const int THRESHOLD = 8;
     const int THRESHOLD = 16; //cagnode18, cache line size 64bytes
                               //L1 data 32 KB, L2 4096 KB
     //const int THRESHOLD = 17;
@@ -233,10 +237,10 @@ namespace PBPAS {
 	  }
 	}
   }
-  
+
   //Compute fast log base 2 ceiling of long int
   int ceil_log2_long(unsigned long long x)
-  {//-------------------------------------------    
+  {//-------------------------------------------
     static const unsigned long long t[6] = {
       0xFFFFFFFF00000000ull,
       0x00000000FFFF0000ull,
@@ -245,29 +249,29 @@ namespace PBPAS {
       0x000000000000000Cull,
       0x0000000000000002ull
     };
-    
+
     int y = (((x & (x - 1)) == 0) ? 0 : 1);
     int j = 32;
- 
+
     for (int i = 0; i < 6; i++) {
       int k = (((x & t[i]) == 0) ? 0 : j);
       y += k;
       x >>= k;
       j >>= 1;
     }
-    
+
     return y;
   }
- 
+
 
   //new DFT
   /*
    * n=2^r
    * W should be a RoosTable
    */
-  void general_DFT_iter(int n, int r, 
-		sfixn *A, 
-		sfixn *W, 
+  void general_DFT_iter(int n, int r,
+		sfixn *A,
+		sfixn *W,
 		MONTP_OPT2_AS_GENE *pPtr,sfixn *B)
   {//-------------------------------------
     /*
@@ -323,7 +327,7 @@ namespace PBPAS {
         A[k+7] = MontMulMod_OPT2_AS_GENE(A[k+7],*(Wp-3),pPtr);
         A[k+11] = MontMulMod_OPT2_AS_GENE(A[k+11],*(Wp-3),pPtr);
         A[k+15] = MontMulMod_OPT2_AS_GENE(A[k+15],*(Wp-3),pPtr);
-        
+
         AddSubSSEModInplace(A+k,A+k+2,prime_sse);
         AddSubSSEModInplace(A+k+4,A+k+6,prime_sse);
         AddSubSSEModInplace(A+k+8,A+k+10,prime_sse);
@@ -334,12 +338,12 @@ namespace PBPAS {
         A[k+13] = MontMulMod_OPT2_AS_GENE(A[k+13],*(Wp-11),pPtr);
         A[k+14] = MontMulMod_OPT2_AS_GENE(A[k+14],*(Wp-10),pPtr);
         A[k+15] = MontMulMod_OPT2_AS_GENE(A[k+15],*(Wp-9),pPtr);
-        
+
         AddSubSSEModInplace(A+k,A+k+4,prime_sse);
         AddSubSSEModInplace(A+k+2,A+k+6,prime_sse);
         AddSubSSEModInplace(A+k+8,A+k+12,prime_sse);
         AddSubSSEModInplace(A+k+10,A+k+14,prime_sse);
-        
+
         A[k+9] = MontMulMod_OPT2_AS_GENE(A[k+9],*(Wp-27),pPtr);
         A[k+10] = MontMulMod_OPT2_AS_GENE(A[k+10],*(Wp-26),pPtr);
         A[k+11] = MontMulMod_OPT2_AS_GENE(A[k+11],*(Wp-25),pPtr);
@@ -373,14 +377,14 @@ namespace PBPAS {
 			AddSubSSEModInplace(A+k+j+2,A+k+j+2+m2,prime_sse);
 			AddSubSSEModInplace(A+k+j+4,A+k+j+4+m2,prime_sse);
 			AddSubSSEModInplace(A+k+j+6,A+k+j+6+m2,prime_sse);
-		}	
+		}
       }
       Wp = Wp - (1L<<(i+1)); //Wp-2^(i+1)
     }
   }
-  void small_DFT_iter(int n, int r, 
-		sfixn *A, 
-		sfixn *W, 
+  void small_DFT_iter(int n, int r,
+		sfixn *A,
+		sfixn *W,
 		MONTP_OPT2_AS_GENE *pPtr,sfixn *B)
   {//-------------------------------------
     /*
@@ -417,14 +421,14 @@ namespace PBPAS {
 			A[k+j+m2] = MontMulMod_OPT2_AS_GENE(A[k+j+m2], Wp[j], pPtr);
 			A[k+j+1+m2] = MontMulMod_OPT2_AS_GENE(A[k+j+1+m2], Wp[j+1], pPtr);
 			AddSubSSEModInplace(A+k+j,A+k+j+m2,prime_sse);
-		}	
+		}
       }
       Wp = Wp - (1L<<(i+1)); //Wp-2^(i+1)
     }
   }
-  void DFT_eff(int n, int r, 
-	       sfixn *A, 
-	       sfixn *W, 
+  void DFT_eff(int n, int r,
+	       sfixn *A,
+	       sfixn *W,
 	       MONTP_OPT2_AS_GENE *pPtr,
 	       int H, int *RevBidMap,
 	       sfixn *B,sfixn whichprime)
@@ -435,7 +439,7 @@ namespace PBPAS {
       std::cout<<A[i]<<", ";
     std::cout<<std::endl;
     */
-    if (n==1) { //rm for H>1     
+    if (n==1) { //rm for H>1
       return;
     }
     if(whichprime ==1){
@@ -457,8 +461,8 @@ namespace PBPAS {
 	    if (n>H){
 	      DFT_rec(n,r,A,W,pPtr,H,RevBidMap,B);
 	    }
-	    else{   
-	      
+	    else{
+
 	      ArrayBitReversal(n,A,RevBidMap);
 	      /*
 	      std::cout<<"--DFT_eff, after ArrayBitReversal:" <<n<<"\n";
@@ -467,7 +471,7 @@ namespace PBPAS {
 	      std::cout<<std::endl;
 	      */
 	      if (n>=16){
-		      general_DFT_iter(n,r,A,W,pPtr,B);      
+		      general_DFT_iter(n,r,A,W,pPtr,B);
 		}
 		else
 			small_DFT_iter(n,r,A,W,pPtr,B);
@@ -478,9 +482,9 @@ namespace PBPAS {
   /*
    * n=2^r
    */
-  void DFT_rec(int n, int r, 
-	       sfixn *A, 
-	       sfixn *W, 
+  void DFT_rec(int n, int r,
+	       sfixn *A,
+	       sfixn *W,
 	       MONTP_OPT2_AS_GENE *pPtr,
 	       int H, int *RevBidMap,
 	       sfixn *B)
@@ -492,7 +496,7 @@ namespace PBPAS {
 	std::cout<<A[i]<<", ";
       std::cout<<std::endl;
     */
-    if (n==1) {    
+    if (n==1) {
       return;
     }
     else if(n<=H){
@@ -503,7 +507,7 @@ namespace PBPAS {
     }
     int n2 = n>>1; //n/2
     int r1 = r-1;
-    
+
     //shuffling data
     Shuffle(n, A, B);
 
@@ -514,7 +518,7 @@ namespace PBPAS {
     std::cout<<std::endl;
     */
 
-    sfixn *W2 = W+n; 
+    sfixn *W2 = W+n;
     DFT_rec(n2, r1, A,    W2, pPtr, H, RevBidMap, B);
     DFT_rec(n2, r1, A+n2, W2, pPtr, H, RevBidMap, B);
 
@@ -575,7 +579,7 @@ namespace PBPAS {
 	A[k+7-n2] = AddMod(t,u,pPtr->P);
 	A[k+7] = SubMod(t,u,pPtr->P);
 	#endif
-    }    
+    }
     //for (int k=0; k<n2; k++){
     //  //which w? tmpw=rootsPtr[partialBitRev(i,power)];
     //  sfixn t = A[k+n2];
@@ -583,9 +587,9 @@ namespace PBPAS {
     //  //sfixn t = MontMulMod_OPT2_AS_GENE(v, W[k], pPtr);
     //  A[k] = AddMod(u, t, pPtr->P);
     //  A[k+n2] = SubMod(u, t, pPtr->P);
-    //}    
+    //}
   }
-  
+
   /*
    * size of B is n/2
    */
@@ -601,19 +605,19 @@ namespace PBPAS {
     //test allocate B locally???
     int n2 = n>>1;
     //shuffling data
-    
+
     for (int i=0; i<n2; i++){
       int i2 = i<<1; //2i
       A[i] = A[i2];
-      B[i] = A[i2+1];	
+      B[i] = A[i2+1];
     }
-    sfixn *A2 = A + n2;      
-    memcpy(A2, B, n2*(sizeof(sfixn)));   
+    sfixn *A2 = A + n2;
+    memcpy(A2, B, n2*(sizeof(sfixn)));
   }
 
-  void ArrayBitReversal(int n, sfixn *A, 
+  void ArrayBitReversal(int n, sfixn *A,
 			int *RevBidMap)
-  {//------------------------------------- 
+  {//-------------------------------------
     /*
     std::cout<<"--ArrayBitReversal, n, A in: "<<n<<std::endl;
     for(int i=0; i<n; ++i)
@@ -642,9 +646,9 @@ namespace PBPAS {
    * n=2^r
    */
 
-  void safe_DFT_iter(int n, int r, 
-		sfixn *A, 
-		sfixn *W, 
+  void safe_DFT_iter(int n, int r,
+		sfixn *A,
+		sfixn *W,
 		MONTP_OPT2_AS_GENE *pPtr,sfixn *B)
   {//-------------------------------------
     /*
@@ -681,14 +685,14 @@ namespace PBPAS {
 			A[k+j+m2] = MontMulMod_OPT2_AS_GENE(A[k+j+m2], Wp[j], pPtr);
 			A[k+j+1+m2] = MontMulMod_OPT2_AS_GENE(A[k+j+1+m2], Wp[j+1], pPtr);
 			AddSubSSEModInplace(A+k+j,A+k+j+m2,prime_sse);
-		}	
+		}
       }
       Wp = Wp - (1L<<(i+1)); //Wp-2^(i+1)
     }
   }
-  void DFT_iter(int n, int r, 
-		sfixn *A, 
-		sfixn *W, 
+  void DFT_iter(int n, int r,
+		sfixn *A,
+		sfixn *W,
 		MONTP_OPT2_AS_GENE *pPtr,
 		sfixn *B)
   {//-------------------------------------
@@ -702,7 +706,7 @@ namespace PBPAS {
     const sfixn prime_sse[2]__attribute__((aligned(16))) = {pPtr->P,pPtr->P};
     const unsigned char shuffle_array[16]__attribute__((aligned(16))) = {4,5,6,7,4,5,6,7,12,13,14,15,12,13,14,15};
     sfixn *Wp = W+(n<<1)-4; //W+n*2-4, point to the two elements at the last row
-    
+
     for(int k=0;k<n;k+=16){
 	#if ASM
 	AddSubSSEMod(u,u+2,A+k,A+k+2,prime_sse);
@@ -763,7 +767,7 @@ namespace PBPAS {
         A[k+11] = MontMulMod_OPT2_AS_GENE(A[k+11],*(Wp-3),pPtr);
         A[k+15] = MontMulMod_OPT2_AS_GENE(A[k+15],*(Wp-3),pPtr);
 	#endif
-        
+
         AddSubSSEModInplace(A+k,A+k+2,prime_sse);
         AddSubSSEModInplace(A+k+4,A+k+6,prime_sse);
         AddSubSSEModInplace(A+k+8,A+k+10,prime_sse);
@@ -774,12 +778,12 @@ namespace PBPAS {
         A[k+13] = MontMulMod_OPT2_AS_GENE(A[k+13],*(Wp-11),pPtr);
         A[k+14] = MontMulMod_OPT2_AS_GENE(A[k+14],*(Wp-10),pPtr);
         A[k+15] = MontMulMod_OPT2_AS_GENE(A[k+15],*(Wp-9),pPtr);
-        
+
         AddSubSSEModInplace(A+k,A+k+4,prime_sse);
         AddSubSSEModInplace(A+k+2,A+k+6,prime_sse);
         AddSubSSEModInplace(A+k+8,A+k+12,prime_sse);
         AddSubSSEModInplace(A+k+10,A+k+14,prime_sse);
-        
+
         A[k+9] = MontMulMod_OPT2_AS_GENE(A[k+9],*(Wp-27),pPtr);
         A[k+10] = MontMulMod_OPT2_AS_GENE(A[k+10],*(Wp-26),pPtr);
         A[k+11] = MontMulMod_OPT2_AS_GENE(A[k+11],*(Wp-25),pPtr);
@@ -969,7 +973,7 @@ namespace PBPAS {
         		AddSubSSEModInplace(A+k+j+12,A+k+j+m2+12,prime_sse);
         		AddSubSSEModInplace(A+k+j+14,A+k+j+m2+14,prime_sse);
         		#endif
-        	}	
+        	}
       }
       Wp = Wp - (1L<<(i+1)); //Wp-2^(i+1)
     }
@@ -982,12 +986,12 @@ namespace PBPAS {
       *n ^= bit;
     } while( (*n & bit) == 0 && bit != 1 );
   }
-  
+
   /*
    * #A = max
-   *A In: 
-   * 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
-   *A Out: 
+   *A In:
+   * 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+   *A Out:
    * 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15
    */
   void RevBitInd(int max, int *A)
@@ -1007,7 +1011,7 @@ namespace PBPAS {
       }
     }
   }
-   
+
   /*
    *n = 2^r
    *e.g. n = 16, contents of rootsTable:
@@ -1016,18 +1020,18 @@ namespace PBPAS {
    * 1, w^4, w^8, w^12
    * 1, w^8
    */
-  void RootsTable(int n, int r, 
+  void RootsTable(int n, int r,
 		  sfixn *T,
 		  MONTP_OPT2_AS_GENE *pPtr)
   {//---------------------------------------------------------------
-    
+
     PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(r, n, T, pPtr);
-    
+
     // std::cout<<"EX_Mont_GetNthRoots_OPT2_AS_GENE T Out: "<<std::endl;
     // for(int i=0; i<n; ++i)
     //   std::cout<<T[i]<<", ";
     // std::cout<<std::endl;
-    
+
     sfixn *T_ptr = T;
     int ni = n;
     for (int i=1; i<r; i++){
@@ -1040,7 +1044,7 @@ namespace PBPAS {
     }
   }
 
-  void RootsTableSpe(int n, int r, 
+  void RootsTableSpe(int n, int r,
 		  sfixn *T,MONTP_OPT2_AS_GENE *p,
 		  int m)
   {
@@ -1074,7 +1078,7 @@ namespace PBPAS {
     Ti[0] = T[0];
     int m=n;
     //int end=n;
-    int i=0; 
+    int i=0;
     sfixn *Ti_p = Ti;
     sfixn *T_p = T;
     while(m>=2){
@@ -1089,12 +1093,12 @@ namespace PBPAS {
     }
     //std::cout<<end<<"\n";
   }
-  
+
   /*
    *fft and inv of d dim (y)
    */
-  void RootsTable2(int n, int r, 
-		   sfixn *T, sfixn *Ti, 
+  void RootsTable2(int n, int r,
+		   sfixn *T, sfixn *Ti,
 		   MONTP_OPT2_AS_GENE *pPtr)
   {//----------------------------------------------
     RootsTable(n,r,T,pPtr);
@@ -1107,7 +1111,7 @@ namespace PBPAS {
    *scaling factors, roots tables fft and inv for K (x-dim)
    */
   void Weight_RootsTable2(int n, int r, int K,
-			  sfixn *Th, sfixn *T, sfixn *Ti, 
+			  sfixn *Th, sfixn *T, sfixn *Ti,
 			  MONTP_OPT2_AS_GENE *pPtr)
   {//--------------------------------------------------------
     PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(r, n, Th, pPtr);
@@ -1126,12 +1130,12 @@ namespace PBPAS {
 	T_ptr[j] = T[(j<<i)]; //j*2^i
       }
     }
-    
+
     InverseRootsTable(K,T,Ti);
   }
-  void InvDFT_eff_keepMontgomery(int n, int r, 
-		  sfixn *A, 
-		  sfixn *W, 
+  void InvDFT_eff_keepMontgomery(int n, int r,
+		  sfixn *A,
+		  sfixn *W,
 		  MONTP_OPT2_AS_GENE *pPtr,
 		  int H, int *RevBidMap,
 		  sfixn *B,sfixn invn,sfixn whichprime)
@@ -1163,9 +1167,9 @@ namespace PBPAS {
 		}
 	}
 }
-  void InvDFT_eff(int n, int r, 
-		  sfixn *A, 
-		  sfixn *W, 
+  void InvDFT_eff(int n, int r,
+		  sfixn *A,
+		  sfixn *W,
 		  MONTP_OPT2_AS_GENE *pPtr,
 		  int H, int *RevBidMap,
 		  sfixn *B,sfixn invn,sfixn whichprime)

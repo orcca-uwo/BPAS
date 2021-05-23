@@ -11,7 +11,7 @@ extern "C" {
 #include "gfpf_gmp_tools_decl.h"
 #include "gfpf_arithmetic_decl.h"
 #include "gfpf_six_step_fft_decl.h"
-#include "small_prime_field_fft_decl.h"
+#include "small_prime_field_fft.h"
 
 #ifdef __cplusplus
 } 

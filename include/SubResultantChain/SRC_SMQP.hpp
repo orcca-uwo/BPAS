@@ -18,10 +18,18 @@ class SubResultantChain<SMQP, SMQP> {
 private:
 
 	SMQP P, Q; //deg(p, var) > deg(q, var);
+
+	/* The following fields are mutable because what appears to be a
+	   read-only operation may actually cause things to be computed
+	   and subsequently cached. */
 	mutable std::vector<SMQP> chain;
 	mutable std::vector<bool> valid;
 	mutable std::vector<SMQP> chainCoefs;
 	mutable std::vector<bool> validCoefs;
+	mutable std::vector<int> chainDegs;
+
+	mutable specSRC_AAZ* lazyInfo = NULL; //a struct cacheing data for low-level algorithms.
+
 	Symbol var;
 
 	void fillChain() const;
@@ -66,6 +74,8 @@ public:
 		valid(a.valid),
 		chainCoefs(a.chainCoefs),
 		validCoefs(a.validCoefs),
+		chainDegs(a.chainDegs),
+		lazyInfo(a.lazyInfo),
 		var(a.var) {
 
 	}
@@ -82,8 +92,10 @@ public:
 		valid(std::move(a.valid)),
 		chainCoefs(std::move(a.chainCoefs)),
 		validCoefs(std::move(a.validCoefs)),
+		chainDegs(std::move(a.chainDegs)),
+		lazyInfo(a.lazyInfo),
 		var(std::move(a.var)) {
-
+		a.lazyInfo = NULL;
 	}
 
 	/**
@@ -104,7 +116,9 @@ public:
 		valid = a.valid;
 		chainCoefs = a.chainCoefs;
 		validCoefs = a.validCoefs;
+		chainDegs = a.chainDegs;
 		var = a.var;
+		lazyInfo = a.lazyInfo;
 		return *this;
 	}
 
@@ -120,6 +134,9 @@ public:
 		valid = std::move(a.valid);
 		chainCoefs = std::move(a.chainCoefs);
 		validCoefs = std::move(a.validCoefs);
+		chainDegs = std::move(a.chainDegs);
+		lazyInfo = a.lazyInfo;
+		a.lazyInfo = NULL;
 		var = std::move(a.var);
 		return *this;
 	}
@@ -153,7 +170,9 @@ public:
 	}
 
 	/**
-	 * Get the variable name.
+	 * Get the variable name with respect to which this subresultant chain is computed.
+	 * That is, the variable for which the input polynomials are viewed
+	 * as unviariate polynomials in.
 	 *
 	 **/
 	inline Symbol variableName() const {
@@ -161,7 +180,7 @@ public:
 	}
 
 	/**
-	 * Get the polynomials in the subresultant chain.
+	 * Get all the polynomials in the subresultant chain.
 	 *
 	 **/
 	std::vector<SMQP> polynomials() const;
@@ -172,10 +191,11 @@ public:
 	 *
 	 * @param i: index of the desired subresultant
 	 */
-	SMQP subResultantOfIndex(size_t i, bool lazy = 1) const;
+	SMQP subResultantOfIndex(size_t i) const;
 
 	/**
-	 * Return the first polynomial in the chain.
+	 * Return the first polynomial in the chain, the first polynomial
+	 * passed to the constructor of this object.
 	 *
 	 **/
 	inline SMQP firstPolynomial() const {
@@ -183,7 +203,8 @@ public:
 	}
 
 	/**
-	 * Return the second polynomial in the chain.
+	 * Return the second polynomial in the chain, the second polynomial
+	 * passed to the constructor of this object.
 	 *
 	 **/
 	inline SMQP secondPolynomial() const {
@@ -193,7 +214,7 @@ public:
 	/**
 	 * Get the resultant of the subresultant chain.
 	 * The lazy parameter indicates whether to compute only the subresultant and no other part
-	 * of he subresultant chain. This is useful if, in the future, one never needs any subresultants.
+	 * of the subresultant chain. This is useful if, in the future, one never needs any subresultants.
 	 *
 	 * @param lazy, if true compute the resultant in a lazy way.
 	 *
@@ -201,12 +222,25 @@ public:
 	SMQP resultant(bool lazy = 0) const;
 
 	/**
-	 * Select the leading coefficient of a subresultant given the index;
-	 * if no such polynomial exists, 0 is returned.
+	 * Select the principal subresultant coefficient of the given index;
+	 * the coefficient of degree i for the i'th subresultant.
 	 *
-	 * @param i: index of the leading coefficient of the desired subresultant
+	 * @param i: index of the subresultant
 	 **/
-	SMQP principleSubResultantCoefficientOfIndex(int i) const;
+	SMQP principalSubResultantCoefficientOfIndex(size_t i) const;
+
+	/**
+	 * Select the initial of the subresultant of the given index;
+	 * the leading coefficient of the subresultant viewed as a
+	 * univariate polynomial in v.
+	 *
+	 * @note: this is different than the principal subresultant coefficient;
+	 *        this method returns the actual leading coefficient,
+	 *        thus returning 0 iff the polynomial is identically 0.
+	 *
+	 * @param i: index of the subresultant
+	 */
+	SMQP subResultantInitialOfIndex(size_t i) const;
 
 	/**
 	 * Given an output stream, print the subresultant chain.

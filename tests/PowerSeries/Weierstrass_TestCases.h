@@ -59,6 +59,10 @@ void test21(int testDeg);
 
 void test22(int testDeg);
 
+void test23(int testDeg);
+
+void test24(int testDeg);
+
 #ifdef __cplusplus
 }
 #endif

@@ -445,6 +445,33 @@ std::vector<RecursivePoly> RegularChain<Field,RecursivePoly>::factorPolynomial(c
 	for (size_t i=0; i<facts.size(); ++i) {
 		factored.push_back(facts[i].first);
 	}
+
+	#ifdef REGULARCHAIN_DEBUG
+		std::cerr << "[FP] done factoring, got nfacts: " << facts.size() << std::endl;
+	#endif
+
+	// //Don't do this check once we trust factorization
+	// RecursivePoly check,temp;
+	// check = facts.ringElement();
+	// for (size_t j=0; j<facts.size(); ++j) {
+	// 	temp = facts.factor(j).first^facts.factor(j).second;
+	// 	check *= temp;
+	// }
+	// if (check != p) {
+	// 	std::cerr << "Regular Chain error, factorization is wrong." << std::endl;
+	// 	std::cerr << "check = " << check << std::endl;
+	// 	std::cerr << "p = " << p << std::endl;
+	// 	std::cerr << "ringElement = " << facts.ringElement() << std::endl;
+	// 	for (size_t m=0; m<facts.size(); ++m) {
+	// 		std::cerr << "factor[" << m <<  "] = [" << facts.factor(m).first << "," << facts.factor(m).second << "]" << std::endl;
+	// 	}
+	// 	printVariables(p.ringVariables(), "p ringVars");
+	// 	printVariables(check.ringVariables(), "check ringVars");
+	// 	exit(1);
+	// }
+	// #ifdef REGULARCHAIN_DEBUG
+	// 	std::cerr << "[FP] done factoring check." << std::endl;
+	// #endif
 	return factored;
 
 	// RegularChain<Field,RecursivePoly> lrc;
@@ -1999,7 +2026,8 @@ RecursivePoly RegularChain<Field,RecursivePoly>::reduceMinimalPrimitivePart(cons
 	RecursivePoly p;
 	p = reduceMinimal(p_in);
 	#ifdef REGULARCHAIN_DEBUG
-		std::cerr << "[RM] leaving reduceMinimalPrimitivePart: " << p_in << std::endl;
+		std::cerr << "[RM] leaving reduceMinimalPrimitivePart input: " << p_in << std::endl;
+		std::cerr << "[RM] leaving reduceMinimalPrimitivePart output: " << p << std::endl;
 	#endif
 
 	return p.mainPrimitivePart();
@@ -2017,7 +2045,8 @@ RecursivePoly RegularChain<Field,RecursivePoly>::reduceMinimalPrimitiveSquareFre
 	RecursivePoly p;
 	p = reduceMinimalPrimitivePart(p_in);
 	#ifdef REGULARCHAIN_DEBUG
-		std::cerr << "[RM] leaving reduceMinimalPrimitiveSquareFreePart: " << p_in << std::endl;
+		std::cerr << "[RM] leaving reduceMinimalPrimitiveSquareFreePart input: " << p_in << std::endl;
+		std::cerr << "[RM] leaving reduceMinimalPrimitiveSquareFreePart output: " << p << std::endl;
 	#endif
 
 	return p.squareFreePart();
@@ -2818,11 +2847,19 @@ std::vector<RegularChain<Field,RecursivePoly>> RegularChain<Field,RecursivePoly>
 		#else
 			RegularChain<Field,RecursivePoly>::removeRedundantChains(results,results2);
 
-			#if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
-			for (auto r : results) {
-				std::cerr << "Final Dimension: " << r.dimension() << std::endl;
+			// #if defined(RC_TRIANGULARIZE_TASKTREEDATA) && RC_TRIANGULARIZE_TASKTREEDATA
+			std::stringstream ss;
+			for (auto r : results2) {
+				int degProd = 1;
+				for (auto p : r.polynomials()) {
+					if (!p.isZero()) {
+						degProd *= p.mainDegree();
+					}
+				}
+				ss << " (" << r.dimension() << "," << degProd << ") ";
 			}
-			#endif
+			fprintf(stderr, "Component Info:%s\n", ss.str().c_str());
+			// #endif
 
 			return results2;
 //			return RegularChain<Field,RecursivePoly>::removeRedundantChains(results);
@@ -3559,6 +3596,11 @@ std::vector<PolyChainPair<RecursivePoly,RegularChain<Field,RecursivePoly>>> Regu
 		#ifdef REGULARCHAIN_PROFILING
 			startTimer(&rcProfilingStart);
 		#endif
+		#ifdef REGULARCHAIN_DEBUG
+			std::cerr << "[sqFPP][" << depth << "] computing SRC between q: " << q << std::endl;
+			std::cerr << "[sqFPP][" << depth << "] computing SRC and dq/dv: " << q.derivative(v) << std::endl;
+		#endif
+
 		SubResultantChain<RecursivePoly,RecursivePoly> src(q.derivative(v),q,v,this->allVariables());
 		#ifdef REGULARCHAIN_PROFILING
 			stopTimerAddElapsed(&rcProfilingStart,&subresultantChainTime);
@@ -3907,25 +3949,25 @@ std::vector<RecursivePoly> RegularChain<Field,RecursivePoly>::GCDFreeFactorizati
 		for (size_t i=0; i<facts.size(); ++i) {
 			results.emplace_back(facts.factor(i).first);
 		}
-		RecursivePoly check,temp;
-		check = facts.ringElement();
-		for (size_t j=0; j<facts.size(); ++j) {
-			temp = facts.factor(j).first^facts.factor(j).second;
-			check *= temp;
-		}
-		if (check != q) {
-			std::cerr << "BLAD error, factorization is wrong." << std::endl;
-			std::cerr << "check = " << check << std::endl;
-			std::cerr << "q = " << q << std::endl;
-			std::cerr << "ringElement = " << facts.ringElement() << std::endl;
-			for (size_t m=0; m<facts.size(); ++m) {
-				std::cerr << "factor[" << m <<  "] = [" << facts.factor(m).first << "," << facts.factor(m).second << "]" << std::endl;
-			}
-			printVariables(q.ringVariables(), "q ringVars");
-			printVariables(check.ringVariables(), "check ringVars");
-			fprintf(stderr, "\n\n\n\n\n\nOOOOOOOP\n" );
-			exit(1);
-		}
+		// RecursivePoly check,temp;
+		// check = facts.ringElement();
+		// for (size_t j=0; j<facts.size(); ++j) {
+		// 	temp = facts.factor(j).first^facts.factor(j).second;
+		// 	check *= temp;
+		// }
+		// if (check != q) {
+		// 	std::cerr << "BLAD error, factorization is wrong." << std::endl;
+		// 	std::cerr << "check = " << check << std::endl;
+		// 	std::cerr << "q = " << q << std::endl;
+		// 	std::cerr << "ringElement = " << facts.ringElement() << std::endl;
+		// 	for (size_t m=0; m<facts.size(); ++m) {
+		// 		std::cerr << "factor[" << m <<  "] = [" << facts.factor(m).first << "," << facts.factor(m).second << "]" << std::endl;
+		// 	}
+		// 	printVariables(q.ringVariables(), "q ringVars");
+		// 	printVariables(check.ringVariables(), "check ringVars");
+		// 	fprintf(stderr, "\n\n\nBAD FACTORIZATION\n" );
+		// 	exit(1);
+		// }
 //		else {
 //			std::cerr << "[GCDFreeFact] check = " << check << std::endl;
 //			std::cerr << "[GCDFreeFact] q = " << q << std::endl;
@@ -5912,7 +5954,7 @@ std::vector<PolyChainPair<RecursivePoly,RegularChain<Field,RecursivePoly>>> Regu
 	//	for (size_t i=0; i<regularizeResults.size(); ++i) {
 			RC_GEN_CONSUMER_GET_LOOPELEM(regSingleTasks, currRegSingleTask, i);
 			#ifdef REGULARCHAIN_DEBUG
-				std::cerr << "[regList] regularizeSingleTask[" << i << "] = " << currRegSingleTask << std::endl;
+				std::cerr << "[regList] regularizeSingleTask[] = " << currRegSingleTask << std::endl;
 			#endif
 			if (currRegSingleTask.poly.isZero()) {
 	//		if (regularizeResults[i].poly.isZero()) {
@@ -7649,18 +7691,33 @@ std::vector<PolyChainPair<RecursivePoly,RegularChain<Field,RecursivePoly>>> Regu
 //			results.emplace_back(PolyChainPair<RecursivePoly,RegularChain<Field,RecursivePoly>>(currTask.chain.reduce(f),currTask.chain));
 		}
 		else {
+			//Feb2/2021:Reworking "principal subres coef" vs "initial of subres".
+			//          We should use initial unless we know the RC is square free
+			//          Moreover, SRC object itself handles i >= d case.
+			if (currTask.chain.isSquareFree()) {
+				f = S.principalSubResultantCoefficientOfIndex(i);
+			} else {
+			// std::cerr << "[rGCD][" << regularGCDDepth << "][" << depth <<"] getting initial of index " << i << std::endl;
+				f = S.subResultantInitialOfIndex(i);
+			}
+			// std::cerr << "[rGCD][" << regularGCDDepth << "][" << depth <<"] for initial of index " << i << " " << f << std::endl;
+
+			f.setRingVariables(this->allVariables());
+
 			// this next line was "if (i<d) {" following the Maple code
 //			if (i<=d) {
-			if (i<d) {
-				f = S.principleSubResultantCoefficientOfIndex(i);
-				//Jan29/2020:We need to set vars right now because subresultants do not have their ambient space necessarily the same.
-				f.setRingVariables(this->allVariables());
-				// f = S.subResultantOfIndex(i).leadingCoefficientInVariable(v);
-				// f = RecursivePoly(S.subResultantOfIndex(i)).leadingCoefficientInVariable(v); // S.principleSubResultantCoefficientOfIndex(i)
-			}
-			else {
-				f = p.initial(); // initial should work here
-			}
+			// if (i<d) {
+			// 	// f = S.principalSubResultantCoefficientOfIndex(i);
+			// 	f = S.subResultantInitialOfIndex(i);
+			// 	//Jan29/2020:We need to set vars right now because subresultants do not have their ambient space necessarily the same.
+			// 	f.setRingVariables(this->allVariables());
+			// 	// f = S.subResultantOfIndex(i).leadingCoefficientInVariable(v);
+			// 	// f = RecursivePoly(S.subResultantOfIndex(i)).leadingCoefficientInVariable(v);
+			// 	// S.principlalubResultantCoefficientOfIndex(i)
+			// }
+			// else {
+			// 	f = p.initial(); // initial should work here
+			// }
 			#ifdef REGULARCHAIN_DEBUG
 				std::cerr << "[rGCD][" << regularGCDDepth << "][" << depth << "] C = " << currTask.chain << std::endl;
 				std::cerr << "[rGCD][" << regularGCDDepth << "][" << depth << "] f = " << f << std::endl;
@@ -7704,6 +7761,10 @@ std::vector<PolyChainPair<RecursivePoly,RegularChain<Field,RecursivePoly>>> Regu
 							std::cerr << "[rGCD][" << regularGCDDepth << "][" << depth << "] case: i<d, i = " << i << std::endl;
 						#endif
 						f = S.subResultantOfIndex(i); //Jan17/2020: reduction causes coefficients to explode.
+						#ifdef REGULARCHAIN_DEBUG
+						std::cerr << "[rGCD][" << regularGCDDepth << "][" << depth <<"] in reg trivial, i<d, got sub res " << f << std::endl;
+						#endif
+
 						f.setRingVariables(this->allVariables());
 						// f = regularComponents[j].chain.reduceMinimal(S.subResultantOfIndex(i));
 //						f = regularComponents[j].chain.reduce(S.subResultantOfIndex(i));
@@ -8004,13 +8065,33 @@ void RegularChain<Field,RecursivePoly>::removeRedundantChains(const std::vector<
 		#endif
 		std::vector<RegularChain<Field,RecursivePoly>> results1,results2;
 		lrcA = std::vector<RegularChain<Field,RecursivePoly>>(lrc.begin(),lrc.begin()+a);
+		lrcB = std::vector<RegularChain<Field,RecursivePoly>>(lrc.begin()+a,lrc.end());
+
+#if defined(RC_RRC_BY_CILK) && RC_RRC_BY_CILK
 		cilk_spawn
 		removeRedundantChains(lrcA,results1);
-		lrcB = std::vector<RegularChain<Field,RecursivePoly>>(lrc.begin()+a,lrc.end());
 		removeRedundantChains(lrcB,results2);
-//		removeRedundantChains(std::vector<RegularChain<Field,RecursivePoly>>(lrc.begin(),lrc.begin()+a),results1);
-//		removeRedundantChains(std::vector<RegularChain<Field,RecursivePoly>>(lrc.begin()+a,lrc.end()),results2);
 		cilk_sync;
+#elif !(defined(SERIAL) && SERIAL) && (defined(RC_RRC_PARALLEL) && RC_RRC_PARALLEL)
+		std::vector<ExecutorThreadPool::threadID> workers;
+		int nthreads = ExecutorThreadPool::getThreadPool().obtainThreads(1, workers);
+		if (nthreads > 0) {
+			std::function<void()> task = std::bind((&RegularChain<Field, RecursivePoly>::removeRedundantChains), std::ref(lrcA), std::ref(results1));
+			ExecutorThreadPool::getThreadPool().executeTask(workers[0], task);
+			removeRedundantChains(std::ref(lrcB),std::ref(results2));
+			ExecutorThreadPool::getThreadPool().waitForThreads(workers);
+			ExecutorThreadPool::getThreadPool().returnThreads(workers);
+		} else {
+			// cilk_spawn
+			removeRedundantChains(lrcA,results1);
+			removeRedundantChains(lrcB,results2);
+			// cilk_sync;
+		}
+#else
+		removeRedundantChains(lrcA,results1);
+		removeRedundantChains(lrcB,results2);
+#endif
+
 		results = mergeIrredundantLists(results1,results2);
 		#ifdef REGULARCHAIN_DEBUGII
 			std::cerr << "Returning to removeRedundantChains from recursive call: n = " << n << std::endl;
@@ -8125,8 +8206,11 @@ std::vector<RegularChain<Field,RecursivePoly>> oneSideCompare(const std::vector<
 	#endif
 
 	results.reserve(lrc1.size()+lrc2.size());
-	// for (size_t i=0; i<lrc1.size(); ++i) {
+#if defined(RC_RRC_BY_CILK) && RC_RRC_BY_CILK
 	cilk_for (size_t i=0; i<lrc1.size(); ++i) {
+#else
+	for (size_t i=0; i<lrc1.size(); ++i) {
+#endif
 		std::vector<RegularChain<Field,RecursivePoly>> rc1results;
 		rc1results.clear();
 		rc1results.emplace_back(lrc1[i]);
@@ -8161,8 +8245,48 @@ std::vector<RegularChain<Field,RecursivePoly>> oneSideCompare(const std::vector<
 }
 
 template <class Field, class RecursivePoly>
+void oneSideCompare_Task(const std::vector<RegularChain<Field,RecursivePoly>>& lrc1, const std::vector<RegularChain<Field, RecursivePoly>>& lrc2, int k1, int k2,
+	SynchronizedWriteVector<RegularChain<Field,RecursivePoly>>& results)
+{
+	#ifdef REGULARCHAIN_DEBUGII
+		std::cerr << "entering oneSideCompare(lrc1,lrc2)" << std::endl;
+		RegularChain<Field,RecursivePoly> rc;
+	#endif
+
+	for (size_t i=k1; i<k2; ++i) {
+		std::vector<RegularChain<Field,RecursivePoly>> rc1results;
+		rc1results.clear();
+		rc1results.emplace_back(lrc1[i]);
+		#ifdef REGULARCHAIN_DEBUGII
+			for (size_t k=0; k<rc1results.size(); ++k) {
+				rc = rc1results[k];
+				std::cerr << "rc1results[" << k << "] = " << rc << std::endl;
+			}
+		#endif
+		for (size_t j=0; j<lrc2.size(); ++j) {
+			#ifdef REGULARCHAIN_DEBUGII
+				std::cerr << "comparing rc1results and" << std::endl;
+				rc = lrc2[j];
+				std::cerr << "lrc2[" << j << "] = " << rc << std::endl;
+			#endif
+			rc1results = oneSideCompare(rc1results,lrc2[j]);
+		}
+		for (size_t j=0; j<rc1results.size(); ++j) {
+			results.push_back(rc1results[j]);
+		}
+//		results.insert(results.end(),rc1results.begin(),rc1results.end());
+		#ifdef REGULARCHAIN_DEBUGII
+			std::cerr << "end outer for loop in oneSideCompare(lrc1,lrc2)" << std::endl;
+			for (size_t k=0; k<results.size(); ++k) {
+				rc = results[k];
+				std::cerr << "results[" << k << "] = " << rc << std::endl;
+			}
+		#endif
+	}
+}
+
+template <class Field, class RecursivePoly>
 std::vector<RegularChain<Field,RecursivePoly>> mergeIrredundantLists(const std::vector<RegularChain<Field,RecursivePoly>>& lrc1, const std::vector<RegularChain<Field,RecursivePoly>>& lrc2) {
-	std::vector<RegularChain<Field,RecursivePoly>> result1,result2;
 
 	#ifdef REGULARCHAIN_DEBUGII
 		RegularChain<Field,RecursivePoly> rc;
@@ -8176,6 +8300,53 @@ std::vector<RegularChain<Field,RecursivePoly>> mergeIrredundantLists(const std::
 			std::cerr << "lrc2[" << i << "] = " << lrc2[i] << std::endl;
 		}
 	#endif
+
+#if !(defined(RC_RRC_BY_CILK) && RC_RRC_BY_CILK) && !(defined(SERIAL) && SERIAL) && (defined(RC_RRC_PARALLEL) && RC_RRC_PARALLEL)
+	SynchronizedWriteVector<RegularChain<Field,RecursivePoly>> results1, results2;
+
+	//do comparison of lrc1, lrc2
+	results1.reserve(lrc1.size() + lrc2.size());
+	std::vector<ExecutorThreadPool::threadID> workers;
+	int size = lrc1.size();
+	int nthreads = ExecutorThreadPool::getThreadPool().obtainThreads(size-1, workers);
+	int k1 = 0, k2 = 0;
+	for (int i = 0; i < nthreads; ++i) {
+    	k2 = (size / (nthreads+1)); //+1 becuase current thread does work to
+    	k2 += k1; //add offset
+    	std::function<void()> task = std::bind(oneSideCompare_Task<Field,RecursivePoly>, std::ref(lrc1), std::ref(lrc2), k1, k2, std::ref(results1));
+		ExecutorThreadPool::getThreadPool().executeTask(workers[i], task);
+		k1 = k2;
+	}
+	k2 = size;
+	oneSideCompare_Task(lrc1, lrc2, k1, k2, results1);
+	ExecutorThreadPool::getThreadPool().waitForThreads(workers);
+
+	//do comparison or lrc2, results1
+	size = lrc2.size();
+	nthreads = (size-1) < nthreads ? size-1 : nthreads;
+	results2.reserve(lrc2.size() + results1.size());
+	k1 = 0; k2 = 0;
+	for (int i = 0; i < nthreads; ++i) {
+    	k2 = (size / (nthreads+1)); //+1 becuase current thread does work to
+    	k2 += k1; //add offset
+    	std::function<void()> task = std::bind(oneSideCompare_Task<Field,RecursivePoly>, std::ref(lrc2), std::ref(results1.vector()), k1, k2, std::ref(results2));
+		ExecutorThreadPool::getThreadPool().executeTask(workers[i], task);
+		k1 = k2;
+	}
+	k2 = size;
+	oneSideCompare_Task(lrc2, results1.vector(), k1, k2, results2);
+	ExecutorThreadPool::getThreadPool().waitForThreads(workers);
+
+	//done with threads.
+	ExecutorThreadPool::getThreadPool().returnThreads(workers);
+
+	std::vector<RegularChain<Field,RecursivePoly>> results = results2.moveVectorOut();
+	results.insert(results.end(), results1.begin(), results1.end());
+	return results;
+
+#else
+	std::vector<RegularChain<Field,RecursivePoly>> result1,result2;
+
 	result1 = oneSideCompare(lrc1,lrc2); 	// determine components of lrc1 not contained in components of lrc2
 	#ifdef REGULARCHAIN_DEBUGII
 		for (size_t i=0; i<result1.size(); ++i) {
@@ -8194,6 +8365,7 @@ std::vector<RegularChain<Field,RecursivePoly>> mergeIrredundantLists(const std::
 	result2.reserve(result1.size()+result2.size());
 	result2.insert(result2.end(),result1.begin(),result1.end());
 	return result2;
+#endif
 }
 
 

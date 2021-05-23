@@ -26,8 +26,8 @@ def generate_everything(file,p,H,num):
 	x = ((u-y)/(2**Rpow))*p
 	if y>0:
 		y = y-2**Rpow
-		x = x+p	
-	
+		x = x+p
+
 	header = open("../../../include/FFT/src/"+file+".h","w")
 	header.write("#include <math.h>\n")
 	header.write("#include <algorithm>\n")
@@ -61,6 +61,7 @@ def generate_everything(file,p,H,num):
 	#code.write("#include \"../../../src/FFT/src/fft_iter%i.cpp\"\n"%num)
 	code.write("#include <cilk/cilk.h>\n")
 	code.write("#include <cilk/cilk_api.h>\n")
+	code.write("#include <string.h>\n")
 	#code.write("#include <cilktools/cilkview.h>\n")
 
 
@@ -77,7 +78,7 @@ def generate_everything(file,p,H,num):
 		mask1 = mask<<1
 		mask2 = mask<<2
 		mask3 = mask
-		
+
 	if (H&mask1)==0:
 		mask1  = mask<<2
 		mask2  = mask
@@ -230,9 +231,8 @@ def generate_everything(file,p,H,num):
 				tmpH=tmpH<<1
 
 		elif "void Shuffle" in line:
-		         header.write(line.replace("{",";\n").replace("Shuffle","Shuffle"))	
-			 code.write(line.replace("Shuffle","Shuffle"))
-
+				header.write(line.replace("{",";\n").replace("Shuffle","Shuffle"))
+				code.write(line.replace("Shuffle","Shuffle"))
 		else:
 			s = line
 			if "MY_PRIME" in s:

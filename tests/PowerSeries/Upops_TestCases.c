@@ -358,7 +358,9 @@ int test12()
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* sum = addUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("y*t", syms, 4);
+	updateToDeg_UPOPS(2, sum);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(2,  sum->data[6]);
+
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
 	Poly_ptr testpoly_2 = generate_altarr_var_defined("1", syms, 4);
 	Poly_ptr mainVarPoly_2 = sum->data[6]->polys[0];
@@ -403,6 +405,8 @@ int test13()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* sum = addUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(8, sum);
+
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("y+z", syms, 4);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(1,  sum->data[0]);
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -462,6 +466,7 @@ int test14()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* sum = addUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(2, sum);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("0", syms, 4);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(5,  sum->data[0]);
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -591,6 +596,7 @@ int test18()
 	Poly_ptr poly = generate_altarr_var_defined("4+3*z*x^2+y*t*x^4+y", syms, 4);
 	Upops_t*  upops = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly);
 	Upops_t* sub = subUnivariatePolyOverPowerSeries_UPOPS (zero, upops);
+	updateToDeg_UPOPS(2, sub);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("-3*z", syms, 4);
 	Poly_ptr mainVarPoly_1 = sub->data[2]->polys[1];
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -638,6 +644,7 @@ int test19()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* sub = subUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(2, sub);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("-y^3*t", syms, 4);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(4,  sub->data[6]);
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -685,6 +692,7 @@ int test20()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* sub = subUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(2, sub);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("y-z", syms, 4);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(1,  sub->data[0]);
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -733,6 +741,7 @@ int test21()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* sub = subUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(6, sub);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("0", syms, 4);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(5,  sub->data[0]);
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -869,6 +878,7 @@ int test25()
 	Poly_ptr poly = generate_altarr_var_defined("4+3*z*x^2+y*t*x^4+y", syms, 4);
 	Upops_t*  upops = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly);
 	Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (zero, upops);
+	updateToDeg_UPOPS(1, prod);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("0", syms, 4);
 	Poly_ptr mainVarPoly_1 = prod->data[2]->polys[0];
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -910,6 +920,7 @@ int test26()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(2, prod);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("y^3+3*z^3", syms, 4);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(3,  prod->data[2]);
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -972,6 +983,7 @@ int test27()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(2, prod);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("t*y", syms, 4);
 	Poly_ptr mainVarPoly_1 = homogPart_PS(2,  prod->data[0]);
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -1017,6 +1029,7 @@ int test28()
 	Upops_t*  upops1 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly1);
 	Upops_t*  upops2 = convertPolyToUnivariatePolyOverPowerSeries_UPOPS(poly2);
 	Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (upops1, upops2);
+	updateToDeg_UPOPS(3, prod);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("t^3", syms, 4);
 	Poly_ptr mainVarPoly_1 = prod->data[0]->polys[3];
 	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,4);
@@ -1069,6 +1082,7 @@ int test29()
 	ps_array[1] = quo_2;
 	Upops_t* upop = convertArrayOfPSToUPOPS_UPOPS(ps_array,2);
 	Upops_t* sum = addUnivariatePolyOverPowerSeries_UPOPS (upop, upop);
+	updateToDeg_UPOPS(2, sum);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("2", Vars, 3);
 	Poly_ptr testpoly_2 = generate_altarr_var_defined("2*x", Vars, 3);
 	Poly_ptr testpoly_3 = generate_altarr_var_defined("2*x^2", Vars, 3);
@@ -1146,6 +1160,7 @@ int test30()
 	ps_array[1] = quo_2;
 	Upops_t* upop = convertArrayOfPSToUPOPS_UPOPS(ps_array,2);
 	Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (upop, upop);
+	updateToDeg_UPOPS(2, prod);
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("1", Vars, 3);
 	Poly_ptr testpoly_2 = generate_altarr_var_defined("2*x", Vars, 3);
 	Poly_ptr testpoly_3 = generate_altarr_var_defined("3*x^2", Vars, 3);
@@ -1272,6 +1287,7 @@ int test31()
 	ps_array[1] = quo_1;
 	Upops_t* upop = convertArrayOfPSToUPOPS_UPOPS(ps_array,2);
 	Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (upop, upop);
+	updateToDeg_UPOPS(6, prod);
 
 	Poly_ptr testpoly_1 = generate_altarr_var_defined("x^2*y^2", Vars, 3);
 	Poly_ptr mainVarPoly_1 = prod->data[0]->polys[4];
@@ -1345,79 +1361,80 @@ int test31()
 int test32()
 
 {
-	 Poly_ptr  poly_1 = generate_altarr_var_defined("x+1", Vars, 3);
-	 Poly_ptr  poly_2 = generate_altarr_var_defined("x^2+y^2", Vars, 3);
-	 Poly_ptr  poly_3 = generate_altarr_var_defined("1-y^2+2*x^3", Vars, 3);
-	 Poly_ptr  poly_4 = generate_altarr_var_defined("x", Vars, 3);
-	 Poly_ptr  poly_5 = generate_altarr_var_defined("x+y", Vars, 3);
-	 PowerSeries_t* ps_1 = convertPolyToPowerSeries_PS(poly_1);
-	 PowerSeries_t* ps_2 = convertPolyToPowerSeries_PS(poly_2);
-	 PowerSeries_t* ps_3 = convertPolyToPowerSeries_PS(poly_3);
-	 PowerSeries_t* quo_1 = dividePowerSeries_PS(ps_1, ps_3);
-	 homogPart_PS(4, quo_1);
-	 PowerSeries_t* ps_4 = convertPolyToPowerSeries_PS(poly_4);
-	 PowerSeries_t* ps_5 = convertPolyToPowerSeries_PS(poly_5);
-	 PowerSeries_t* ps_array[4];
-	 ps_array[0] = ps_2;
-	 ps_array[1] =  ps_4;
-	 ps_array[2] = ps_5;
-	 ps_array[3] = quo_1;
+	Poly_ptr  poly_1 = generate_altarr_var_defined("x+1", Vars, 3);
+	Poly_ptr  poly_2 = generate_altarr_var_defined("x^2+y^2", Vars, 3);
+	Poly_ptr  poly_3 = generate_altarr_var_defined("1-y^2+2*x^3", Vars, 3);
+	Poly_ptr  poly_4 = generate_altarr_var_defined("x", Vars, 3);
+	Poly_ptr  poly_5 = generate_altarr_var_defined("x+y", Vars, 3);
+	PowerSeries_t* ps_1 = convertPolyToPowerSeries_PS(poly_1);
+	PowerSeries_t* ps_2 = convertPolyToPowerSeries_PS(poly_2);
+	PowerSeries_t* ps_3 = convertPolyToPowerSeries_PS(poly_3);
+	PowerSeries_t* quo_1 = dividePowerSeries_PS(ps_1, ps_3);
+	homogPart_PS(4, quo_1);
+	PowerSeries_t* ps_4 = convertPolyToPowerSeries_PS(poly_4);
+	PowerSeries_t* ps_5 = convertPolyToPowerSeries_PS(poly_5);
+	PowerSeries_t* ps_array[4];
+	ps_array[0] = ps_2;
+	ps_array[1] =  ps_4;
+	ps_array[2] = ps_5;
+	ps_array[3] = quo_1;
 
-	 Upops_t* upop = convertArrayOfPSToUPOPS_UPOPS(ps_array,4);
-	 Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (upop, upop);
+	Upops_t* upop = convertArrayOfPSToUPOPS_UPOPS(ps_array,4);
+	Upops_t* prod = multiplyUnivariatePolyOverPowerSeries_UPOPS (upop, upop);
+	updateToDeg_UPOPS(4, prod);
 
-	 Poly_ptr testpoly_1 = generate_altarr_var_defined("2*x^2*y^2+x^4+y^4", Vars, 3);
-	 Poly_ptr mainVarPoly_1 = homogPart_PS(4, prod->data[0]);
-	 Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,3);
+	Poly_ptr testpoly_1 = generate_altarr_var_defined("2*x^2*y^2+x^4+y^4", Vars, 3);
+	Poly_ptr mainVarPoly_1 = homogPart_PS(4, prod->data[0]);
+	Poly_ptr subpoly_1 = subPolynomials_AA(mainVarPoly_1,testpoly_1,3);
 
-	 Poly_ptr testpoly_2 = NULL;
-	 Poly_ptr mainVarPoly_2 = prod->data[1]->polys[0];
-	 Poly_ptr subpoly_2 = subPolynomials_AA(mainVarPoly_2,testpoly_2,3);
-
-
-	 Poly_ptr testpoly_3 =  NULL;
-	 Poly_ptr mainVarPoly_3 = prod->data[2]->polys[0];
-	 Poly_ptr subpoly_3 = subPolynomials_AA(mainVarPoly_3,testpoly_3,3);
-
-	 Poly_ptr testpoly_4 = generate_altarr_var_defined("4*x^2+2*y^2+2*x*y", Vars, 3);;
-	 Poly_ptr mainVarPoly_4 = homogPart_PS(2,prod->data[3]);
-	 Poly_ptr subpoly_4 = subPolynomials_AA(mainVarPoly_4,testpoly_4,3);
-
-	 Poly_ptr testpoly_5 = generate_altarr_var_defined("2*x", Vars, 3);;
-	 Poly_ptr mainVarPoly_5 = prod->data[4]->polys[1];
-	 Poly_ptr subpoly_5 = subPolynomials_AA(mainVarPoly_5,testpoly_5,3);
+	Poly_ptr testpoly_2 = NULL;
+	Poly_ptr mainVarPoly_2 = prod->data[1]->polys[0];
+	Poly_ptr subpoly_2 = subPolynomials_AA(mainVarPoly_2,testpoly_2,3);
 
 
-	 Poly_ptr testpoly_6 = generate_altarr_var_defined("2*x+2*y", Vars, 3);;
-	 Poly_ptr mainVarPoly_6 = prod->data[5]->polys[1];
-	 Poly_ptr subpoly_6 = subPolynomials_AA(mainVarPoly_6,testpoly_6,3);
+	Poly_ptr testpoly_3 =  NULL;
+	Poly_ptr mainVarPoly_3 = prod->data[2]->polys[0];
+	Poly_ptr subpoly_3 = subPolynomials_AA(mainVarPoly_3,testpoly_3,3);
 
-	 Poly_ptr testpoly_7 = generate_altarr_var_defined("1", Vars, 3);;
-	 Poly_ptr mainVarPoly_7 = prod->data[6]->polys[0];
-	 Poly_ptr subpoly_7 = subPolynomials_AA(mainVarPoly_7,testpoly_7,3);
+	Poly_ptr testpoly_4 = generate_altarr_var_defined("4*x^2+2*y^2+2*x*y", Vars, 3);;
+	Poly_ptr mainVarPoly_4 = homogPart_PS(2,prod->data[3]);
+	Poly_ptr subpoly_4 = subPolynomials_AA(mainVarPoly_4,testpoly_4,3);
 
-	 Poly_ptr testpoly_8 = generate_altarr_var_defined("2*x", Vars, 3);;
-	 Poly_ptr mainVarPoly_8 = prod->data[6]->polys[1];
-	 Poly_ptr subpoly_8 = subPolynomials_AA(mainVarPoly_8,testpoly_8,3);
+	Poly_ptr testpoly_5 = generate_altarr_var_defined("2*x", Vars, 3);;
+	Poly_ptr mainVarPoly_5 = prod->data[4]->polys[1];
+	Poly_ptr subpoly_5 = subPolynomials_AA(mainVarPoly_5,testpoly_5,3);
 
-	 Poly_ptr testpoly_9 = generate_altarr_var_defined("2*y^2+x^2", Vars, 3);;
-	 Poly_ptr mainVarPoly_9 = prod->data[6]->polys[2];
-	 Poly_ptr subpoly_9 = subPolynomials_AA(mainVarPoly_9,testpoly_9,3);
 
-	 Poly_ptr testpoly_10 = generate_altarr_var_defined("4*x*y^2-4*x^3", Vars, 3);;
-	 Poly_ptr mainVarPoly_10 = prod->data[6]->polys[3];
-	 Poly_ptr subpoly_10 = subPolynomials_AA(mainVarPoly_10,testpoly_10,3);
+	Poly_ptr testpoly_6 = generate_altarr_var_defined("2*x+2*y", Vars, 3);;
+	Poly_ptr mainVarPoly_6 = prod->data[5]->polys[1];
+	Poly_ptr subpoly_6 = subPolynomials_AA(mainVarPoly_6,testpoly_6,3);
 
-	 Poly_ptr testpoly_11 = generate_altarr_var_defined("3*y^4+2*x^2*y^2-8*x^4", Vars, 3);;
-	 Poly_ptr mainVarPoly_11 = prod->data[6]->polys[4];
-	 Poly_ptr subpoly_11 = subPolynomials_AA(mainVarPoly_11,testpoly_11,3);
+	Poly_ptr testpoly_7 = generate_altarr_var_defined("1", Vars, 3);;
+	Poly_ptr mainVarPoly_7 = prod->data[6]->polys[0];
+	Poly_ptr subpoly_7 = subPolynomials_AA(mainVarPoly_7,testpoly_7,3);
+
+	Poly_ptr testpoly_8 = generate_altarr_var_defined("2*x", Vars, 3);;
+	Poly_ptr mainVarPoly_8 = prod->data[6]->polys[1];
+	Poly_ptr subpoly_8 = subPolynomials_AA(mainVarPoly_8,testpoly_8,3);
+
+	Poly_ptr testpoly_9 = generate_altarr_var_defined("2*y^2+x^2", Vars, 3);;
+	Poly_ptr mainVarPoly_9 = prod->data[6]->polys[2];
+	Poly_ptr subpoly_9 = subPolynomials_AA(mainVarPoly_9,testpoly_9,3);
+
+	Poly_ptr testpoly_10 = generate_altarr_var_defined("4*x*y^2-4*x^3", Vars, 3);;
+	Poly_ptr mainVarPoly_10 = prod->data[6]->polys[3];
+	Poly_ptr subpoly_10 = subPolynomials_AA(mainVarPoly_10,testpoly_10,3);
+
+	Poly_ptr testpoly_11 = generate_altarr_var_defined("3*y^4+2*x^2*y^2-8*x^4", Vars, 3);;
+	Poly_ptr mainVarPoly_11 = prod->data[6]->polys[4];
+	Poly_ptr subpoly_11 = subPolynomials_AA(mainVarPoly_11,testpoly_11,3);
 
 	if (isZero_AA(subpoly_1) && isZero_AA(subpoly_2) && isZero_AA(subpoly_3) && isZero_AA(subpoly_4)
 		&& isZero_AA(subpoly_5) && isZero_AA(subpoly_6) && isZero_AA(subpoly_7) && isZero_AA(subpoly_8)
-		 && isZero_AA(subpoly_9) && isZero_AA(subpoly_10) && isZero_AA(subpoly_11)) {
-	    fprintf(stderr, "UPOPS Test 32: \t\t\t\t\t PASSED \n");
+		&& isZero_AA(subpoly_9) && isZero_AA(subpoly_10) && isZero_AA(subpoly_11)) {
+		fprintf(stderr, "UPOPS Test 32: \t\t\t\t\t PASSED \n");
 	} else {
-	    fprintf(stderr, "UPOPS Test 32: \t\t\t\t\t FAILED \n");
+		fprintf(stderr, "UPOPS Test 32: \t\t\t\t\t FAILED \n");
 		exit(1);
 	}
 
@@ -1458,7 +1475,7 @@ int test32()
 	destroyPowerSeries_PS(quo_1);
 	destroyUnivariatePolynomialOverPowerSeries_UPOPS(upop);
 	destroyUnivariatePolynomialOverPowerSeries_UPOPS(prod);
-    return 0;
+	return 0;
 }
 
 

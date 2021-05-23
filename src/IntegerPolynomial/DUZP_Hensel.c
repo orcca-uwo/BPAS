@@ -6,9 +6,10 @@
 
 /**
  * Solve the two-term diophantine equation u*sigma + w*tau = c
- * for sigma nad tau. 
+ * for sigma nad tau.
  *
  * sigma and tau are returned by pointer.
+ * if return is 0, sigma and tau do not point to anything
  *
  * returns 1 iff the equation can be solved (i.e. gcd(u,w) does not divide c )
  */
@@ -50,7 +51,7 @@ int UDP_spX(const duspoly_t* u, const duspoly_t* w, const duspoly_t* c, duspoly_
 		//tau = t * c
 		mulPolynomialsInForm_spX (s, c, sigma, Pptr);
 		mulPolynomialsInForm_spX (t, c, tau, Pptr);
-		
+
 		//free in prep for re-using variable as quotient or product
 		freePolynomial_spX (&t);
 		freePolynomial_spX (&s);
@@ -72,7 +73,7 @@ int UDP_spX(const duspoly_t* u, const duspoly_t* w, const duspoly_t* c, duspoly_
 		freePolynomial_spX (&g);
 		freePolynomial_spX (&s);
 		freePolynomial_spX (&t);
-		return 0;		
+		return 0;
 	}
 
 	//s = s*c/g, t = t*c/g
@@ -84,7 +85,7 @@ int UDP_spX(const duspoly_t* u, const duspoly_t* w, const duspoly_t* c, duspoly_
 	plainExactDivPolynomialsInForm_spX(*tau, g, &t, Pptr);
 	freePolynomial_spX (&*tau);
 
-	//sigma = rem(s, w/g), s = quo(s, w/g) 
+	//sigma = rem(s, w/g), s = quo(s, w/g)
 	duspoly_t* wgQuo;
 	plainExactDivPolynomialsInForm_spX(w, g, &wgQuo, Pptr);
 	plainDivPolynomialsInForm_spX_inp(&s, wgQuo, sigma, Pptr);
@@ -108,13 +109,17 @@ int UDP_spX(const duspoly_t* u, const duspoly_t* w, const duspoly_t* c, duspoly_
 
 
 /**
- * Solve the multi-term univariate diophantine problem for sigma_i in 
- * b[0]*sigma[0] + ... + b[r-1]*sigma[r-1] = c mod p 
+ * Solve the multi-term univariate diophantine problem for sigma_i in
+ * b[0]*sigma[0] + ... + b[r-1]*sigma[r-1] = c mod p
  * where b[j] = prod f[i] for i != j.
  * Each sigma_i returned in the pre-allocated array sigmas.
  *
  * c : the rhs of the diophantine equation
  * fs : an array of the factors of the b polynomials in the diophantine equation
+ * r : the number of factors
+ * sigmas: a pre-allocated array to store the results.
+ *
+ * if return is 0, sigmas do not point to anything
  *
  * returns 1 iff the problem could be solved (i.e. if gcd(f[i],f[j]) == 1 for all i,j
  * and p does not divide l.c. of f[i] for all i).
@@ -127,23 +132,28 @@ int multiUDP_spX(const duspoly_t* c, duspoly_t const*const* fs, int r, duspoly_t
 
 	/* First solve b[0]*s[0] + ... + b[r-1]*s[i-1] = 1 for each s*/
 
-	//compute the products of f, beta_i = prod(f_j), j >= i+1 
-	//temporarily use sigmas to store products of f 
+	//compute the products of f, beta_i = prod(f_j), j >= i+1
+	//temporarily use sigmas to store products of f
 	//for j = r-1 and r-2 just use f[r-1], f[r-2]
+	sigmas[r-1] = NULL;
 	mulPolynomialsInForm_spX (fs[r-1], fs[r-2], sigmas + r-2, Pptr);
 	for (int i = r-3; i > 0; --i) {
 		mulPolynomialsInForm_spX (fs[i], sigmas[i+1], sigmas + i, Pptr);
 	}
+
+	int ret = 1;
 
 	duspoly_t* beta = makePolynomial_spX(1);
 	duspoly_t* nextBeta = NULL;
     beta->elems[0] = smallprimefield_convert_in (1, Pptr);
 	for (int j = 0; j < r-2; ++j) {
 		if (!UDP_spX(fs[j], sigmas[j+1], beta, &nextBeta, sigmas + j, Pptr)) {
-			fprintf(stderr, "UDP failed! fs are not co-prime!!!!!!!!\n\n\n\n");
-			exit(1);
+			// fprintf(stderr, "UDP failed! fs are not co-prime!!!!!!!!\n\n\n\n");
+			ret = 0;
+			break;
 		}
 		freePolynomial_spX (&sigmas[j+1]);
+		sigmas[j+1] = NULL;
 		freePolynomial_spX (&beta);
 		beta = nextBeta;
 		nextBeta = NULL;
@@ -151,8 +161,8 @@ int multiUDP_spX(const duspoly_t* c, duspoly_t const*const* fs, int r, duspoly_t
 	//do last solve manually using f[r-2], f[r-1]
 	// fprintf(stderr, "about to do manual solve in multiUDP\n");
 	if (!UDP_spX(fs[r-2], fs[r-1], beta, sigmas + r-1, sigmas + r-2, Pptr)) {
-		fprintf(stderr, "UDP failed! fs are not co-prime!!!!!!!!\n\n\n\n");
-		exit(1);
+		// fprintf(stderr, "UDP failed! fs are not co-prime!!!!!!!!\n\n\n\n");
+		ret = 0;
 	}
 	// fprintf(stderr, "got UDP solution1: \n");
 	// printPolynomialOutForm_spX(sigmas[r-1], Pptr);
@@ -161,7 +171,7 @@ int multiUDP_spX(const duspoly_t* c, duspoly_t const*const* fs, int r, duspoly_t
 	freePolynomial_spX (&beta);
 	beta = NULL;
 
-	if (!isOneInForm_spX(c, Pptr)) {
+	if (ret && !isOneInForm_spX(c, Pptr)) {
 		//Multiply through by c now and get rem by fs[i] to get sigma[i].
 		for (int j = 0; j < r; ++j) {
 			mulPolynomialsInForm_spX (c, sigmas[j], &beta, Pptr);
@@ -176,7 +186,7 @@ int multiUDP_spX(const duspoly_t* c, duspoly_t const*const* fs, int r, duspoly_t
 		}
 	}
 
-	return 1;
+	return ret;
 }
 
 
@@ -229,7 +239,7 @@ void symmetricPadicUpdate(DUZP_t* a, duspoly_t* p, mpz_t modulus, const Prime_pt
 	register unsigned long long pelem;
 // 1
 	register long long prime = Pptr->prime;
-// 2	
+// 2
 	// register unsigned long long prime = Pptr->prime;
 	for (int i = 0; i <= p->lt; ++i) {
 		pelem = (unsigned long long) smallprimefield_convert_out(p->elems[i], Pptr);
@@ -321,7 +331,7 @@ int monicPositiveTwoTermPadicLift(const DUZP_t* a, const duspoly_t* u, const dus
 	mpz_mul_si(bound, bound, 2l);
 
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 	int primePow = 1;
@@ -408,7 +418,7 @@ int monicTwoTermPadicLift(const DUZP_t* a, const duspoly_t* u, const duspoly_t* 
 	infinityNorm_DUZP(a, bound);
 	mpz_mul_si(bound, bound, 2l);
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 	unsigned long long int halfP = (Pptr->prime - 1) >> 1;
@@ -450,7 +460,7 @@ int monicTwoTermPadicLift(const DUZP_t* a, const duspoly_t* u, const duspoly_t* 
 		//sigma = rem(sigma, w); s = quo(sgima, w)
 		duspoly_t* q;
 		plainDivPolynomialsInForm_spX_inp(&sigma, w, &q, Pptr);
-		//TODO 
+		//TODO
 		//in place or fast div???
 		// duspoly_t* new_sigma;
 		// fastDivPolynomialInForm_wPSInv_spX (sigma, w, &new_sigma, &q, Pptr);
@@ -500,7 +510,7 @@ int monicTwoTermPadicLift(const DUZP_t* a, const duspoly_t* u, const duspoly_t* 
 /**
  *
  * u and w are modified throughout this algorithm to save space.
- */ 
+ */
 int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU, DUZP_t** liftedW, const mpz_t gamma, const Prime_ptr* Pptr) {
 	if (liftedU == NULL && liftedW == NULL) {
 		return 0;;
@@ -518,9 +528,9 @@ int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** lift
 	mpz_set(alpha, aa->coefs[aa->lt]);
 
 
-//Two strategies here for leading coefficient correct. 
-//First (commented) is based off Algorithms for Computer Algebra. 
-//One sets leading cofficients of both u and w so that their product 
+//Two strategies here for leading coefficient correct.
+//First (commented) is based off Algorithms for Computer Algebra.
+//One sets leading cofficients of both u and w so that their product
 //has the leading coefficient of a at every step. Hence deg(error) < deg(a).
 //Second is similar to ensure deg(error) < deg(a). Force w to be monic
 //and force lc(u) = lc(a). This second technique is used in quadratic lifting
@@ -534,12 +544,12 @@ int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** lift
 	// }
 	// scalarMulPolynomialInForm_spX_inp (&u, gamma_sp, Pptr);
 
-	// prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);	
+	// prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);
 	// if (smallprimefield_convert_out(w->elems[w->lt], Pptr) != 1) {
 	// 	alpha_sp = smallprimefield_mul(alpha_sp, smallprimefield_inv(w->elems[w->lt], Pptr), Pptr);
 	// }
 	// scalarMulPolynomialInForm_spX_inp (&w, alpha_sp, Pptr);
-	
+
 //2
 	DUZP_t* a = (DUZP_t*) aa;
 	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);
@@ -551,7 +561,7 @@ int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** lift
 	if (smallprimefield_convert_out(w->elems[w->lt], Pptr) != 1) {
 		scalarMulPolynomialInForm_spX_inp (&w, smallprimefield_inv(w->elems[w->lt], Pptr), Pptr);
 	}
-	
+
 	// fprintf(stderr, "u after lc adjust:\n");
 	// printPolynomialOutForm_spX(u, Pptr);
 	// fprintf(stderr, "w after lc adjust:\n");
@@ -569,7 +579,7 @@ int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** lift
 	}
 	freePolynomial_spX (&sp_one);
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 
@@ -580,13 +590,13 @@ int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** lift
 
 	DUZP_t* uu = convertFromDUSPSymmetric_DUZP(u, Pptr);
 	DUZP_t* ww = convertFromDUSPSymmetric_DUZP(w, Pptr);
-	
+
 //1
 	// mpz_set(uu->coefs[uu->lt], gamma);
 	// mpz_set(ww->coefs[ww->lt], alpha);
 //2
 	mpz_set(uu->coefs[uu->lt], alpha);
-	
+
 	DUZP_t* error = multiplyPolynomials_DUZP(uu, ww);
 	subtractPolynomials_DUZP_inpRHS(a, &error);
 	// fprintf(stderr, "error:\n");
@@ -631,7 +641,7 @@ int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** lift
 	mpz_t cont;
 	mpz_init(cont);
 	primitivePartAndContent_DUZP_inp(uu, cont);
-	
+
 //1
 	// freePolynomial_DUZP(a);
 //2
@@ -662,10 +672,10 @@ int twoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** lift
 }
 
 /**
- * A two-term padic lift specialized for GCD computation. 
+ * A two-term padic lift specialized for GCD computation.
  * aa is one of the polynomials whose gcd is being computed,
- * u is the gcd image, w is the cofactor. 
- * It is assumed that the gcd image is monic in the finite field. 
+ * u is the gcd image, w is the cofactor.
+ * It is assumed that the gcd image is monic in the finite field.
  * Hence, lc(w) = lc(aa) mod Pptr->prime.
  */
 int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU, const Prime_ptr* Pptr) {
@@ -673,9 +683,9 @@ int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU,
 		return 0;
 	}
 
-//Two strategies here for leading coefficient correct. 
-//First (commented) is based off Algorithms for Computer Algebra. 
-//One sets leading cofficients of both u and w so that their product 
+//Two strategies here for leading coefficient correct.
+//First (commented) is based off Algorithms for Computer Algebra.
+//One sets leading cofficients of both u and w so that their product
 //has the leading coefficient of a at every step. Hence deg(error) < deg(a).
 //Second is similar to ensure deg(error) < deg(a). Force w to be monic
 //and force lc(u) = lc(a). This second technique is used in quadratic lifting
@@ -694,12 +704,12 @@ int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU,
 	// }
 	// scalarMulPolynomialInForm_spX_inp (&u, gamma_sp, Pptr);
 
-	// prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);	
+	// prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);
 	// if (smallprimefield_convert_out(w->elems[w->lt], Pptr) != 1) {
 	// 	alpha_sp = smallprimefield_mul(alpha_sp, smallprimefield_inv(w->elems[w->lt], Pptr), Pptr);
 	// }
 	// scalarMulPolynomialInForm_spX_inp (&w, alpha_sp, Pptr);
-	
+
 //2
 
 
@@ -709,7 +719,7 @@ int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU,
 		scalarMulPolynomialInForm_spX_inp (&u, w->elems[w->lt], Pptr);
 		scalarMulPolynomialInForm_spX_inp (&w, smallprimefield_inv(w->elems[w->lt], Pptr), Pptr);
 	}
-	
+
 	//get bezout coefficients
 	duspoly_t* sp_s, *sp_t;
 	duspoly_t* sp_one;
@@ -722,7 +732,7 @@ int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU,
 	}
 	freePolynomial_spX (&sp_one);
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 
@@ -735,7 +745,7 @@ int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU,
 
 	DUZP_t* uu = convertFromDUSPSymmetric_DUZP(u, Pptr);
 	DUZP_t* ww = convertFromDUSPSymmetric_DUZP(w, Pptr);
-	
+
 //1
 	// mpz_set(uu->coefs[uu->lt], gamma);
 	// mpz_set(ww->coefs[ww->lt], alpha);
@@ -748,9 +758,9 @@ int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU,
 	infinityNorm_DUZP(aa, bound);
 	mpz_mul_si(bound, bound, 2l);
 	mpz_mul(bound, bound, alpha);
-	
+
 	DUZP_t* error = multiplyPolynomials_DUZP(uu, ww);
-	
+
 	subtractPolynomials_DUZP_inpRHS(a, &error);
 
 	while( !isZero_DUZP(error) && mpz_cmp(mod, bound) < 0 ) {
@@ -793,7 +803,7 @@ int gcdPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU,
 	mpz_init(cont);
 	primitivePartAndContent_DUZP_inp(uu, cont);
 	*liftedU = uu;
-	
+
 //1
 	// freePolynomial_DUZP(a);
 //2
@@ -839,7 +849,7 @@ int quadraticPadicHenselStep_DUZP(const DUZP_t* a, DUZP_t* u, DUZP_t* w, DUZP_t*
 	freePolynomial_DUZP(quo);
 	DUZP_t* tmp = addPolynomials_DUZP(u, te);
 	DUZP_t* uNext = addPolynomials_DUZP(qu, tmp);
-	applyModuloSymmetric_DUZP_inp(uNext, mod); 
+	applyModuloSymmetric_DUZP_inp(uNext, mod);
 	freePolynomial_DUZP(te);
 	freePolynomial_DUZP(qu);
 	freePolynomial_DUZP(tmp);
@@ -898,7 +908,7 @@ int quadraticPadicHenselStepOpt_DUZP(const DUZP_t* a, DUZP_t* u, DUZP_t* w, DUZP
 	applyModuloSymmetric_DUZP_inp(*se, mod);
 	DUZP_t* quo, *rem;
 	dividePolynomials_DUZP(*se, w, &quo, &rem);
-	
+
 	addPolynomials_DUZP_inp(&w, rem);
 	applyModuloSymmetric_DUZP_inp(w, mod);
 	freePolynomial_DUZP(rem);
@@ -908,7 +918,7 @@ int quadraticPadicHenselStepOpt_DUZP(const DUZP_t* a, DUZP_t* u, DUZP_t* w, DUZP
 	freePolynomial_DUZP(quo);
 	multiplyPolynomialsPreAlloc_DUZP(t, *error, te);
 	addPolynomials_DUZP_inp(&u, *te);
-	applyModuloSymmetric_DUZP_inp(u, mod); 
+	applyModuloSymmetric_DUZP_inp(u, mod);
 
 	//lift bezout coefficients now
 	multiplyPolynomialsPreAlloc_DUZP(t, w, te);
@@ -959,14 +969,14 @@ int monicTwoTermQuadraticPadicLift(const DUZP_t* aa, duspoly_t* up, duspoly_t* w
 	}
 	freePolynomial_spX (&sp_one);
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init_set_ui(mod, Pptr->prime);
 	int primePow = 1;
 
 	DUZP_t* u = convertFromDUSPSymmetric_DUZP(up, Pptr);
 	DUZP_t* w = convertFromDUSPSymmetric_DUZP(wp, Pptr);
 	DUZP_t* s = convertFromDUSPSymmetric_DUZP(sp_s, Pptr);
-	DUZP_t* t = convertFromDUSPSymmetric_DUZP(sp_t, Pptr);	
+	DUZP_t* t = convertFromDUSPSymmetric_DUZP(sp_t, Pptr);
 	freePolynomial_spX (&sp_s);
 	freePolynomial_spX (&sp_t);
 
@@ -1025,8 +1035,8 @@ int monicTwoTermQuadraticPadicLift(const DUZP_t* aa, duspoly_t* up, duspoly_t* w
 // 	mpz_set(alpha, aa->coefs[aa->lt]);
 
 // 	DUZP_t* a = multiplyByInteger_DUZP(aa, gamma);
-	
-// 	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);	
+
+// 	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);
 // 	if (smallprimefield_convert_out(up->elems[up->lt], Pptr) != 1) {
 // 		alpha_sp = smallprimefield_mul(alpha_sp, smallprimefield_inv(up->elems[up->lt], Pptr), Pptr);
 // 	}
@@ -1054,11 +1064,11 @@ int monicTwoTermQuadraticPadicLift(const DUZP_t* aa, duspoly_t* up, duspoly_t* w
 // 	DUZP_t* w = convertFromDUSPSymmetric_DUZP(wp, Pptr);
 // 	// mpz_set(w->coefs[w->lt], alpha);
 // 	DUZP_t* s = convertFromDUSPSymmetric_DUZP(sp_s, Pptr);
-// 	DUZP_t* t = convertFromDUSPSymmetric_DUZP(sp_t, Pptr);	
+// 	DUZP_t* t = convertFromDUSPSymmetric_DUZP(sp_t, Pptr);
 // 	freePolynomial_spX (&sp_s);
 // 	freePolynomial_spX (&sp_t);
 
-// 	mpz_t mod; 
+// 	mpz_t mod;
 // 	mpz_init(mod);
 // 	mpz_set_ui(mod, Pptr->prime);
 
@@ -1121,7 +1131,7 @@ int monicTwoTermQuadraticPadicLift(const DUZP_t* aa, duspoly_t* up, duspoly_t* w
 // 	mpz_t cont;
 // 	mpz_init(cont);
 // 	primitivePartAndContent_DUZP_inp(u, cont);
-	
+
 // 	if (liftedU != NULL) {
 // 		*liftedU = u;
 // 	} else {
@@ -1175,11 +1185,11 @@ int gcdQuadraticPadicLift(const DUZP_t* a, duspoly_t* up, duspoly_t* wp, DUZP_t*
 	DUZP_t* w = convertFromDUSPSymmetric_DUZP(wp, Pptr);
 	// mpz_set(w->coefs[w->lt], alpha);
 	DUZP_t* s = convertFromDUSPSymmetric_DUZP(sp_s, Pptr);
-	DUZP_t* t = convertFromDUSPSymmetric_DUZP(sp_t, Pptr);	
+	DUZP_t* t = convertFromDUSPSymmetric_DUZP(sp_t, Pptr);
 	freePolynomial_spX (&sp_s);
 	freePolynomial_spX (&sp_t);
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 	int primePow = 1;
@@ -1218,7 +1228,7 @@ int gcdQuadraticPadicLift(const DUZP_t* a, duspoly_t* up, duspoly_t* wp, DUZP_t*
 	}
 
 
-	primitivePart_DUZP_inp(u);	
+	primitivePart_DUZP_inp(u);
 	*liftedU = u;
 
 	freePolynomial_DUZP(w);
@@ -1234,7 +1244,7 @@ int gcdQuadraticPadicLift(const DUZP_t* a, duspoly_t* up, duspoly_t* wp, DUZP_t*
 
 /**
  * u and w are modified throughout this algorithm to save space.
- */ 
+ */
 int positiveTwoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_t** liftedU, DUZP_t** liftedW, const mpz_t gamma, const Prime_ptr* Pptr) {
 	if (liftedU == NULL && liftedW == NULL) {
 		return 0;
@@ -1252,14 +1262,14 @@ int positiveTwoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_
 
 	//scale polynomials to fix l.c. problem
 	DUZP_t* a = multiplyByInteger_DUZP(aa, gamma);
-	
+
 	prime_t gamma_sp = smallprimefield_convert_in(mpz_fdiv_ui(gamma, Pptr->prime), Pptr);
 	if (smallprimefield_convert_out(u->elems[u->lt], Pptr) != 1) {
 		gamma_sp = smallprimefield_mul(gamma_sp, smallprimefield_inv(u->elems[u->lt], Pptr), Pptr);
 	}
 	scalarMulPolynomialInForm_spX_inp (&u, gamma_sp, Pptr);
 
-	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);	
+	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(alpha, Pptr->prime), Pptr);
 	if (smallprimefield_convert_out(w->elems[w->lt], Pptr) != 1) {
 		alpha_sp = smallprimefield_mul(alpha_sp, smallprimefield_inv(w->elems[w->lt], Pptr), Pptr);
 	}
@@ -1277,7 +1287,7 @@ int positiveTwoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_
 	}
 	freePolynomial_spX (&sp_one);
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 	int primePow = 1;
@@ -1327,7 +1337,7 @@ int positiveTwoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_
 	mpz_t cont;
 	mpz_init(cont);
 	primitivePartAndContent_DUZP_inp(uu, cont);
-	
+
 	freePolynomial_DUZP(error);
 	freePolynomial_DUZP(a);
 	freePolynomial_spX (&sp_s);
@@ -1357,8 +1367,8 @@ int positiveTwoTermPadicLift(const DUZP_t* aa, duspoly_t* u, duspoly_t* w, DUZP_
 /**
  * Given a = lc(a)*f[0]*f[1]*...*f[nf-1] mod Pptr->prime,
  * Where f[i] are monic and pair-wise co-prime,
- * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z. 
- */ 
+ * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z.
+ */
 int monicMultiTermPadicLift_Iterative(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** liftedF, short nf, const Prime_ptr* Pptr) {
 	if (liftedF == NULL) {
 		return 0;
@@ -1369,9 +1379,9 @@ int monicMultiTermPadicLift_Iterative(const DUZP_t* a, duspoly_t const*const* f,
 	infinityNorm_DUZP(a, bound);
 	mpz_mul_si(bound, bound, 2l);
 
-	duspoly_t** sigmas = (duspoly_t**) malloc(sizeof(duspoly_t*)*nf);	
+	duspoly_t** sigmas = (duspoly_t**) malloc(sizeof(duspoly_t*)*nf);
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 	unsigned long long int halfP = (Pptr->prime - 1) >> 1;
@@ -1405,13 +1415,13 @@ int monicMultiTermPadicLift_Iterative(const DUZP_t* a, duspoly_t const*const* f,
 		//update the error.
 		freePolynomial_DUZP(error);
 		error = multiplyManyPolynomials_DUZP( CONSTCONSTCAST(DUZP_t, liftedF), nf);
-		
+
 		subtractPolynomials_DUZP_inpRHS(a, &error);
 		mpz_mul_si(mod, mod, Pptr->prime);
 		++primePow;
 
 	}
-	
+
 	freePolynomial_DUZP(error);
 	free(sigmas);
 
@@ -1423,8 +1433,8 @@ int monicMultiTermPadicLift_Iterative(const DUZP_t* a, duspoly_t const*const* f,
 /**
  * Given a = lc(a)*f[0]*f[1]*...*f[nf-1] mod Pptr->prime,
  * Where f[i] are monic and pair-wise co-prime,
- * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z. 
- */ 
+ * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z.
+ */
 int monicMultiTermPadicLiftOpt_Iterative(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** liftedF, short nf, const Prime_ptr* Pptr) {
 	if (liftedF == NULL) {
 		return 0;
@@ -1447,7 +1457,7 @@ int monicMultiTermPadicLiftOpt_Iterative(const DUZP_t* a, duspoly_t const*const*
 		exit(1);
 	}
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 	unsigned long long int halfP = (Pptr->prime - 1) >> 1;
@@ -1504,7 +1514,7 @@ int multiTermPadicLiftResume(const DUZP_t* a, duspoly_t const*const* f, DUZP_t**
 		return 0;
 	}
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init_set_ui(mod, Pptr->prime);
 	mpz_pow_ui(mod, mod, e);
 	unsigned long long int halfP = (Pptr->prime - 1) >> 1;
@@ -1524,7 +1534,7 @@ int multiTermPadicLiftResume(const DUZP_t* a, duspoly_t const*const* f, DUZP_t**
 		return e;
 	}
 
-	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(a->coefs[a->lt], Pptr->prime), Pptr);	
+	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(a->coefs[a->lt], Pptr->prime), Pptr);
 	duspoly_t* tmp_sp;
 	scalarMulPolynomialInForm_spX(f[0], alpha_sp, &tmp_sp, Pptr);
 
@@ -1582,14 +1592,14 @@ int multiTermPadicLiftResume(const DUZP_t* a, duspoly_t const*const* f, DUZP_t**
 /**
  * Given a = lc(a)*f[0]*f[1]*...*f[nf-1] mod Pptr->prime,
  * Where f[i] are monic and pair-wise co-prime,
- * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z. 
- */ 
+ * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z.
+ */
 int multiTermPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** liftedF, duspoly_t*** retSigmas, short nf, const mpz_t bound, const Prime_ptr* Pptr) {
 	if (liftedF == NULL) {
 		return 0;
 	}
 
-	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(a->coefs[a->lt], Pptr->prime), Pptr);	
+	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(a->coefs[a->lt], Pptr->prime), Pptr);
 	duspoly_t* tmp_sp;
 	scalarMulPolynomialInForm_spX(f[0], alpha_sp, &tmp_sp, Pptr);
 
@@ -1627,7 +1637,7 @@ int multiTermPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** 
 		exit(1);
 	}
 
-	mpz_t mod; 
+	mpz_t mod;
 	mpz_init(mod);
 	mpz_set_ui(mod, Pptr->prime);
 	unsigned long long int halfP = (Pptr->prime - 1) >> 1;
@@ -1688,7 +1698,7 @@ int multiTermPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** 
 		freePolynomial_spX(&c);
 	}
 
-	
+
 	//make lifted non-monic poly primitive
 	// mpz_t cont;
 	// mpz_init(cont);
@@ -1714,7 +1724,7 @@ int multiTermPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** 
 		for (int i = 0; i < nf; ++i) {
 			freePolynomial_spX (&sigmas[i]);
 		}
-		free(sigmas);	
+		free(sigmas);
 	} else {
 		*retSigmas = sigmas;
 	}
@@ -1731,17 +1741,17 @@ int multiTermPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** 
 /**
  * Given a monic polynomial, a, a = f[0]*f[1]*...*f[nf-1] mod Pptr->prime, where f[i] are monic and pair-wise co-prime,
  * lift f[i] such that a = lc(a)liftedF[0]*...liftedF[nf-1] over Z.
- * This process is recursive in that it lifts by multiplying several factors together 
+ * This process is recursive in that it lifts by multiplying several factors together
  * and solving many two-factor lifts.
  * It has problems with these products of factors being not co-prime for a two-factor lift.
  *
- * @param a a monic polynomial over the integers whose factors are to be lifted. 
+ * @param a a monic polynomial over the integers whose factors are to be lifted.
  * @param f an array of nf polynomials ove ra finite field which are factors of a mouldo the prime.
  * @param[out] liftedF a pre-allocated array of size nf to store the lifted factors.
  * @param nf the number of factors in f to be lifted.
  * @param Pptr the prime of the finite field.
- * 
- */ 
+ *
+ */
 void monicMultiTermPadicLiftOpt_Recursive(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** liftedF, short nf, const Prime_ptr* Pptr) {
 	if (liftedF == NULL) {
 		return;
@@ -1756,7 +1766,7 @@ void monicMultiTermPadicLiftOpt_Recursive(const DUZP_t* a, duspoly_t const*const
 		return;
 	}
 
-	//partition f into two sets and make intermediate products. 
+	//partition f into two sets and make intermediate products.
 	duspoly_t* f1, *f2;
 	int f1Size = nf/2;
 	int f2Size = nf - (nf/2);
@@ -1800,7 +1810,7 @@ void multiTermPadicLiftOpt_Recursive(const DUZP_t* a, duspoly_t** f, DUZP_t** li
 		return;
 	}
 
-	//partition f into two sets and make intermediate products. 
+	//partition f into two sets and make intermediate products.
 	duspoly_t* f1, *f2;
 	int f1Size = nf/2;
 	int f2Size = nf - (nf/2);
@@ -1824,8 +1834,8 @@ void multiTermPadicLiftOpt_Recursive(const DUZP_t* a, duspoly_t** f, DUZP_t** li
  * Given a = lc(a)*f[0]*f[1]*...*f[nf-1] mod Pptr->prime,
  * Where f[i] are monic and pair-wise co-prime,
  * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z.
- * nf >= 2. 
- */ 
+ * nf >= 2.
+ */
 int monicMultiTermQuadraticPadicLiftOpt_Iterative(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** liftedF, short nf, const Prime_ptr* Pptr) {
 	if (liftedF == NULL) {
 		return 0;
@@ -1846,7 +1856,7 @@ int monicMultiTermQuadraticPadicLiftOpt_Iterative(const DUZP_t* a, duspoly_t con
 	if (isZero_DUZP(error)) {
 		//no lifting at all to do
 		freePolynomial_DUZP(error);
-		return 1;	
+		return 1;
 	}
 
 	mpz_t bound;
@@ -1875,7 +1885,7 @@ int monicMultiTermQuadraticPadicLiftOpt_Iterative(const DUZP_t* a, duspoly_t con
 		sigmas[i] = tmp;
 	}
 
-	mpz_t mod, mod2, halfMod; 
+	mpz_t mod, mod2, halfMod;
 	mpz_init_set_ui(halfMod, Pptr->prime);
 	mpz_div_ui(halfMod, halfMod, 2ul);
 	mpz_init_set_ui(mod, Pptr->prime);
@@ -1892,7 +1902,7 @@ int monicMultiTermQuadraticPadicLiftOpt_Iterative(const DUZP_t* a, duspoly_t con
 	}
 
 	while( !isZero_DUZP(error) && mpz_cmp(mod, bound) < 0 ) {
-		
+
 		//c = error / p^k
 		//keep error in positive prime field range under padic update
 		applyModulo_DUZP_inp(error, mod2);
@@ -2032,8 +2042,8 @@ static inline void multiTermQuadraticPadicHenselStepFactors_DUZP(const DUZP_t* a
  * Given a = lc(a)*f[0]*f[1]*...*f[nf-1] mod Pptr->prime,
  * Where f[i] are monic and pair-wise co-prime,
  * Lift f[i] such that a = lc(a)lf[0]*...lf[nf-1] over Z.
- * nf >= 2. 
- */ 
+ * nf >= 2.
+ */
 int multiTermQuadraticPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, DUZP_t** liftedF, DUZP_t*** retSigmas, short nf, const mpz_t bound, const Prime_ptr* Pptr) {
 	if (liftedF == NULL) {
 		return 0;
@@ -2044,7 +2054,7 @@ int multiTermQuadraticPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, 
 		return 0;
 	}
 
-	mpz_t mod, mod2, halfMod, halfMod2; 
+	mpz_t mod, mod2, halfMod, halfMod2;
 	mpz_init_set_ui(halfMod, Pptr->prime);
 	mpz_div_ui(halfMod, halfMod, 2ul);
 	mpz_init_set_ui(mod, Pptr->prime);
@@ -2055,7 +2065,7 @@ int multiTermQuadraticPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, 
 	int primePow = 1;
 
 	//temporarily set f[0] to be multiplied through by lc(a).
-	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(a->coefs[a->lt], Pptr->prime), Pptr);	
+	prime_t alpha_sp = smallprimefield_convert_in(mpz_fdiv_ui(a->coefs[a->lt], Pptr->prime), Pptr);
 	duspoly_t* tmp2;
 	scalarMulPolynomialInForm_spX(f[0], alpha_sp, &tmp2, Pptr);
 
@@ -2080,7 +2090,7 @@ int multiTermQuadraticPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, 
 		freePolynomial_spX (&tmp2);
 
 		mpz_clears(mod, mod2, halfMod, halfMod2, NULL);
-		return 1;	
+		return 1;
 	}
 
 	const duspoly_t* udpInput[nf];
@@ -2119,7 +2129,7 @@ int multiTermQuadraticPadicLiftStart(const DUZP_t* a, duspoly_t const*const* f, 
 
 	mpz_t mod4;
 	mpz_init(mod4);
-	
+
 	while( !isZero_DUZP(error) && mpz_cmp(mod, bound) < 0 ) {
 
 		multiTermQuadraticPadicHenselStepFactors_DUZP(a, &error, liftedF, sigmas, nf, &prod, mod, mod2, mod4, halfMod, halfMod2);
@@ -2190,11 +2200,11 @@ int multiTermQuadraticPadicLiftResume(const DUZP_t* a, DUZP_t** liftedF, DUZP_t 
 	}
 
 
-	mpz_t mod, mod2, halfMod, halfMod2; 
+	mpz_t mod, mod2, halfMod, halfMod2;
 	mpz_init_set_ui(mod, Pptr->prime);
 	mpz_pow_ui(mod, mod, e);
 
-	mpz_init_set(halfMod, mod);	
+	mpz_init_set(halfMod, mod);
 	mpz_div_ui(halfMod, halfMod, 2ul);
 	mpz_init_set(mod2, mod);
 	mpz_mul(mod2, mod2, mod);
@@ -2217,7 +2227,7 @@ int multiTermQuadraticPadicLiftResume(const DUZP_t* a, DUZP_t** liftedF, DUZP_t 
 		freePolynomial_DUZP(error);
 
 		mpz_clears(mod, mod2, halfMod, halfMod2, NULL);
-		return primePow;	
+		return primePow;
 	}
 
 
@@ -2235,7 +2245,7 @@ int multiTermQuadraticPadicLiftResume(const DUZP_t* a, DUZP_t** liftedF, DUZP_t 
 	while( !isZero_DUZP(error) && mpz_cmp(mod, targetBound) < 0 ) {
 
 		multiTermQuadraticPadicHenselStepFactors_DUZP(a, &error, liftedF, sigmas, nf, &prod, mod, mod2, mod4, halfMod, halfMod2);
-		
+
 		multiTermQuadraticPadicHenselStepSigmas_DUZP(sigmaError, liftedF, sigmas, prods, nf, &prod, mod, mod2);
 
 		//update mods
@@ -2415,7 +2425,7 @@ DUZP_t* univarHenselGCD_DUZP(const DUZP_t* a, const DUZP_t* b, const Prime_ptr* 
 	 	// twoTermPadicLift(primA, g, cofact_a, &liftedG, NULL, gamma, Pptr);
 	 	gcdPadicLift(primA, g, cofact_a, &liftedG, Pptr);
 	 	// gcdQuadraticPadicLift(primA, g, cofact_a, &liftedG, Pptr);
-		
+
 	}
 
 	//now multiply by proper content
@@ -2486,7 +2496,7 @@ DUZP_t* univarQuadraticHenselGCD_DUZP(const DUZP_t* a, const DUZP_t* b, const Pr
 	 	// twoTermQuadraticPadicLift(a, g, cofact_a, &liftedG, NULL, gamma, Pptr);
 	 	// twoTermPadicLift(primA, g, cofact_a, &liftedG, NULL, gamma, Pptr);
 	 	gcdQuadraticPadicLift(primA, g, cofact_a, &liftedG, Pptr);
-		
+
 	}
 
 	//now multiply by proper content

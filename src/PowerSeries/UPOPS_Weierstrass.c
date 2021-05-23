@@ -2,6 +2,7 @@
 #include "PowerSeries/UnivariatePolynomialOverPowerSeries.h"
 #include "PowerSeries/UPOPS_Weierstrass.h"
 
+
 /**
  * requestedDeg : the requested degree
  * coefDeg : the index of the power series in data array
@@ -88,7 +89,7 @@ Poly_ptr weierstrassCoefVoidAUpdate_UPOPS(int i, void* coefDeg, void* alpha) {
  * nvar : the number of variables
  *
  */
-Poly_ptr lemmaForWeiestrass_UPOPS(PowerSeries_t* F, PowerSeries_t* G, PowerSeries_t* H, int r) {
+Poly_ptr lemmaForWeierstrass_UPOPS(PowerSeries_t* F, PowerSeries_t* G, PowerSeries_t* H, int r) {
 	if (F == NULL || G == NULL || H == NULL) {
 		return NULL;
 	}
@@ -96,17 +97,15 @@ Poly_ptr lemmaForWeiestrass_UPOPS(PowerSeries_t* F, PowerSeries_t* G, PowerSerie
 	int nvar = F->polys[0] == NULL ? H->polys[0]->nvar : F->polys[0]->nvar;
 
 	Poly_ptr s = NULL;
-	// fprintf(stderr, "lemma for r=%d\n", r);
 	for (int i = 1; i < r; ++i) {
 
 		//Here we need homogPart, because sometimes alpha or p may be truncated.
-	    Poly_ptr multiply = multiplyPolynomials_AA(homogPart_PS(r-i, G), homogPart_PS(i, H), nvar);
-	    // const char* syms[] = {"z", "x", "y"};
-	    // fprintf(stderr, "multiply: ");
-	    // printPoly_AA(stderr, multiply, syms, multiply == NULL ? 0 : multiply->nvar);
-	    // fprintf(stderr, "\n ");
-	    s = addPolynomials_AA_inp(s,  multiply, nvar);
-	    freePolynomial_AA(multiply);
+		Poly_ptr multiply = multiplyPolynomials_AA(homogPart_PS(r-i, G), homogPart_PS(i, H), nvar);
+
+		s = addPolynomials_AA_inp(s,  multiply, nvar);
+		freePolynomial_AA(multiply);
+
+
 	}
 
 	if(r > F->deg) {
@@ -118,8 +117,8 @@ Poly_ptr lemmaForWeiestrass_UPOPS(PowerSeries_t* F, PowerSeries_t* G, PowerSerie
 		negatePolynomial_AA(s);
 	}
 
-	divideByRational_AA_inp(s, H->polys[0]->elems[0].coef);
 
+	divideByRational_AA_inp(s, H->polys[0]->elems[0].coef);
 	return s;
 }
 
@@ -153,45 +152,36 @@ void weierstrassUpdate_UPOPS(Upops_t* p, Upops_t* alpha) {
 
 	PowerSeries_t** F = p->weierstrassFData;
 
-    for (int lP = 0; lP <= d-1; ++lP) {
+	for (int lP = 0; lP <= d-1; ++lP) {
 		// fprintf(stderr, "curdP %d, alloc: %d\n\n", curdP, p->data[lP]->alloc);
-     	if (curdP + 1 > p->data[lP]->alloc) {
-		    int newAlloc = (2*(p->data[lP])->alloc < curdP+1) ? curdP + 1 : 2*p->data[lP]->alloc;
-		    p->data[lP]->polys = (Poly_ptr*) realloc(p->data[lP]->polys, sizeof(Poly_ptr)*newAlloc);
+		if (curdP + 1 > p->data[lP]->alloc) {
+			int newAlloc = (2*(p->data[lP])->alloc < curdP+1) ? curdP + 1 : 2*p->data[lP]->alloc;
+			p->data[lP]->polys = (Poly_ptr*) realloc(p->data[lP]->polys, sizeof(Poly_ptr)*newAlloc);
 			p->data[lP]->alloc = newAlloc;
 		}
 	}
 	//alpha's allocation automatically managed by its power series structure.
-
-
 	for (int lP = 0; lP <= d - 1; ++lP) {
-		// fprintf(stderr, "before degree of p->data[%d]: %d\n", lP, p->data[lP]->deg);
-		// fprintf(stderr, "before degree of alpha->Data[0]: %d\n", alpha->data[0]->deg);
-		// fprintf(stderr, "before degree of F[%d]: %d\n", lP, F[lP]->deg);
-
 		if (F[lP]->deg == -1){
-			 polyP = NULL;
+			polyP = NULL;
 		}else{
-		   updateToDeg_PS(curdP,F[lP]); //update F based on new terms of p->data[lP-1]
-			// fprintf(stderr, "after degree of F[%d]: %d\n", lP, F[lP]->deg);
-		   polyP = lemmaForWeiestrass_UPOPS(F[lP], p->data[lP], alpha->data[0], curdP);
+			// fprintf(stderr, "updating F[%d] to %d\n", lP, curdP);
+			// homogPartParallel_PS(curdP, F[lP], tids);
+			updateToDeg_PS(curdP,F[lP]); //update F based on new terms of p->data[lP-1]
+			// fprintf(stderr, "\n");
+		   // updateToDeg_PS(curdP,F[lP]); //update F based on new terms of p->data[lP-1]
+		   polyP = lemmaForWeierstrass_UPOPS(F[lP], p->data[lP], alpha->data[0], curdP);
 		}
 
-		// const char* syms[] = {"z", "x", "y"};
-		// fprintf(stderr, "\n\ncomputed lemma poly for degree %d:\n", curdP);
-		// printPoly_AA(stderr, polyP, syms, polyP == NULL ? 0 : polyP->nvar);
-		// fprintf(stderr, "\n" );
 		p->data[lP]->polys[curdP] = polyP;
 		//manually set new degree since this updated PS is needed for next iteration of the loop.
 		p->data[lP]->deg = curdP;
-		// fprintf(stderr, "after degree of p->data[%d]: %d\n", lP, p->data[lP]->deg);
 	}
 
 	for (int lA = m; lA >= 0; --lA) {
-		// fprintf(stderr, "before degree of alpha->data[%d]: %d\n", lA, alpha->data[lA]->deg);
 		updateToDeg_PS(curdA,  alpha->data[lA]);
-		// fprintf(stderr, "after degree of alpha->data[%d]: %d\n", lA, alpha->data[lA]->deg);
 	}
+
 }
 
 
@@ -220,7 +210,10 @@ void weierstrassPreparation_UPOPS(Upops_t* upops, Upops_t** p_out, Upops_t** alp
 		exit(1);
 	}
 
-	int nvar = upops->data[d]->polys[0] == NULL ? 0 : upops->data[d]->polys[0]->nvar;
+	int nvar = -1;
+	for (int i = 0; i < upops->deg && nvar == -1; ++i) {
+		nvar = upops->data[i]->nvar;
+	}
 	if (d == 0) {
 		if (p_out != NULL) {
 			*p_out = one_UPOPS(nvar);
@@ -243,54 +236,53 @@ void weierstrassPreparation_UPOPS(Upops_t* upops, Upops_t** p_out, Upops_t** alp
 
 	/*  Initializing b  */
 
-    for (int j = 0; j <= d - 1; j++) {
+
+	for (int j = 0; j <= d - 1; j++) {
 		b[j]= allocatePowerSeries_PS(0);
 		b[j]->polys= copyUpTo_PS(upops->data[j], 0);
 		b[j]->alloc = 1;
 		b[j]->deg = 0;
-
+		b[j]->nvar = nvar;
 	}
 
-    b[d] = onePowerSeries_PS(nvar);
-
+	b[d] = onePowerSeries_PS(nvar);
 
 	/*  Initializing c */
-    reserve_PS(a[d+m]);
-    c[m] = a[d+m];
+	reserve_PS(a[d+m]);
+	c[m] = a[d+m];
 	for (int lA = m-1; lA >= 0; --lA) {
 
 		c[lA] = upops->data[d + lA];
 		reserve_PS(c[lA]);
 
 		for (int jA = d-1; jA >= 0; --jA) {
-		    int k = d + lA - jA;
+			int k = d + lA - jA;
 
 			if (k <= m) {
-
-		        PowerSeries_t* mulpsA = multiplyPowerSeries_PS(b[jA], c[k]);
+				PowerSeries_t* mulpsA = multiplyPowerSeries_PS(b[jA], c[k]);
 				PowerSeries_t* tmp = subPowerSeries_PS(c[lA], mulpsA);
 				destroyPowerSeries_PS(c[lA]); //c[lA] is reserved inside subPowerSeries_PS
 				destroyPowerSeries_PS(mulpsA); //mulpsA is reserved inside subPowerSeries_PS
 				c[lA] = tmp;
 			}
-	    }
+		}
 	}
 
 	/*  Initializing F */
 	reserve_PS(upops->data[0]);
 	F[0] = upops->data[0];
 	for (int lP = 1; lP <= d - 1; ++lP) {
-	    F[lP] = upops->data[lP];
-	    reserve_PS(F[lP]);
-	    if (m > 0) {
-	        for (int jP = 1; jP <= lP; ++jP) {
-	    	    PowerSeries_t* mulpsP = multiplyPowerSeries_PS(b[lP - jP], c[jP]);
-	    	    PowerSeries_t* tmp = subPowerSeries_PS(F[lP], mulpsP);
-	    	    destroyPowerSeries_PS(F[lP]);
-	    	    destroyPowerSeries_PS(mulpsP); //mulpsP is reserved inside sub
-	    		F[lP] = tmp;
-	    	}
-	    }
+		F[lP] = upops->data[lP];
+		reserve_PS(F[lP]);
+		if (m > 0) {
+			for (int jP = 1; jP <= lP && jP <= m; ++jP) {
+				PowerSeries_t* mulpsP = multiplyPowerSeries_PS(b[lP - jP], c[jP]);
+				PowerSeries_t* tmp = subPowerSeries_PS(F[lP], mulpsP);
+				destroyPowerSeries_PS(F[lP]);
+				destroyPowerSeries_PS(mulpsP); //mulpsP is reserved inside sub
+				F[lP] = tmp;
+			}
+		}
 	}
 	p->weierstrassFData = F;
 	p->fDataSize = d;
@@ -299,13 +291,13 @@ void weierstrassPreparation_UPOPS(Upops_t* upops, Upops_t** p_out, Upops_t** alp
 	p->deg = d;
 	/*  generators of each b[i] in p */
 	for (long long int k = 0; k < d; k++) {
-	    b[k]->genOrder = 3;
-	    b[k]->gen.tertiaryGen = &(weierstrassCoefVoidPUpdate_UPOPS);
-	    b[k]->genParam1 = (void*) k; //the index of the coefficient
-	    b[k]->genParam2 = (void*) p; //yes, a bit recrusive in nature. But it should be fine with the correct number of reserves and destroys.
-	   	b[k]->genParam3 = (void*) alpha;
-	    // reserve_UPOPS(p); // use a weak reference to p
-	    reserve_UPOPS(alpha);
+		b[k]->genOrder = 3;
+		b[k]->gen.tertiaryGen = &(weierstrassCoefVoidPUpdate_UPOPS);
+		b[k]->genParam1 = (void*) k; //the index of the coefficient
+		b[k]->genParam2 = (void*) p; //yes, a bit recrusive in nature. But it should be fine with the correct number of reserves and destroys.
+		b[k]->genParam3 = (void*) alpha;
+		// reserve_UPOPS(p); // use a weak reference to p
+		reserve_UPOPS(alpha);
 		b[k]->paramType1 = PLAIN_DATA;
 		b[k]->paramType2 = WEAK_UPOPS;
 		b[k]->paramType3 = UPOPS;
@@ -325,10 +317,10 @@ void weierstrassPreparation_UPOPS(Upops_t* upops, Upops_t** p_out, Upops_t** alp
 	// alpha->BinaryGen = &(weierstrassCoefVoidAUpdate_UPOPS);
 	// alpha->genParam1 = upops;
 	// alpha->genParam2 = p;
-    // alpha->paramType1 = UPOPS;
-    // alpha->paramType2 = UPOPS;
-    // reserve_UPOPS(upops);
-    // reserve_UPOPS(p);
+	// alpha->paramType1 = UPOPS;
+	// alpha->paramType2 = UPOPS;
+	// reserve_UPOPS(upops);
+	// reserve_UPOPS(p);
 
 
 	if (p_out != NULL) {

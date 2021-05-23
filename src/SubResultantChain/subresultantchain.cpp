@@ -90,7 +90,7 @@
  **/
 template <class Domain, class UnivariateDomainPoly>
 SubResultantChain<Domain,UnivariateDomainPoly>::SubResultantChain () : var("x") {}
-		
+
 /**
  * Constructor: creates an empty subresultant chain with identified variable
  *
@@ -98,7 +98,7 @@ SubResultantChain<Domain,UnivariateDomainPoly>::SubResultantChain () : var("x") 
  **/
 template <class Domain, class UnivariateDomainPoly>
 SubResultantChain<Domain,UnivariateDomainPoly>::SubResultantChain (const Symbol& v) : var(v) {}
-		
+
 /**
  * Default constructor: creates subresultant chain from the input polynomials
  *
@@ -125,7 +125,7 @@ SubResultantChain<Domain,UnivariateDomainPoly>::SubResultantChain (const Univari
 		std::cerr << "[SRC] leaving default constructor." << std::endl;
 	#endif
 }
-		
+
 /**
  * Ring specification constructor: creates subresultant chain from the input polynomials in a minimal ordered subring of R
  *
@@ -164,7 +164,7 @@ SubResultantChain<Domain,UnivariateDomainPoly>::SubResultantChain (const Univari
 	chain[0].setRingVariables(chain[0].variables());
 	chain[chain.size()-1].setRingVariables(chain[chain.size()-1].variables());
 	chain[chain.size()-2].setRingVariables(chain[chain.size()-2].variables());
-	
+
 
 	std::cerr << "Computing Chain Between: " << std::endl << "P: " << a << std::endl << "Q: " << b << std::endl;
 
@@ -176,8 +176,8 @@ SubResultantChain<Domain,UnivariateDomainPoly>::SubResultantChain (const Univari
 	#ifdef TRIANGULARSET_DEBUG
 		std::cerr << "[SRC] leaving ring specification constructor." << std::endl;
 	#endif
-	
-	
+
+
 //	UnivariateDomainPoly A(a),B(b);
 //	A.setRingVariables(R);
 //	A.setRingVariables(A.variables());
@@ -303,7 +303,7 @@ UnivariateDomainPoly SubResultantChain<Domain,UnivariateDomainPoly>::subResultan
 		exit(1);
 	}
 }
-		
+
 /**
  * Return the first polynomial in the chain
  *
@@ -345,7 +345,7 @@ UnivariateDomainPoly SubResultantChain<Domain,UnivariateDomainPoly>::resultant(b
         zero.zero();
 	return zero;
 }
-		
+
 ///**
 // * Select the leading coefficient of a subresultant given the index;
 // * if no such polynomial, 0 is returned
@@ -353,7 +353,7 @@ UnivariateDomainPoly SubResultantChain<Domain,UnivariateDomainPoly>::resultant(b
 // * @param i: index of the leading coefficient of the desired subresultant
 // **/
 //template <class Domain, class UnivariateDomainPoly>
-//Domain SubResultantChain<Domain,UnivariateDomainPoly>::principleSubResultantCoefficientOfIndex(int i) const {
+//Domain SubResultantChain<Domain,UnivariateDomainPoly>::principalSubResultantCoefficientOfIndex(int i) const {
 //	if (i <= chain.size() && !(chain.empty()))
 //		return chain[i].leadingCoefficientInVariable(var);
 //	else {

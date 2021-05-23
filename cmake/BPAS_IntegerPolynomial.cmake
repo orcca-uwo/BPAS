@@ -2,11 +2,13 @@ target_sources(${BPAS_LIB_TARGET} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/SMZP_Hensel.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/DUZP_Hensel.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/DUZP_Support.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/DBZP_Support.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/SMZP_Support.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/SMZP_Support_Unpacked.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/SMZP_Support_Test.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/SMZP_Support_Recursive.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/SMZP_Support_Recursive_Unpacked.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/SMZP_Factoring_Support.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/mzpolynomial.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/uzpolynomial.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/IntegerPolynomial/Poly.cpp

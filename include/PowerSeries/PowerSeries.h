@@ -103,9 +103,10 @@ typedef struct PowerSeries {
     int deg;
     int alloc;
     Poly_ptr* polys;
+    int nvar;
 
-    HomogPartGenerator_u gen;
     int genOrder;
+    HomogPartGenerator_u gen;
     void* genParam1;
     void* genParam2;
     void* genParam3;
@@ -126,11 +127,41 @@ PowerSeries_t* allocatePowerSeries_PS(int alloc);
 
 
 /**
+ * Resize the allocation of a power series, freeing
+ * homogeneous parts if the new allocation is less than
+ * the current power series' deg.
+ * This function is useful if you know in advance
+ * the desired precision, avoiding possibly many
+ * lazy reallocations.
+ *
+ * Note that newAlloc counts the homogeneous parts,
+ * thus newAlloc will store at most homogeneous part
+ * of degree newAlloc-1
+ *
+ * @param f: the power series to resize
+ * @param newAlloc: the new maixmum number of homogeneous parts to allocate
+ */
+void resizePowerSeries_PS(PowerSeries_t* f, int newAlloc);
+
+
+/**
  * Destroy the power series.
  * Actually, decerements the reference count and destroys conditionally.
  * @param ps : a power series
  */
 void destroyPowerSeries_PS(PowerSeries_t* ps);
+
+static void inline destroyPowerSeries_shallow_PS(PowerSeries_t* ps) {
+    if (ps == NULL) {
+        return;
+    }
+
+    for(int i = 0; i < ps->deg; ++i) {
+        freePolynomial_AA(ps->polys[i]);
+    }
+
+    free(ps);
+}
 
 
 /**
@@ -160,12 +191,27 @@ static inline int isUnit_PS(PowerSeries_t* f) {
  * @return 1 iff f is 0.
  */
 static inline int isZero_PS(PowerSeries_t* f) {
-    if (f == NULL || f->deg == -1) {
+    if (f == NULL || f->deg == -1 || f->nvar == -1) {
         return 1;
     }
     return 0;
 }
 
+/**
+ * Given a power series f, check if it is defined
+ * to be exactly 1, not just equal to 1 up
+ * to some precision.
+ *
+ * @return 1 iff f = 1.
+ *
+ */
+static inline int isOne_PS(PowerSeries_t* f) {
+    if (f == NULL || f->deg > 0) {
+        return 0;
+    }
+
+    return isOne_AA(f->polys[0]) && f->genOrder == -1;
+}
 
 /**
  * Create the zero power series.
@@ -200,6 +246,14 @@ PowerSeries_t* constPowerSeries_PS(const mpq_t coef, int nvar);
 PowerSeries_t* geometricSeries_PS(long long nvar);
 
 /**
+ * Create the series consisting of all possible monomials
+ * with a given number of variables.
+ * @param nvar: the number of variables
+ * @return the power series which is the sum of all monomials
+ */
+PowerSeries_t* sumOfAllMonomials_PS(long long nvar);
+
+/**
  * Print a power series to the file pointer fp
  * using the symbols sym as symbols of the homogeneous polynomial.
  * @param fp: the file pointer to print to; may be stdout or stderr or something else.
@@ -216,6 +270,11 @@ void print_PS(FILE* fp, PowerSeries_t* ps, const char** sym);
 /**
  * Given a power series f and an integer d, return the homogeneous
  * part of f of degree d.
+ *
+ * Note that, for performance reasons, this returns a pointer to the
+ * same polynomial as is stored in the power series. It should not be free'd.
+ * Modifications should be made only to a copy of the returned polynmoial.
+ * @see deepCopyPolynomial_AA
  *
  * The is the main functional interface for power series.
  * Calling this function will generate terms in the power series as needed.
@@ -288,6 +347,17 @@ static inline Poly_ptr* copyUpTo_PS(PowerSeries_t* f, int d) {
     return arrayOfHomogPart;
 }
 
+static inline PowerSeries_t* deepCopy_PS(PowerSeries_t* f) {
+    PowerSeries_t* g = allocatePowerSeries_PS(f->deg+1);
+    Poly_ptr* data = g->polys;
+    *g = *f; //copy most things
+    g->refCount = 1;
+    g->polys = data;
+    for (int i = 0; i <= g->deg; ++i) {
+        g->polys[i] = deepCopyPolynomial_AA(f->polys[i]);
+    }
+    return g;
+}
 
 /**********************
  * Addition and Subtraction
@@ -367,7 +437,7 @@ Poly_ptr homogPart_sub_PS(int d,  PowerSeries_t* f,  PowerSeries_t* g);
  * @param d: the degree of the homogeneous part to generate.
  * @param param1: the power series to negate.
  */
-Poly_ptr homogPartVoid_negate_ps(int d, void* param1);
+Poly_ptr homogPartVoid_negate_PS(int d, void* param1);
 
 /**
  * An internal function.

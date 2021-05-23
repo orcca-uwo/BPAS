@@ -15,10 +15,10 @@ extern "C" {
 
 /********************************
  * The MapleInterface is an interface to a running maple kernel from C.
- * It can be used by the program to communicate with maple, execute things 
+ * It can be used by the program to communicate with maple, execute things
  * on the kernel, and generally pass data back and forth.
- * 
- * WARNING: Since the maple kernel is a singleton, it not thread-safe. Calling 
+ *
+ * WARNING: Since the maple kernel is a singleton, it not thread-safe. Calling
  * the kernel from many threads will lead to trouble.
  *
  ********************************/
@@ -27,11 +27,11 @@ extern "C" {
 
 
 /**
- * Get a reference to the maple kernel vector. 
+ * Get a reference to the maple kernel vector.
  * This pointer is a singleton that exists for the lifetime of the program.
- * 
+ *
  * Note: Maple kernels cannot be stopped and subsequently restarted via the C interface.
- *       Thus, this is the one and only kernel for maple during the entire program. 
+ *       Thus, this is the one and only kernel for maple during the entire program.
  *
  * returns a pointer to the maple kernel vector.
  */
@@ -40,7 +40,7 @@ MKernelVector* getMapleKVSingleton();
 /**
  * Start up the maple kernel using some arguments.
  * argc: the number of arguments.
- * argv: the arguments to pass to kernel initialization. 
+ * argv: the arguments to pass to kernel initialization.
  */
 void startMapleKernel(int argc, char* argv[]);
 
@@ -48,7 +48,7 @@ void startMapleKernel(int argc, char* argv[]);
  * Stop the maple kernel.
  * Note: once stopped, the kernel can never be started again during the lifetime
  *       of a program.
- */ 
+ */
 void stopMapleKernel();
 
 /**
@@ -56,14 +56,14 @@ void stopMapleKernel();
  * Note: As of maple 2017, this has no effect on the maple kernel via the C interface.
  *       The kernel is *not* restarted.
  */
-// void restartMapleKernel();
+void restartMapleKernel();
 
 /**
  * Convert an multivariate integer polynomial (AltArrZ_t) to a maple ALGEB object.
  * aa: the polynomial to convert.
  * syms: the symbols representing each variable in the polynomial.
  *
- * returns the ALGEB constructed from aa. 
+ * returns the ALGEB constructed from aa.
  */
 ALGEB convertToMaple_AAZ(const AltArrZ_t* aa, const char** syms);
 
@@ -90,7 +90,7 @@ char* algebToString_MplInt(ALGEB in);
 AltArrZ_t* gcd_MplInt_AAZ(const AltArrZ_t* aa, const AltArrZ_t* ba, const char** syms);
 
 /**
- * Get the GCD of two algebraic types by calling Maple's gcd. 
+ * Get the GCD of two algebraic types by calling Maple's gcd.
  *
  * f: the first algebraic object as a string.
  * g: the second algebraic object as a string.
@@ -103,15 +103,15 @@ char* gcd_MplInt_string(const char* f, const char* g);
  * Factor a polynomial over the integers.
  * A common integer factor is returned in numericFact. Irreducible polynomial factors
  * are returned in retFactsPtr with a parallel array retExps encoding the
- * exponents of each factor. 
- * 
+ * exponents of each factor.
+ *
  * aa: the polynomial to factor
  * symsL the symbols representing each variable in the polynomial.
  * numfacts: the number of factors returned in retFactsPtr and retExps
  * retFactsPtr: a pointer to the dynamically-allocated return array of factors
  * retExps: a pointer to the dynamically-allocated return array of exponents
  * numericFact: an integer factor (or 1 if no integer factor)
- * 
+ *
  */
 void factorPolynomial_MplInt_AAZ(const AltArrZ_t* aa, const char** syms, int* numFacts, AltArrZ_t*** retFactsPtr, int** retExps, mpz_t numericFact);
 
@@ -119,14 +119,14 @@ void factorPolynomial_MplInt_AAZ(const AltArrZ_t* aa, const char** syms, int* nu
  * Factors a polynomial by calling maple's factors command.
  * A common integer factor is returned in numericFact. Irreducible polynomial factors
  * are returned in retFactsPtr with a parallel array retExps encoding the
- * exponents of each factor. 
- * 
+ * exponents of each factor.
+ *
  * poly: the polynomial to factor, the last character should be a colon (:).
  * numfacts: the number of factors returned in retFactsPtr and retExps
  * retFactsPtr: a pointer to the dynamically-allocated return array of factors
  * retExps: a pointer to the dynamically-allocated return array of exponents
  * numericFact: an integer factor (or 1 if no integer factor)
- * 
+ *
  */
 void factorPolynomial_MplInt_string(const char* poly, int* numFacts, char*** retFactsPtr, char*** retExps, char** numericFact);
 

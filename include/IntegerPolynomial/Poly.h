@@ -9,6 +9,7 @@
 */
 
 #include "../global.h"
+#include "DUZP_Support.h"
 
 class UnivariateIntegerPolynomial{
 
@@ -135,6 +136,22 @@ class UnivariateIntegerPolynomial{
 		UnivariateIntegerPolynomial(){
 			init();
 			exposedSize = 0;
+		}
+
+		UnivariateIntegerPolynomial(DUZP_t* p) {
+			init();
+			if (isZero_DUZP(p)) {
+				size = 1;
+				coefficients = new mpz_class[size]();
+				exposedSize = 0;
+				return; 
+			}
+			size = p->lt + 1;
+			exposedSize = p->lt + 1;
+			coefficients = new mpz_class[size]();
+			for (int i = 0; i < size; ++i) {
+				coefficients[i] = std::move(mpz_class(p->coefs[i]));
+			}		
 		}
 
 		/*inline UnivariateIntegerPolynomial& operator= (UnivariateIntegerPolynomial q) {
@@ -464,7 +481,19 @@ class UnivariateIntegerPolynomial{
 		 * @param digitCount maximum number of the digits for the coefficients
 		 */
 		void extractCoeffsicients(mpz_class c1Int, mpz_class c2Int, int startIndex, int lastIndex, int digitCount);
-		
+	
+		DUZP_t* convertToDUZP() {
+			if (exposedSize == 0) {
+				return NULL;
+			}
+			DUZP_t* ret = allocPolynomial_DUZP(exposedSize);
+			for (int i = 0; i < exposedSize; ++i) {
+				mpz_init_set(ret->coefs[i], coefficients[i].get_mpz_t());
+			}
+			ret->lt = exposedSize - 1;
+			return ret;
+		}
+	
 		/******************************* UTIL ********************************************/
 
 		/**

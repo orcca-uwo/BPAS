@@ -66,7 +66,7 @@ add_custom_target(${BPAS_V_SANITY_TEST_TARGET} DEPENDS ${BPAS_LIB_TARGET} COMMAN
 
 # --------------------------------------
 # Declare the verbose validate test target
-set( BPAS_V_SANITY_TEST_TARGET "validate-tests-verbose")
+set( BPAS_V_VALIDATE_TEST_TARGET "validate-tests-verbose")
 add_custom_target(${BPAS_V_VALIDATE_TEST_TARGET} DEPENDS ${BPAS_LIB_TARGET} COMMAND ${CMAKE_CTEST_COMMAND} -R ${BPAS_VALIDATE_TESTS_MARK} --verbose)
 
 # -----------------------------------------

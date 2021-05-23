@@ -43,6 +43,8 @@ Upops_t* taylorShift_UPOPS(Upops_t* f, const mpq_t c_r);
  * Factorize upops f using Hensel's lemma.
  * Returns an array of size n of the upops factors of f
  * found using Hensel's lemma and Weierstrass preparation.
+ * 
+ * @Note: f is assumed to be monic in its polynomial variable.
  *
  * @Note: it is assumed that \bar{f} factorizes into linear
  * factors over Q, with \bar{f} being the polynomial resulting
@@ -53,7 +55,9 @@ Upops_t* taylorShift_UPOPS(Upops_t* f, const mpq_t c_r);
  * If either factrs or n is NULL, this function does nothing.
  *
  * @param f, the input upops
- * @param facts[out] a pointer to an array of size n of the upops factors of f.
+ * @param facts[out] a pointer to an array of size n of the upops factors of f,
+                     if facts does not point to NULL, it is assumed to be
+                     pre-allocated with a large enough allocation.
  * @param n[out], a pointer to the number of roots.
  */
 void HenselFactorization_UPOPS(Upops_t* f, Upops_t*** facts, int* n);
@@ -69,28 +73,21 @@ void HenselFactorization_UPOPS(Upops_t* f, Upops_t*** facts, int* n);
  * \bar{f} being the polynomial resulting from evaluating
  * all power series coefficeints of f at the origin.
  *
+ * @Note: f is assumed ot be monic in its polynomial variable. 
+ *
  * @Note: it is assumed that \bar{f} factorizes into linear
- * factors over Q.
+ * factors over Q whose roots are given by C.
  *
  * @param f, the input upops
  * @param C, the list of roots of size of of \bar{f}.
  * @param n, the number of roots.
- * @param facts[out] a pointer to an array of size n of the upops factors of f.
+ * @param facts[out] a pointer to an array of size n of the upops factors of f,
+                     if facts does not point to NULL, it is assumed to be
+                     pre-allocated with a large enough allocation.
  */
 void HenselFactorization_UPOPS(Upops_t* f, mpq_t* C, int n, Upops_t*** facts);
 
 
-
-
-// /**
-//  * Given a UPOPS, convert it to a univariate integer polynomial
-//  * by evaluating all power series variables to zero
-//  * and taking the pimitice part of the resulting univariate rational polynomial.
-//  *
-//  * @param f: the upops.
-//  * @return the univariate integer polynomail.
-//  */
-// DUZP_t* evalToDUZP_UPOPS(Upops_t* f);
 
 
 

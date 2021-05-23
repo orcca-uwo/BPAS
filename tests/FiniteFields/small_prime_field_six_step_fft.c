@@ -1,8 +1,7 @@
-
 #include "bpas.h"
 //#include "cpu_timer.h"
 
-/**************************************/
+///////////////////////////////////////////////////////////
 
 /* test_dft_six_step_small_prime_field_cpu:
  * compute FFT-based multiplication of two
@@ -66,11 +65,15 @@ test_dft_six_step_small_prime_field_cpu (int K, int e, usfixn64 p_u64)
   memset (x_data, 0x00, (data_size));
   memset (y_data, 0x00, (data_size));
 
+  srand(time(NULL));
+  usfixn64 rv=rand();
   for (int i = 0; i < N / 2; i++)
     {
-      x_data[i] = p_u64 - 1 - i; //(i % vector_size);
-      y_data[i] = p_u64 - 2 - i; //(i % vector_size);
+      x_data[i] = rv;//p_u64 - 1 - i; //(i % vector_size);
+      y_data[i] = rv-1;//p_u64 - 2 - i; //(i % vector_size);
+      rv-=2;
     }
+//  printf("GENERATING RANDOM DATA!!!\n");
 
   /////////////////////////////////////
   printf ("%s", shortline);
@@ -110,16 +113,16 @@ test_dft_six_step_small_prime_field_cpu (int K, int e, usfixn64 p_u64)
 
   for (int i = 0; i < N; i++)
     {
-      convertIn_GLOBAL_ptr(&x_data[i], &P);
+      convertIn_GLOBAL_ptr (&x_data[i], &P);
     }
   for (int i = 0; i < N; i++)
     {
-      convertIn_GLOBAL_ptr(&y_data[i], &P);
+      convertIn_GLOBAL_ptr (&y_data[i], &P);
     }
 
   ///////////////////////////////////////
-  convertIn_GLOBAL_ptr(&omega, &P);
-  convertIn_GLOBAL_ptr(&omega_inv, &P);
+  convertIn_GLOBAL_ptr (&omega, &P);
+  convertIn_GLOBAL_ptr (&omega_inv, &P);
 
   //setting up timers.
   cpu_timer t_fft_based_mult;
@@ -146,7 +149,7 @@ test_dft_six_step_small_prime_field_cpu (int K, int e, usfixn64 p_u64)
   printf("%s",shortline);
 #endif
   ///////////////////////////////////////
-  convertIn_GLOBAL_ptr(&n_inv, &P);
+  convertIn_GLOBAL_ptr (&n_inv, &P);
   ///////////////////////////////////////
 
 #if VERBOSE>=1
@@ -166,7 +169,7 @@ test_dft_six_step_small_prime_field_cpu (int K, int e, usfixn64 p_u64)
 
   for (int i = 0; i < N; i++)
     {
-      convertOut_GLOBAL_ptr(&x_data[i], &P);
+      convertOut_GLOBAL_ptr (&x_data[i], &P);
     }
 
 #if VERBOSE>=1
@@ -192,8 +195,8 @@ test_dft_six_step_small_prime_field_cpu (int K, int e, usfixn64 p_u64)
       gmp_karatsuba_poly_mult_u64 (x_data_copy, y_data_copy, N, p_u64 - 1, 1);
 
       int test_failed = 0;
-      printVectorToFile(x_data, N, 1, "x.tmp",0);
-      printVectorToFile(x_data_copy, N, 1, "xcopy.tmp",0);
+      printVectorToFile (x_data, N, 1, "x.tmp", 0);
+      printVectorToFile (x_data_copy, N, 1, "xcopy.tmp", 0);
       for (int i = 0; i < N; i++)
 	{
 	  if (x_data_copy[i] != x_data[i])
@@ -231,25 +234,28 @@ test_dft_six_step_small_prime_field_cpu (int K, int e, usfixn64 p_u64)
   return verification_result;
 }
 
-/**************************************/
+///////////////////////////////////////////////////////////
 
 int
 main (int argc, char ** argv)
 {
+
+//  test_cilk(argc, argv);
+//  return EXIT_SUCCESS;
   setbuf (stdout, NULL);
   int K = 16;
   int e = 2;
   int fft_based_mult_enabled = 1;
 
-  if ((argc==2))
-    if ((strcmp(argv[1],"-h")==0)||(strcmp(argv[1],"--help")==0))
-    {
-      printf ("%s", shortline);
-      printf ("computing DFT_{K^e}:"
-	      "args: [1]:K  [2]:e \n");
-      printf ("%s", shortline);
-      exit(EXIT_SUCCESS);
-    }
+  if ((argc == 2))
+    if ((strcmp (argv[1], "-h") == 0) || (strcmp (argv[1], "--help") == 0))
+      {
+	printf ("%s", shortline);
+	printf ("computing DFT_{K^e}:"
+		"args: [1]:K  [2]:e \n");
+	printf ("%s", shortline);
+	exit (EXIT_SUCCESS);
+      }
   if (argc > 1)
     {
       K = atoi (argv[1]);
@@ -260,7 +266,7 @@ main (int argc, char ** argv)
       e = atoi (argv[2]);
     }
 
-  test_dft_six_step_small_prime_field_cpu(K, e, fourier_primes_u64_table[0]);
+  test_dft_six_step_small_prime_field_cpu (K, e, fourier_primes_u64_table[0]);
 
 //  //VERIFIED.
 //  for (int K = 16; K <= 64; K *= 2)
@@ -270,4 +276,4 @@ main (int argc, char ** argv)
   return 0;
 }
 
-/**************************************/
+///////////////////////////////////////////////////////////

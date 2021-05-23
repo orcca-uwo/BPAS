@@ -1,5 +1,5 @@
 #---------------------------------------------------------
-# Macros for easily generating tests. 
+# Macros for easily generating tests.
 # Assumes the following cmake variables are set:
 #   BPAS_SANITY_TEST_TARGET - the target name of sanity tests
 #   BPAS_VALIDATE_TEST_TARGET - the target name of validate tests
@@ -21,7 +21,7 @@ macro(BPAS_ADD_SANITY_TEST _name _exename)
     set(oneValueArgs)
     set(multiValueArgs FILES ARGUMENTS LINK_WITH)
     cmake_parse_arguments(BPAS_ADD_SANITY_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    
+
     if(NOT TARGET ${_exename})
         add_executable(${_exename} ${BPAS_ADD_SANITY_TEST_FILES})
         target_compile_options(${_exename} PRIVATE ${BPAS_SANITY_TEST_ARGS} )
@@ -33,7 +33,7 @@ macro(BPAS_ADD_SANITY_TEST _name _exename)
     add_test(NAME "${BPAS_SANITY_TESTS_MARK}${_name}" COMMAND ${_exename} ${BPAS_ADD_SANITY_TEST_ARGUMENTS})
 
     if(BPAS_WITH_MAPLE)
-        set_tests_properties("${BPAS_SANITY_TESTS_MARK}${_name}" PROPERTIES ENVIRONMENT "MAPLE=${MAPLE_HOME};LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${MAPLE_HOME}/bin.X86_64_LINUX")
+        set_tests_properties("${BPAS_SANITY_TESTS_MARK}${_name}" PROPERTIES ENVIRONMENT "MAPLE=${MAPLE_HOME};LD_LIBRARY_PATH=${MAPLE_HOME}/bin.X86_64_LINUX:$ENV{LD_LIBRARY_PATH}")
     endif()
 
 endmacro()
@@ -55,7 +55,7 @@ macro(BPAS_ADD_VALIDATE_TEST _name _exename)
     set(oneValueArgs)
     set(multiValueArgs FILES ARGUMENTS LINK_WITH)
     cmake_parse_arguments(BPAS_ADD_VALIDATE_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    
+
     if(NOT TARGET ${_exename})
         add_executable(${_exename} ${BPAS_ADD_VALIDATE_TEST_FILES})
         target_compile_options(${_exename} PRIVATE ${BPAS_VALIDATE_TEST_ARGS} )
@@ -68,5 +68,5 @@ macro(BPAS_ADD_VALIDATE_TEST _name _exename)
 
     # YES, Maple required that you set environment variables like this...
     # It is beyond annoying.
-    set_tests_properties("${BPAS_VALIDATE_TESTS_MARK}${_name}" PROPERTIES ENVIRONMENT "MAPLE=${MAPLE_HOME};LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${MAPLE_HOME}/bin.X86_64_LINUX")
+    set_tests_properties("${BPAS_VALIDATE_TESTS_MARK}${_name}" PROPERTIES ENVIRONMENT "MAPLE=${MAPLE_HOME};LD_LIBRARY_PATH=${MAPLE_HOME}/bin.X86_64_LINUX:$ENV{LD_LIBRARY_PATH}")
 endmacro()

@@ -15,7 +15,7 @@ void mapleKernelErrorCB(void* data, long int tag, const char* output) {
 }
 
 MKernelVector* mapleKVSingleton(int set, MKernelVector kv) {
-	static MKernelVector singleton;
+	static MKernelVector singleton = NULL;
 	if (set) {
 		singleton = kv;
 	}
@@ -62,7 +62,6 @@ void startMapleKernel(int argc, char* argv[]) {
 void stopMapleKernel() {
 	MKernelVector* kv_p = mapleKVSingleton(0, NULL);
 	StopMaple(*kv_p);
-	mapleKVSingleton(0, NULL);
 }
 
 
@@ -95,7 +94,7 @@ char* algebToString_MplInt(ALGEB in) {
 	//+1 for null char.
 	char* ret = (char*) malloc(sizeof(char)*(resSize+1));
 	memcpy(ret, resStr, sizeof(char)*(resSize+1));
-	return ret; 
+	return ret;
 }
 
 ALGEB convertToMaple_AAZ(const AltArrZ_t* aa, const char** syms) {
@@ -121,14 +120,14 @@ ALGEB convertToMaple_AAZ(const AltArrZ_t* aa, const char** syms) {
 }
 
 
-	
+
 char* gcd_MplInt_string(const char* ac, const char* bc) {
 	// timer_id id = start_timer();
 	MKernelVector* kv_p = getMapleKVSingleton();
     // timer_time elapsed1 = elapsed_time(&id);
     // double time = (elapsed1.tv_sec + ((double)elapsed1.tv_usec / 1000000));
 	// fprintf(stderr, "Start kernel time: %f\n", time );
-	
+
 
 	// id = start_timer();
 	ALGEB a = EvalMapleStatement(*kv_p, ac);
@@ -160,14 +159,14 @@ char* gcd_MplInt_string(const char* ac, const char* bc) {
 
 
 AltArrZ_t* gcd_MplInt_AAZ(const AltArrZ_t* aa, const AltArrZ_t* ba, const char** syms) {
-	
+
 
 	// timer_id id = start_timer();
 	MKernelVector* kv_p = getMapleKVSingleton();
     // timer_time elapsed1 = elapsed_time(&id);
     // double time = (elapsed1.tv_sec + ((double)elapsed1.tv_usec / 1000000));
 	// fprintf(stderr, "Start kernel time: %f\n", time );
-	
+
 
 	// id = start_timer();
 	ALGEB a = convertToMaple_AAZ(aa, syms);
@@ -216,7 +215,7 @@ void factorPolynomial_MplInt_string(const char* poly, int* numFacts, char*** ret
 	// ALGEB verifyFunc = EvalMapleStatement(*kv_p, verifyStr);
 	// ALGEB didFactorAlg = EvalMapleProc(*kv_p, verifyFunc, 2, a, factList);
 	// M_BOOL didFactor = MapleToM_BOOL(*kv_p, didFactorAlg);
-	
+
 	// if (didFactor) {
 	// 	return 0;
 	// }
@@ -262,7 +261,7 @@ void factorPolynomial_MplInt_string(const char* poly, int* numFacts, char*** ret
 		}
 		free(retFacts);
 	}
-	
+
 	if (retExps != NULL) {
 		*retExps = exps;
 	} else {
@@ -289,7 +288,7 @@ void factorPolynomial_MplInt_AAZ(const AltArrZ_t* aa, const char** syms, int* nu
 	// ALGEB verifyFunc = EvalMapleStatement(*kv_p, verifyStr);
 	// ALGEB didFactorAlg = EvalMapleProc(*kv_p, verifyFunc, 2, a, factList);
 	// M_BOOL didFactor = MapleToM_BOOL(*kv_p, didFactorAlg);
-	
+
 	// if (didFactor) {
 	// 	return 0;
 	// }
@@ -302,7 +301,7 @@ void factorPolynomial_MplInt_AAZ(const AltArrZ_t* aa, const char** syms, int* nu
 	char opStr[] = "op:";
 	ALGEB opFunc = EvalMapleStatement(*kv_p, opStr);
 
-	mpq_t ringElem; 
+	mpq_t ringElem;
 	mpq_init(ringElem);
 	ALGEB ringElemAlg = EvalMapleProc(*kv_p, opFunc, 2, ToMapleInteger(*kv_p, 1), factList);
 	char* reStr = algebToString_MplInt(ringElemAlg);
@@ -326,7 +325,7 @@ void factorPolynomial_MplInt_AAZ(const AltArrZ_t* aa, const char** syms, int* nu
 
 		char* op_str = algebToString_MplInt(op1);
 		AltArr_t* opQ = generate_altarr_var_defined(op_str, syms, aa->nvar);
-		
+
 		AltArrZ_t* opZ = primitivePartAndContent_AAZFromAA(opQ, cont);
 
 		// retFacts[i-1] = deepCopyPolynomial_AAZFromAA(opQ);
@@ -355,7 +354,7 @@ void factorPolynomial_MplInt_AAZ(const AltArrZ_t* aa, const char** syms, int* nu
 		}
 		free(retFacts);
 	}
-	
+
 	if (retExps != NULL) {
 		*retExps = exps;
 	} else {
@@ -389,7 +388,7 @@ int triangularizeValidate_MplInt(const char** inputs, int nInputs, int isLazard)
     else {
     	testProc = EvalMapleStatement(*kv_p, procStrKalk);
     }
-	
+
     ALGEB result = EvalMapleProc(*kv_p, testProc, 3, algebList[0], algebList[1], algebList[2]);
 
     ALGEB algebList2[3];
@@ -410,14 +409,14 @@ int triangularizeValidate_MplInt(const char** inputs, int nInputs, int isLazard)
 	result = EvalMapleProc(*kv_p, validateProc, 2, algebList2[0], algebList2[1]);
 	M_BOOL ret = MapleToM_BOOL(*kv_p, result);
 	if (!ret) {
-		
+
 		if (isLazard) {
 			validateProc = EvalMapleStatement(*kv_p, validateProcLazard);
 	    }
 	    else {
 			validateProc = EvalMapleStatement(*kv_p, validateProcKalk);
 	    }
-	        
+
 	    result = EvalMapleProc(*kv_p, validateProc, 3, algebList2[0], algebList2[1], algebList2[2]);
 	    ret = MapleToM_BOOL(*kv_p, result);
 	    // ret = 1;
@@ -425,7 +424,7 @@ int triangularizeValidate_MplInt(const char** inputs, int nInputs, int isLazard)
 	} else {
 		// fprintf(stderr, "Passed by exact set test!\n");
 	}
-      
+
     char* bpasstr = algebToString_MplInt(algebList2[0]);
     char* maplestr = algebToString_MplInt(algebList2[1]);
     fprintf(stderr, "BPAS result: \n");

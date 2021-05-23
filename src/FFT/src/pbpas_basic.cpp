@@ -1,4 +1,4 @@
-// -*- C++ -*- 
+// -*- C++ -*-
 // @author Yuzhen Xie
 
 #if DEBUG
@@ -7,6 +7,8 @@
 #endif
 
 #include <cilk/cilk.h>
+#include <iostream>
+#include <string.h>
 
 #include "../../../include/FFT/src/modpn.h"
 
@@ -18,7 +20,7 @@
 //typedef __int32_t int32;
 using namespace std;
 namespace PBPAS {
-    
+
     /*
       C = A*B mod p
       p: prime number
@@ -28,8 +30,8 @@ namespace PBPAS {
       C should be initialized to zero
       default wp (whichprime) =0 to call the fft for a general Frouier prime
      */
-    bool DMPMul(sfixn p,  int N,    
-		sfixn *C, int *dc, 
+    bool DMPMul(sfixn p,  int N,
+		sfixn *C, int *dc,
 		sfixn *A, int *da,
 		sfixn *B, int *db,
 		int wp=0)
@@ -61,7 +63,7 @@ namespace PBPAS {
       pPtr: struct for Montgmery mod arithmetic
       C should be initialized to zero
      */
-    void BivarMul(sfixn *C, int *dc, 
+    void BivarMul(sfixn *C, int *dc,
 		  sfixn *A, int *da,
 		  sfixn *B, int *db,
 		  MONTP_OPT2_AS_GENE *pPtr,
@@ -74,13 +76,13 @@ namespace PBPAS {
 	int ls2 = dc[1]+1;
 	int es2 = logceiling(ls2);
 	int dims2 = 1<<es2;
-	
+
 	if ( (es2 > (pPtr->Npow)) || (es1 > (pPtr->Npow)) ){
 	    std::cout<<"BPAS: exception, the prime number is too small for the FFT problem."<<"es1: "<<es1<<", es2: "<<es2<<", p: "<<pPtr->P<<std::endl;
 	    exit(1); //checkFrourierPrime
 	}
 	//improve, just compute for the largest dimension
-	int RT1_size = (dims1<<1)-2; //2*dims1-2	
+	int RT1_size = (dims1<<1)-2; //2*dims1-2
 	sfixn *RT1   = (sfixn *) my_calloc(RT1_size<<1, sizeof(sfixn));
 	PBPAS::RootsTable(dims1, es1, RT1, pPtr);
 	sfixn *invRT1 = RT1 + RT1_size;
@@ -98,7 +100,7 @@ namespace PBPAS {
 	sfixn *RT2    = invRT1+dims1;
 	sfixn *invRT2 = RT2+dims2;
 	//--------------------------------------
-	cilk_spawn PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es1,dims1,RT1,pPtr);	
+	cilk_spawn PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es1,dims1,RT1,pPtr);
 	PBPAS::EX_Mont_GetNthRoots_OPT2_AS_GENE(es2,dims2,RT2,pPtr);
 	cilk_sync;
 
@@ -113,20 +115,20 @@ namespace PBPAS {
 
 	//RevBidMap
 	int *RevBidMap = new int[H];
-	for(int i=0; i<H; ++i)   
+	for(int i=0; i<H; ++i)
 	    RevBidMap[i] = i;
 	PBPAS::RevBitInd(H, RevBidMap);
 
 	int s = ls1*ls2;
 #if __GNUC__ == 4
-	memset(C, 0, s*sizeof(sfixn)); 
+	memset(C, 0, s*sizeof(sfixn));
 #else
 	cilk_for(int j = 0; j < s*sizeof(sfixn); j++) C[j] = 0;
 #endif
-	cilk_spawn 
+	cilk_spawn
 	    Evaluation2D(C,es1,es2,dims1,dims2,ls1,ls2,A,da[0]+1,da[1]+1,RT1,RT2,pPtr,H,RevBidMap,wp);
 
-	
+
 	sfixn *tmp = (sfixn *)my_calloc(s, sizeof(sfixn));
 	Evaluation2D(tmp,es1,es2,dims1,dims2,ls1,ls2,B,db[0]+1,db[1]+1,RT1,RT2,pPtr,H,RevBidMap,wp);
 	cilk_sync;
@@ -137,19 +139,19 @@ namespace PBPAS {
 	//cout<<"after PairwiseMul"<<endl;
 	my_free(tmp);
 	//cout<<"before Interpolation2D"<<endl;
-	Interpolation2D(C,es1,es2,dims1,dims2,ls1,ls2,invRT1,invRT2,pPtr,H,RevBidMap,wp); 
+	Interpolation2D(C,es1,es2,dims1,dims2,ls1,ls2,invRT1,invRT2,pPtr,H,RevBidMap,wp);
 
 	delete [] RevBidMap;
 	my_free(RT1);
     }
-    /* 
+    /*
        res should be initialized to zero
        s1 = partial degree of v1 of A + 1
        s2 = partial degree of v2 of A + 1
     */
-    void Evaluation2D(sfixn *res, int es1, int es2, 
+    void Evaluation2D(sfixn *res, int es1, int es2,
 		      int dims1, int dims2,
-		      int ls1, int ls2, 
+		      int ls1, int ls2,
 		      sfixn *A, int s1, int s2,
 		      sfixn *RT1, sfixn *RT2,
 		      MONTP_OPT2_AS_GENE *pPtr,
@@ -162,14 +164,14 @@ namespace PBPAS {
 	  int h = dims1>>1; //dims1/2, size of the shuffling buffer for fft
 	    size_t st = s1*sizeof(sfixn);
 	int *RevBidMapt = new int[H];
-	for(int i=0; i<H; ++i)   
+	for(int i=0; i<H; ++i)
 	    RevBidMapt[i] = i;
 	if(H<=dims1)
 	PBPAS::RevBitInd(H, RevBidMapt);
 	else
 	PBPAS::RevBitInd(dims1, RevBidMapt);
 	    cilk_for(int i=0; i<s2; ++i){
-		sfixn *SB = (sfixn *)my_malloc(h*sizeof(sfixn)); 
+		sfixn *SB = (sfixn *)my_malloc(h*sizeof(sfixn));
 		//copy s1 coefficients of v1 for v2^i in A to the right vector in res
 		sfixn *vec = res+i*dims1; //size of vec is a power of 2
 		memcpy(vec, A+i*s1, st);
@@ -185,7 +187,7 @@ namespace PBPAS {
 	//cout<<"in Evaluation2D, after eva v1"<<endl;
 	if ( ls1==ls2 )
 	    PBPAS::sqtranspose(res, ls2, 0, ls1, 0, 1, ls1);
-	else{	
+	else{
 	    sfixn n = ls1*ls2;
 	    sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
 	    PBPAS::transpose(res, ls1, B, ls2, 0, ls2, 0, ls1);
@@ -195,41 +197,41 @@ namespace PBPAS {
 	//cout<<"in Evaluation2D, before eva v2"<<endl;
 	if (dims2==ls2) {//Size of v2 is a power of 2, use FFT
 	int *RevBidMapt = new int[H];
-	for(int i=0; i<H; ++i)   
+	for(int i=0; i<H; ++i)
 	    RevBidMapt[i] = i;
 	if(H<=dims1)
 	PBPAS::RevBitInd(H, RevBidMapt);
 	else
 	PBPAS::RevBitInd(dims2, RevBidMapt);
-	  int h = dims2>>1; 
+	  int h = dims2>>1;
 	    cilk_for(int i=0; i<s1; ++i){
-		sfixn *SB = (sfixn *)my_malloc(h*sizeof(sfixn)); 
-		sfixn *vec = res+i*dims2; 
-		PBPAS::DFT_eff(dims2, es2, vec, RT2, pPtr, H, RevBidMapt, SB, wp);	
+		sfixn *SB = (sfixn *)my_malloc(h*sizeof(sfixn));
+		sfixn *vec = res+i*dims2;
+		PBPAS::DFT_eff(dims2, es2, vec, RT2, pPtr, H, RevBidMapt, SB, wp);
 		my_free(SB);
 	    }
 	}else{
 	    cout<<"ToDo: size of v2 is not a power of 2. Use TFT"<<endl;
 	    return;
-	} 
+	}
 	//cout<<"in Evaluation2D, after eva v2"<<endl;
     }
 
     void Interpolation2D(sfixn *res, int es1, int es2,
-			 int dims1, int dims2, 
+			 int dims1, int dims2,
 			 int ls1, int ls2,
 			 sfixn *invRT1, sfixn *invRT2,
-			 MONTP_OPT2_AS_GENE *pPtr, 
+			 MONTP_OPT2_AS_GENE *pPtr,
 			 int H, int *RevBidMap, int wp)
-    {//---------------------------------------------------------------	
+    {//---------------------------------------------------------------
       //cout<<"in Interpolation2D"<<endl;
-	sfixn R=1L<<(pPtr->Rpow); 
+	sfixn R=1L<<(pPtr->Rpow);
 	R=R%pPtr->P;
-	
+
 	sfixn invn2=inverseMod(dims2,pPtr->P);
 	invn2 = MulMod(R,invn2,pPtr->P);
 	invn2 <<= pPtr->Base_Rpow;
-	
+
 	sfixn invn1=inverseMod(dims1,pPtr->P);
 	invn1 = MulMod(R,invn1,pPtr->P);
 	invn1 = MulMod(R,invn1,pPtr->P);
@@ -237,13 +239,13 @@ namespace PBPAS {
 
 	if (dims2==ls2){//size of v2 is a power of 2, use FFT
 	int *RevBidMapt = new int[H];
-	for(int i=0; i<H; ++i)   
+	for(int i=0; i<H; ++i)
 	    RevBidMapt[i] = i;
 	if(H<=dims1)
 	PBPAS::RevBitInd(H, RevBidMapt);
 	else
 	PBPAS::RevBitInd(dims2, RevBidMapt);
-	    int h = dims2>>1; 
+	    int h = dims2>>1;
 	    cilk_for(int i=0; i<ls1; ++i){
 		sfixn *SB = (sfixn *)my_malloc(h*sizeof(sfixn)); //shuffle buffer
 		PBPAS::InvDFT_eff_keepMontgomery(dims2, es2, res+i*dims2, invRT2, pPtr, H, RevBidMapt, SB, invn2, wp);
@@ -252,20 +254,20 @@ namespace PBPAS {
 	    cout<<"ToDo: size of v2 is not a power of 2. Use TFT"<<endl;
 	    return;
 	}
-	
+
 	if ( ls1==ls2 )
 	  PBPAS::sqtranspose(res, ls1, 0, ls2, 0, 1, ls2);
-	else{	
+	else{
 	  sfixn n = ls1*ls2;
 	  sfixn *B = (sfixn * ) my_calloc(n, sizeof(sfixn));
-	  PBPAS::transpose(res, ls2, B, ls1, 0, ls1, 0, ls2);	  
+	  PBPAS::transpose(res, ls2, B, ls1, 0, ls1, 0, ls2);
 	  memcpy(res, B, n*sizeof(sfixn));
 	  my_free(B);
 	}
-	
+
 	if (dims1==ls1){//ls1 is a power of 2, use fft
 	int *RevBidMapt = new int[H];
-	for(int i=0; i<H; ++i)   
+	for(int i=0; i<H; ++i)
 	    RevBidMapt[i] = i;
 	if(H<=dims1)
 	PBPAS::RevBitInd(H, RevBidMapt);

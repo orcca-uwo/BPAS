@@ -19,7 +19,7 @@ extern "C" {
  * @param r: the degree of the homogeneous part of G to compute
  *
  */
-Poly_ptr lemmaForWeiestrass_UPOPS(PowerSeries_t* F, PowerSeries_t* G, PowerSeries_t* H, int r);
+Poly_ptr lemmaForWeierstrass_UPOPS(PowerSeries_t* F, PowerSeries_t* G, PowerSeries_t* H, int r);
 
 /**
  * Update all power series coefficients of p and alpha by one additional degree of precision,

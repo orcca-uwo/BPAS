@@ -1,6 +1,7 @@
 
 #include "RationalNumberPolynomial/SMQP_Support-AA.h"
 #include "IntegerPolynomial/DUZP_Support.h"
+#include "IntegerPolynomial/SMZP_Support.h"
 
 
 /*****************
@@ -323,7 +324,7 @@ void printPolyOptions_AA(FILE* fp, const AltArr_t* aa, const char** syms, int nv
 		if (!isZeroExponentVector(aa->elems[aa->size-1].degs)) {
 			fprintf(fp, "*");
 			if (positiveDegsOnly) {
-				printDegs_AA(fp, aa->elems[aa->size-1].degs, syms, nvar, masks, sizes);
+				printPositiveDegs_AA(fp, aa->elems[aa->size-1].degs, syms, nvar, masks, sizes);
 			} else {
 				printDegs_AA(fp, aa->elems[aa->size-1].degs, syms, nvar, masks, sizes);
 			}
@@ -2271,6 +2272,11 @@ AltArr_t* addPolynomials_AA(AltArr_t* a, AltArr_t* b, int nvar) {
 	AA_SIZE(c) = k;
 
 	resizePolynomial_AA(c, k);
+	if (isZero_AA(c)) {
+		freePolynomial_AA(c);
+		c = NULL;
+	}
+
 	return c;
 }
 
@@ -2356,6 +2362,10 @@ AltArr_t* subPolynomials_AA(AltArr_t* a, AltArr_t* b, int nvar) {
 	AA_SIZE(c) = k;
 
 	resizePolynomial_AA(c, k);
+	if (isZero_AA(c)) {
+		freePolynomial_AA(c);
+		c = NULL;
+	}
 
 	return c;
 }
@@ -2528,6 +2538,11 @@ AltArr_t* addPolynomials_AA_inp(AltArr_t* a, AltArr_t* b, int nvar) {
 
 	AA_SIZE(c) = k;
 	resizePolynomial_AA(c, k);
+	if (isZero_AA(c)) {
+		freePolynomial_AA(c);
+		c = NULL;
+	}
+
 	return c;
 
 #endif
@@ -2707,6 +2722,12 @@ AltArr_t* subPolynomials_AA_inp(AltArr_t* a, AltArr_t* b, int nvar) {
 	AA_SIZE(c) = k;
 
 	resizePolynomial_AA(c, k);
+	if (isZero_AA(c)) {
+		freePolynomial_AA(c);
+		c = NULL;
+	}
+
+
 	return c;
 
 #endif
@@ -3253,12 +3274,24 @@ Node* multiplyPolynomials(Node* a, Node* b, int nvar) {
  * returns a pointer to the head Node of the product polynomial.
  */
 AltArr_t* multiplyPolynomials_AA(AltArr_t*  a, AltArr_t*  b, int nvar) {
-	if (a == NULL || a->size == 0 || b == NULL || b->size == 0) {
+	if (isZero_AA(a) || isZero_AA(b)) {
 		return NULL;
 	}
 
 	if (a->unpacked || b->unpacked) {
 		return multiplyPolynomials_AA_unpk(a,b,nvar);
+	}
+
+	if (integerPolynomialTest_AA(a) && integerPolynomialTest_AA(b)) {
+        AltArrZ_t* aAAZ = deepCopyPolynomial_AAZFromAA(a);
+        AltArrZ_t* bAAZ = deepCopyPolynomial_AAZFromAA(b);
+        AltArrZ_t* cAAZ = multiplyPolynomials_AAZ(aAAZ, bAAZ, nvar);
+        AltArr_t* c = deepCopyPolynomial_AAFromAAZ(cAAZ);
+
+        freePolynomial_AAZ(aAAZ);
+        freePolynomial_AAZ(bAAZ);
+        freePolynomial_AAZ(cAAZ);
+        return c;
 	}
 
 	degrees_t aMax = calculateMaxDegs_AA(a);
@@ -3273,6 +3306,19 @@ AltArr_t* multiplyPolynomials_AA(AltArr_t*  a, AltArr_t*  b, int nvar) {
 		packExponentVectors_AA_inp(b);
 		return ret;
 	}
+
+	if (b->size == 1) {
+		AltArr_t* ret = deepCopyPolynomial_AA(a);
+		multiplyByMonomial_AA_inp(ret, b->elems->degs);
+		multiplyByRational_AA_inp(ret, b->elems->coef);
+		return ret;
+	} else if (a->size == 1) {
+		AltArr_t* ret = deepCopyPolynomial_AA(b);
+		multiplyByMonomial_AA_inp(ret, a->elems->degs);
+		multiplyByRational_AA_inp(ret, a->elems->coef);
+		return ret;
+	}
+
 
 	// reorder to obtain smaller as a.
 	if (b->size < a->size) {
@@ -4350,7 +4396,11 @@ void exactDividePolynomials_AA (AltArr_t* c, AltArr_t* b, AltArr_t** res_a, regi
 }
 
 void multiplyByRational_AA_inp(AltArr_t* aa, const mpq_t z) {
-	if (aa == NULL || aa->size == 0) {
+	if (isZero_AA(aa)) {
+		return;
+	}
+	if (mpq_sgn(z) == 0) {
+		resizePolynomial_AA(aa, 0);
 		return;
 	}
 
@@ -4360,14 +4410,37 @@ void multiplyByRational_AA_inp(AltArr_t* aa, const mpq_t z) {
 }
 
 void divideByRational_AA_inp(AltArr_t* aa, const mpq_t z) {
-	if (aa == NULL || aa->size == 0) {
+	if (isZero_AA(aa)) {
 		return;
+	}
+	if (mpq_sgn(z) == 0) {
+		fprintf(stderr, "BPAS ERROR: Divide by zero in divideByRational_AA_inp\n");
+		exit(1);
 	}
 
 	for (int i = 0; i < aa->size; ++i) {
 		mpq_div(aa->elems[i].coef, aa->elems[i].coef, z);
 	}
 }
+
+void multiplyByMonomial_AA_inp(AltArr_t* aa, degrees_t  degs) {
+	if (isZero_AA(aa) || isZeroExponentVector(degs)) {
+		return;
+	}
+
+	degrees_t aMax = calculateMaxDegs_AA(aa);
+	if (!monomialMultFitsPacked(aMax, degs, aa->nvar)) {
+		return;
+	}
+
+	int size = aa->size;
+	int nvar = aa->nvar;
+	int i;
+	for (i = 0; i < size; ++i) {
+		addExponentVectors(aa->elems[i].degs, degs, aa->elems[i].degs);
+	}
+}
+
 
 void univariatePseudoDividePolynomials_AA(AltArr_t* c, AltArr_t* b, AltArr_t** res_a, AltArr_t** res_r, int* e, int lazy) {
 

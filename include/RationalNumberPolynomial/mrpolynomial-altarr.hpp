@@ -15,6 +15,7 @@
 #include "../DataStructures/Factors.hpp"
 #include "../TriangularSet/triangularset.hpp"
 #include "../IntegerPolynomial/DUZP_Support.h"
+#include "../ModularPolynomial/DUSP_Parallel.hpp"
 #include "../Parser/bpas_parser.h"
 
 class SparseMultivariateIntegerPolynomial;
@@ -415,18 +416,35 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * @note, if the subresultant of index idx+1 is degenerative then many subresultants will be returned until the first non-degenerative one is found.
 		 * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants.
 		 *
-		 * @param q: the other polynomial for which to compute the subresultant chain.
+		 * @param q: the other polynomial for which to compute the subresultant chain.subresultantInit
 		 * @param v: the main variable to be used when computing the subresultant chain.
 		 *
-		 * @return a vector containing the subresultant chain whereby index 0 is requested subresultant idx subresultant degrees increase with index.
+		 * @return two successive subresultants: S_{i}, S_{i+1} s.t. deg(S_{i}) <= idx and deg(S_{i+1} > idx
 		 *
 		 */
-		std::vector<SparseMultivariateRationalPolynomial> subresultantChainAtIdx (const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx = 0, std::vector<SparseMultivariateRationalPolynomial>* principleCoefs = NULL) const;
+		std::vector<SparseMultivariateRationalPolynomial> subresultantAtIdx (const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx = 0, specSRC_AAZ **lazyInfo = NULL) const;
 
 		/**
- 		* Extended Subresultant Chain
- 		* Return the list of subresultants with Besout Coefficients
- 		**/
+		 * Compute the initials of two successive subresultants: S_{i}, S_{i+1} s.t. deg(S_{i}) <= idx and deg(S_{i+1} > idx.
+		 * This returns init(S_{i},v) and init(S_{i+1}, v) as a vector.
+		 * The degrees degree(S_{i},v) and degree(S_{i+1}, v) are returned in mdegIdx and mdegIdx1, respectively.
+		 * These degrees can be used to determine if certain subresultants are defective, i.e. degree(S_{i}, v) != i.
+		 */
+		std::vector<SparseMultivariateRationalPolynomial> subresultantInitialAtIdx (const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx, Integer& mdegIdx, Integer& mdegIdx1, specSRC_AAZ **lazyInfo = NULL) const;
+
+		/**
+		 * Compute the initials of two successive subresultants: S_{i}, S_{i+1} s.t. deg(S_{i}) <= idx and deg(S_{i+1} > idx.
+		 * This returns init(S_{i},v) and init(S_{i+1}, v) as a vector.
+		 */
+		std::vector<SparseMultivariateRationalPolynomial> subresultantInitialAtIdx (const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx = 0, specSRC_AAZ **lazyInfo = NULL) const {
+			Integer d1, d2;
+			return this->subresultantInitialAtIdx(q, v, idx, d1, d2, lazyInfo);
+		}
+
+		/**
+ 		 * Extended Subresultant Chain
+ 		 * Return the list of subresultants with Besout Coefficients
+ 		 */
 	    std::vector<std::vector<SparseMultivariateRationalPolynomial>> exSubresultantChain (const SparseMultivariateRationalPolynomial& q, const Symbol& v) const;
 
 	    SparseMultivariateRationalPolynomial resultant (const SparseMultivariateRationalPolynomial& q, const Symbol& v) const;
@@ -1029,7 +1047,7 @@ class SparseMultivariateRationalPolynomial: public BPASRecursivelyViewedPolynomi
 		 * Get the degree of this polynomial w.r.t the leading variable.
 		 */
 		Integer leadingVariableDegree() const;
-    degree_t leadingVariableDegree_tmp() const;
+
 		/**
 		 * Is the contant term zero.
 		 */

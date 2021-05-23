@@ -119,6 +119,7 @@ class RegularChain : public TriangularSet<Field,RecursivePoly>,
 #endif
 
 		int regularChainOptions = CONSTRUCT_FACTORIZE;
+		// int regularChainOptions = MAINTAIN_SQUAREFREE | CONSTRUCT_FACTORIZE;
 
 		//TODO: These don't really work. They only count up from the empty chain.
 		//Ex: RC over [x>y>z] with polys [x,y]. Adding a non-square free poly in z would make squarefree-ness = 0

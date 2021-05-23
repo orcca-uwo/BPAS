@@ -24,8 +24,6 @@
 #include <iostream>
 
 
-extern float g_MapleComputeTime;
-
 /**
  * The EventThread class represents a long-running, event-loop based
  * thread for unified access to some sub-module. It supports
@@ -74,10 +72,7 @@ protected:
 		while (requestQueue.getNextObject(reqObj)) {
 			// std::cerr << std::this_thread::get_id() << " is about to process request" << std::endl;
 			Response respObj;
-			unsigned long long start;
-			_startTimer(&start);
 			bool respond = processTask(reqObj, respObj);
-			_stopTimerAddElapsed(&start, &g_MapleComputeTime);
 			if (respond) {
 				responseQueue.addResult(std::pair<Request,Response>(std::move(reqObj),std::move(respObj)));
 			}

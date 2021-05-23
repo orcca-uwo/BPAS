@@ -1,6 +1,6 @@
 #include "ModularPolynomial/DUSP_Support_Test.h"
 
-// print polynomial 
+// print polynomial
 // TODO delete prp
 void printPolynomial_spX (const duspoly_t* a, const Prime_ptr* Pptr)
 {
@@ -9,15 +9,15 @@ void printPolynomial_spX (const duspoly_t* a, const Prime_ptr* Pptr)
     	fprintf(stderr, "  ;\n");
     	return;
     }
-    
-    elem_t* elems = a->elems;    
-    
+
+    elem_t* elems = a->elems;
+
     fprintf(stderr, " ");
     if (POLY_LT(a) == 0) {
     	fprintf(stderr, "%lld in Z_{%lld}[x];\n", elems[0], Pptr->prime);
     	return;
     }
-    
+
     if (elems[0] != 0) {
         fprintf(stderr, "%lld + ", elems[0]);
     }
@@ -31,6 +31,35 @@ void printPolynomial_spX (const duspoly_t* a, const Prime_ptr* Pptr)
     fprintf(stderr, "%lld*x^%ld in Z_{%lld}[x];\n", elems[POLY_LT(a)], POLY_LT(a), Pptr->prime);
 }
 
+void purePrintPolySymOutForm_spX (const duspoly_t* a, const Prime_ptr* Pptr, const char* sym)
+{
+
+    if (a == NULL || POLY_ALLOC(a) == 0) {
+        fprintf(stderr, " ;");
+        return;
+    }
+
+    elem_t* elems = a->elems;
+
+    if (POLY_LT(a) == 0) {
+        fprintf(stderr, "%lld", smallprimefield_convert_out(elems[0], Pptr));
+        return;
+    }
+
+    if (elems[0] != 0) {
+        fprintf(stderr, "%lld + ", smallprimefield_convert_out(elems[0], Pptr));
+    }
+
+    for (polysize_t i = 1; i < POLY_LT(a); ++i) {
+        if (elems[i] != 0) {
+           fprintf(stderr, "%lld*%s^%ld + ", smallprimefield_convert_out(elems[i], Pptr), sym, i);
+        }
+    }
+
+    fprintf(stderr, "%lld*%s^%ld", smallprimefield_convert_out(elems[POLY_LT(a)], Pptr), sym, POLY_LT(a));
+}
+
+
 void purePrintPolynomial_spX (const duspoly_t* a, const Prime_ptr* Pptr)
 {
 
@@ -38,9 +67,9 @@ void purePrintPolynomial_spX (const duspoly_t* a, const Prime_ptr* Pptr)
         fprintf(stderr, " ");
         return;
     }
-    
-    elem_t* elems = a->elems;    
-    
+
+    elem_t* elems = a->elems;
+
     fprintf(stderr, " ");
     if (POLY_LT(a) == 0) {
         fprintf(stderr, "%lld", elems[0]);
@@ -48,9 +77,9 @@ void purePrintPolynomial_spX (const duspoly_t* a, const Prime_ptr* Pptr)
     }
 
     if (elems[0] != 0) {
-        fprintf(stderr, "%lld + ", elems[0]);    
+        fprintf(stderr, "%lld + ", elems[0]);
     }
-    
+
     for (polysize_t i = 1; i < POLY_LT(a); ++i) {
         if (elems[i] != 0) {
             fprintf(stderr, "%lld*x^%ld + ", elems[i], i);
@@ -74,11 +103,28 @@ void purePrintPolynomialOutForm_spX (const duspoly_t* a, const Prime_ptr* Pptr)
     freePolynomial_spX (&a_out);
 }
 
-// print Matrix 2*2 of polynomials 
+void printPolynomialOutForm_spXY (const dbspoly_t* a, const Prime_ptr* Pptr) {
+    if (a == NULL) {
+        return;
+    }
+
+
+    for (int i = 0; i < a->ltX; ++i) {
+        fprintf(stderr, "(");
+        purePrintPolySymOutForm_spX (a->coefsY[i], Pptr, "y");
+        fprintf(stderr, ")*x^%d + ", i );
+    }
+    fprintf(stderr, "(");
+    purePrintPolySymOutForm_spX (a->coefsY[a->ltX], Pptr, "y");
+    fprintf(stderr, ")*x^%ld in Z_{%lld}[x,y]\n", a->ltX, Pptr->prime);
+
+}
+
+// print Matrix 2*2 of polynomials
 // TODO delete prp
 void printMat4_spX (dusmat4_t* A, const Prime_ptr* Pptr)
 {
-    // fprintf(stderr, "printPolynomialInForm_spX... \n");	
+    // fprintf(stderr, "printPolynomialInForm_spX... \n");
     if (A == NULL) {
 	fprintf(stderr, "  ;\n");
 	return;
@@ -86,7 +132,7 @@ void printMat4_spX (dusmat4_t* A, const Prime_ptr* Pptr)
 
     fprintf (stderr, "A[0,0] := ");
     printPolynomial_spX (A->polys[0], Pptr);
-    
+
     fprintf (stderr, "A[0,1] := ");
     printPolynomial_spX (A->polys[1], Pptr);
 
@@ -100,7 +146,7 @@ void printMat4_spX (dusmat4_t* A, const Prime_ptr* Pptr)
 
 void printMat4OutForm_spX (dusmat4_t* A, const Prime_ptr* Pptr)
 {
-    // fprintf(stderr, "printPolynomialInForm_spX... \n");	
+    // fprintf(stderr, "printPolynomialInForm_spX... \n");
     if (A == NULL) {
 	fprintf(stderr, "  ;\n");
 	return;
@@ -108,7 +154,7 @@ void printMat4OutForm_spX (dusmat4_t* A, const Prime_ptr* Pptr)
 
     fprintf (stderr, "A[0,0] := ");
     printPolynomialOutForm_spX (A->polys[0], Pptr);
-    
+
     fprintf (stderr, "A[0,1] := ");
     printPolynomialOutForm_spX (A->polys[1], Pptr);
 
@@ -245,7 +291,7 @@ void purePrintFactorsOutForm_spX (factors_t* f, const Prime_ptr* Pptr)
 
 /**
  * Random Polynomial
- * 
+ *
  * @param sz size of polynomial (deg = sz-1)
  * @param sparsity the maximum distance between two successive terms
  * @param Pptr small prime pointer
@@ -256,12 +302,12 @@ duspoly_t* randomFullyDensePolynomial_spX (polysize_t sz, const Prime_ptr* Pptr)
 	return NULL;
     }
     polysize_t s = 2; // (sparsity < 2) ? 2: sparsity;
-	
-    duspoly_t* poly = makePolynomial_spX (sz);    
+
+    duspoly_t* poly = makePolynomial_spX (sz);
     POLY_LT(poly) = sz-1;
-    
+
     elem_t* elems = poly->elems;
-    
+
     static int initTest = 0;
 
     while (!initTest) {
@@ -270,22 +316,22 @@ duspoly_t* randomFullyDensePolynomial_spX (polysize_t sz, const Prime_ptr* Pptr)
 
         initTest = 1;
     }
-    
+
     //polysize_t step = ((polysize_t) time() % s) > 0 ? ((polysize_t) time() % s) : 1;
-    polysize_t step  = s-1; 
-    
+    polysize_t step  = s-1;
+
     for (polysize_t i = 0; i < sz; i += step) {
 	elems[i] = (elem_t) rand() % Pptr->prime;
 	// smallprimefield_covert_in ((elem_t) rand(), pr, R);
 	// step = ((polysize_t) rand() % s) > 0 ? ((polysize_t) time() % s) : 1;
     }
-    
+
     while (elems[sz-1] == 0) {
 	elems[sz-1] = (elem_t) rand() % Pptr->prime;
     }
-    
+
     normalize_spX (&poly);
-    
+
     return poly;
 }
 
@@ -297,7 +343,7 @@ int DivisionTest (const duspoly_t* a, const duspoly_t* b, const duspoly_t* r, co
     if (degPolynomial_spX (r) >= degPolynomial_spX (b)) {
       return 0;
     }
-    
+
     plainMulPolynomials_spX (b, q, &right, Pptr);
     addPolynomials_spX (right, r, &res, Pptr);
     freePolynomial_spX (&right);
@@ -306,7 +352,7 @@ int DivisionTest (const duspoly_t* a, const duspoly_t* b, const duspoly_t* r, co
 }
 
 int ExtEuclideanTest (const duspoly_t* a, const duspoly_t* b, const duspoly_t* s, const duspoly_t* t, const duspoly_t* g, const Prime_ptr* Pptr) {
-    
+
     duspoly_t* sa = NULL;
     duspoly_t* tb = NULL;
     duspoly_t* res = NULL;
@@ -317,12 +363,12 @@ int ExtEuclideanTest (const duspoly_t* a, const duspoly_t* b, const duspoly_t* s
     addPolynomials_spX (sa, tb, &res, Pptr);
     freePolynomial_spX (&sa);
     freePolynomial_spX (&tb);
-    
+
     return isEqual_spX (res, g);
 }
 
 int ExtEuclideanTestInForm (const duspoly_t* a, const duspoly_t* b, const duspoly_t* s, const duspoly_t* t, const duspoly_t* g, const Prime_ptr* Pptr) {
-    
+
     duspoly_t* sa = NULL;
     duspoly_t* tb = NULL;
     duspoly_t* res = NULL;
@@ -336,8 +382,8 @@ int ExtEuclideanTestInForm (const duspoly_t* a, const duspoly_t* b, const duspol
 
     /* fprintf (stderr, "a*s + b*t = "); */
     /* printPolynomial_spX (res, Pptr); */
-    
-    
+
+
     return isEqual_spX (res, g);
 }
 
@@ -362,7 +408,7 @@ int SFFVerificationInForm_spX (const duspoly_t* a, factors_t* f, const Prime_ptr
 
             exponentiatePolynomialInForm_spX (f->polys[i], i, &t1, Pptr);
             plainMulPolynomialsInForm_spX (aa, t1, &t2, Pptr);
-            
+
             freePolynomial_spX (&t1);
             freePolynomial_spX (&aa);
 

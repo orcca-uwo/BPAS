@@ -216,14 +216,14 @@ def generate_last_block(log,H,depth,code):
 	#s+="asm(\"\":::\"memory\");\n"
 	for i in range(1,log+1):
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				if ((l-2**(i-1))*jump!=0):
 					s+="\tA[%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[%i],*(Wp+%i));\n"%(((2**i)*k+l)*jump,(k*2**i+l)*jump,(l-2**(i-1))*jump)
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\tA[%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[%i],*(Wp+%i));\n"%(((2**i)*k+l)*jump+1,(k*2**i+l)*jump+1,(l-2**(i-1))*jump+1)
 		for l in range(0,2**(i-1)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\tAddSubSpeSSEModInplace(A+%i,A+%i);\n"%((k*2**i+l)*jump,(k*2**i+l+2**(i-1))*jump)
 		if i!=log:
 			s+="\tWp = Wp-(1L<<%i);\n"%(depth+i)
@@ -232,13 +232,13 @@ def generate_last_block(log,H,depth,code):
 	s+="\t\tWp = Wt;\n"
 	for i in range(1,log+1):
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\tA[j+%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[j+%i],*(Wp+j+%i));\n"%(((2**i)*k+l)*jump,(k*2**i+l)*jump,(l-2**(i-1))*jump)
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\tA[j+%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[j+%i],*(Wp+j+%i));\n"%(((2**i)*k+l)*jump+1,(k*2**i+l)*jump+1,(l-2**(i-1))*jump+1)
 		for l in range(0,2**(i-1)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\tAddSubSpeSSEModInplace(A+j+%i,A+j+%i);\n"%((k*2**i+l)*jump,(k*2**i+l+2**(i-1))*jump)
 		if i!=log:
 			s+="\t\tWp = Wp-(1L<<%i);\n"%(depth+i)
@@ -258,14 +258,14 @@ def generate_block(log,H,depth,code):
 	s+="\t\tWp = Wt;\n"
 	for i in range(1,log+1):
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				if ((l-2**(i-1))*jump!=0):
 					s+="\t\tA[k+%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[k+%i],*(Wp+%i));\n"%(((2**i)*k+l)*jump,(k*2**i+l)*jump,(l-2**(i-1))*jump)
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\tA[k+%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[k+%i],*(Wp+%i));\n"%(((2**i)*k+l)*jump+1,(k*2**i+l)*jump+1,(l-2**(i-1))*jump+1)
 		for l in range(0,2**(i-1)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\tAddSubSpeSSEModInplace(A+k+%i,A+k+%i);\n"%((k*2**i+l)*jump,(k*2**i+l+2**(i-1))*jump)
 		if i!=log:
 			s+="\t\tWp = Wp-(1L<<%i);\n"%(depth+i)
@@ -273,13 +273,13 @@ def generate_block(log,H,depth,code):
 	s+="\t\t\tWp = Wt;\n"
 	for i in range(1,log+1):
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\t\tA[k+j+%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[k+j+%i],*(Wp+j+%i));\n"%(((2**i)*k+l)*jump,(k*2**i+l)*jump,(l-2**(i-1))*jump)
 		for l in range(2**(i-1),2**(i)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\t\tA[k+j+%i] = MontMulModSpe_OPT3_AS_GENE_INLINE(A[k+j+%i],*(Wp+j+%i));\n"%(((2**i)*k+l)*jump+1,(k*2**i+l)*jump+1,(l-2**(i-1))*jump+1)
 		for l in range(0,2**(i-1)):
-			for k in range(0,(2**log)/(2**i)):
+			for k in range(0,int((2**log)/(2**i))):
 				s+="\t\t\tAddSubSpeSSEModInplace(A+k+j+%i,A+k+j+%i);\n"%((k*2**i+l)*jump,(k*2**i+l+2**(i-1))*jump)
 		if i!=log:
 			s+="\t\t\tWp = Wp-(1L<<%i);\n"%(depth+i)
@@ -307,8 +307,8 @@ def generate_dft_iterative(size,code,name=""):
 	rem = size/pos
 	log = 0
 	while rem>1:
-		log=log+1
-		rem=rem>>1
+		log += 1
+		rem = rem//2
 	generate_last_block(log,size,depth,code)
 	code.write("}\n")
 
@@ -338,8 +338,8 @@ def generate_everything(file,p,H,num):
 	x = ((u-y)/(2**Rpow))*p
 	if y>0:
 		y = y-2**Rpow
-		x = x+p	
-	
+		x = x+p
+
 	header = open("../../../include/FFT/src/"+file+".h","w")
 	header.write("#include \"modpn.h\"\n")
 	header.write("#ifndef FFTSPE%i\n"%num)
@@ -356,6 +356,8 @@ def generate_everything(file,p,H,num):
 	code.write("#include \"../../../include/FFT/src/"+file+".h\"\n")
 	code.write("#include \"../../../include/FFT/src/arraybitreversal.h\"\n")
 	code.write("#include \"../../../include/FFT/src/modpn.h\"\n")
+	code.write("#include <iostream>\n")
+	code.write("#include <string.h>\n")
 	code.write("#define FFT_THRESHOLD %i\n"%(H))
 	code.write("#define FFT_THRESHOLD_LOG %i\n"%(len(bin(H))-2))
 #---------------NOT USED ANYMORE------------------------
@@ -367,7 +369,7 @@ def generate_everything(file,p,H,num):
 		mask1 = mask<<1
 		mask2 = mask<<2
 		mask3 = mask
-		
+
 	if (H&mask1)==0:
 		mask1  = mask<<2
 		mask2  = mask
@@ -412,7 +414,7 @@ def generate_everything(file,p,H,num):
 				code.write("\t\t\t\tbreak;\n")
 				tmpH=tmpH<<1
 
-		
+
 		else:
 			s = line
 			if "MY_PRIME" in s:

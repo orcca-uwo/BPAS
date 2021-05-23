@@ -1,13 +1,13 @@
-
 #######################################
 SRC_LIST:=\
-	gfpf_six_step_fft_test\
 	small_prime_field_six_step_fft\
+	gfpf_six_step_fft_test
 
 #######################################
 INCLUDES = ../../include/FiniteFields
+#LIB_PATH:=../../src/FiniteFields
+LIB_PATH:=$(BPAS_HOME)/build
 CC  = g++ -L$(LIB_PATH) #-pg -g3 -g
-LIB_PATH:=../../src/FiniteFields
 LIBS= -lm -lgmp -lcilkrts -lbpas
 #######################################
 COMPILER_OPTIONS=-fpic -fcilkplus -flto\
@@ -16,15 +16,13 @@ COMPILER_OPTIONS=-fpic -fcilkplus -flto\
 								 -I$(INCLUDES)\
 								 -DVERBOSE=0\
 								 -DSMALL_FFT_STEPS_TIMING_ENABLED=0\
-								 -DVERIFICATION_ENABLED=0\
-#######################################
+								 -DVERIFICATION_ENABLED=1\
 #######################################
 COMPILE_ARGS=$(CC) $(COMPILER_OPTIONS) $(LIBS) #-Wl,--start-group
 #######################################
 OBJS:=$(SRC_LIST:=.o)
-
 #######################################
-all : clean test
+all : clean parallel #serial
 
 #######################################
 check: parallel
@@ -36,17 +34,12 @@ test: parallel
 
 test-validate: test ;
 
+build-lib:
+	@#(cd $(BPAS_HOME)/build; make;)
 #######################################
+parallel: build-lib
 parallel: clean
-parallel: parallel_src 
-parallel_src:
-	(cd $(BPAS_HOME)/src/FiniteFields;\
-		make clean;\
-		cd ..;\
-		make;\
-		)
 parallel: $(OBJS)
-#######################################
 #######################################
 serial-gmp: clean
 serial-gmp: parallel_src_serial_gmp 
@@ -62,29 +55,20 @@ serial-gmp: $(OBJS)
 #######################################
 %.o: %.c
 	@echo gcc [$<] ...	
-	$(COMPILE_ARGS) $< $(LIBS) -o $(@:%.o=%.bin) 
+	@$(COMPILE_ARGS) $< $(LIBS) -o $(@:%.o=%.bin) 
 
 #######################################
 SERIAL_OBJS:=$(SRC_LIST:=.serial)
 #######################################
 serial: clean
-serial: serial_src
-serial_src: 
-	(cd $(BPAS_HOME)/src/FiniteFields;\
-		make clean;\
-		make serial;\
-		cd ..;\
-		make;\
-		)
-
 #######################################
 serial: $(SERIAL_OBJS)
 #######################################
 %.serial: %.c
-	@echo gcc serial [$<] ...
-	@$(COMPILE_ARGS) -DENABLE_CILK=0 $< -c -o $@
-	@cp $@ $(@:%.serial=%.o)
-	@$(COMPILE_ARGS) -DENABLE_CILK=0 $< $(LIBS) -o $(@:%.serial=%.bin) 
+	#@echo gcc serial [$<] ...
+	#$(COMPILE_ARGS) -DENABLE_CILK=0 $< -c -o $@
+	#@cp $@ $(@:%.serial=%.o)
+	$(COMPILE_ARGS) -DENABLE_CILK=0 $< $(LIBS) -o $(@:%.serial=%.bin) 
 
 #######################################
 benchmark-serial: serial
@@ -99,9 +83,8 @@ benchmark-parallel: parallel
 	./benchmark.sh parallel
 
 #######################################
-RM_LIST= bin log o data out tmp serial
+RM_LIST= bin log o data out tmp serial txt tmp
 RM_STR=$(RM_LIST:%=*.%) callgrind.out.*
 
 clean:
-	echo $(RM_STR)
 	rm -rf $(RM_STR)

@@ -2,7 +2,6 @@
 
 #include "MapleInterface/MapleWorkerThread.hpp"
 #include "Utils/Unix_Timer.h"
-float g_MapleComputeTime = 0;
 
 
 bool MapleWorkerThread::processTask(const std::vector<std::string>& request, std::vector<std::string>& response) {
@@ -15,7 +14,7 @@ bool MapleWorkerThread::processTask(const std::vector<std::string>& request, std
 	// unsigned long long start;
 	// _startTimer(&start);
 	if (request[0] == "factors") {
-		ret = factors_mapleWorker(request, response);			
+		ret = factors_mapleWorker(request, response);
 	} else if (request[0] == "gcd") {
 		ret = gcd_mapleWorker(request, response);
 	} else if (request[0] == "triangularizeValidate") {
@@ -23,6 +22,10 @@ bool MapleWorkerThread::processTask(const std::vector<std::string>& request, std
 	} else if (request[0] == "startKernel") {
 		MKernelVector* kv_p = getMapleKVSingleton();
 		response.push_back("started");
+		ret = true;
+	} else if (request[0] == "stopKernel") {
+		restartMapleKernel(); //actually stopping the kernel makes Maple (2020) freak out
+		response.push_back("stopped");
 		ret = true;
 	}
 	// float time = 0;
@@ -32,7 +35,9 @@ bool MapleWorkerThread::processTask(const std::vector<std::string>& request, std
 }
 
 void MapleWorkerThread::threadCleanup() {
-	stopMapleKernel();
+	std::vector<std::string> request;
+	request.emplace_back("stopKernel");
+	sendRequestAndWait(request);
 }
 
 bool MapleWorkerThread::factors_mapleWorker(const std::vector<std::string>& request, std::vector<std::string>& response) {
@@ -40,7 +45,7 @@ bool MapleWorkerThread::factors_mapleWorker(const std::vector<std::string>& requ
 	if(request.size() < 2) {
 		return false;
 	}
-	
+
 	std::string poly = request[1] + ":";
 
 	char** facts = NULL;
@@ -100,12 +105,12 @@ bool MapleWorkerThread::triangularizeValidate_mapleWorker(const std::vector<std:
 
 	const char* inputs[request.size()-2];
 	for (size_t i = 2; i < request.size(); ++i) {
-		inputs[i-2] = request[i].c_str(); 
-	} 
+		inputs[i-2] = request[i].c_str();
+	}
 
 	int isLazard = atoi(request[1].c_str());
 
-    
+
 	bool ret = triangularizeValidate_MplInt(inputs, request.size()-2, isLazard);
 
 	response.push_back(std::to_string(ret));

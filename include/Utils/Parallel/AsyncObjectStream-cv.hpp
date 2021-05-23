@@ -15,15 +15,15 @@
 
 #include "Synchronized.hpp"
 
-/** 
+/**
  * A class to implement a (possibly) multi-threaded producer-consumer stream.
  * This supports one producer and one consumer.
  * Moreover, to avoid unnecessary locking and synchronization, some methods
- * should only be called by the consumer and some methods should only be called 
+ * should only be called by the consumer and some methods should only be called
  * by the producer. See individual method documentation.
  *
  */
-template <class Object> 
+template <class Object>
 class AsyncObjectStream {
 
 	std::queue<Object> retObjs;
@@ -36,10 +36,10 @@ class AsyncObjectStream {
 
 public:
 
-	/** 
+	/**
 	 * Construct a new AsyncObjectStream
 	 */
-	AsyncObjectStream() : 
+	AsyncObjectStream() :
 		finished(0),
 		m_mutex(),
 		m_cv()
@@ -49,12 +49,12 @@ public:
 		resultsFinished();
 	}
 
-	/** 
+	/**
 	 * This method is only to be called by the consumer.
-	 * 
-	 * Gets the next object on the stream. 
+	 *
+	 * Gets the next object on the stream.
 	 * This method will block to wait for a result if one is pending.
-	 * 
+	 *
 	 * returns true if the next object was successfully retrieved.
 	 * returns false if the stream has finished and no new objects are available.
 	 */
@@ -74,7 +74,7 @@ public:
 			} else {
 				ret = true;
 				res = retObjs.front();
-				retObjs.pop();	
+				retObjs.pop();
 			}
 		}
 		return ret;
@@ -86,7 +86,7 @@ public:
 	 * Adding a new result will move from the Object res
 	 * allowing for efficient data transfer.
 	 */
-	void addResult(Object& res) {	
+	void addResult(Object& res) {
 		if (finished) {
 			throw std::runtime_error("AsyncObjectStream declared finished by tried to add new result.");
 		}
@@ -96,7 +96,7 @@ public:
 		m_cv.notify_all();
 	}
 
-	void addResult(Object&& res) {	
+	void addResult(Object&& res) {
 		if (finished) {
 			throw std::runtime_error("AsyncObjectStream declared finished by tried to add new result.");
 		}
@@ -130,6 +130,14 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	bool streamEmpty() {
+		bool isEmpty;
+		synchronized_nonrecursive(m_mutex) {
+			isEmpty = retObjs.empty();
+		}
+		return isEmpty;
 	}
 
 };

@@ -6,9 +6,9 @@
  * Private constructor to create SMQP directly from a Node*.
  * Makes a copy of input varNames
  */
-SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(AltArr_t* aa, int vars, Symbol* varNames) : 
+SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(AltArr_t* aa, int vars, Symbol* varNames) :
     poly(aa),
-    nvar(vars) 
+    nvar(vars)
 {
     names = new Symbol[nvar+1];
     std::copy(varNames, varNames+nvar+1, names);
@@ -18,7 +18,7 @@ SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(AltAr
  * Construct a multivariate polynomial
  *
  **/
-SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial() : 
+SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial() :
     poly(NULL),
     nvar(0)
 {
@@ -64,13 +64,13 @@ SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial (cons
     poly = makeConstPolynomial_AA(1, nvar, coef);
     degree_t degsList[nvar] = {0};
     degsList[0] = 1;
-    setDegrees_AA_inp(poly, 0, degsList, 1); 
+    setDegrees_AA_inp(poly, 0, degsList, 1);
     // poly->elems->degs = 1;
     mpq_clear(coef);
 }
 
 SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial (const std::string& str) :
-poly(NULL), 
+poly(NULL),
 nvar(0),
 names(NULL)
 {
@@ -80,8 +80,8 @@ names(NULL)
 
 /**
  * Copy Constructor.
- * 
- * Does not reuse underlying memory allocated by b. 
+ *
+ * Does not reuse underlying memory allocated by b.
  *
  * @param b: A sparse multivariate polynomial
  **/
@@ -122,12 +122,12 @@ SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(const
 }
 
 /**
- * Create a SMQP from a Integer. 
+ * Create a SMQP from a Integer.
  */
 SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(const Integer& r, int nv) :
     nvar(nv),
     poly(NULL)
-{   
+{
     mpq_t coef;
     mpq_init(coef);
     mpz_set(mpq_numref(coef), r.get_mpz_t());
@@ -145,7 +145,7 @@ SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(const
 }
 
 /**
- * Create a SMQP from a RationalNumber. 
+ * Create a SMQP from a RationalNumber.
  */
 SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(const RationalNumber& r, int nv) :
     nvar(nv),
@@ -165,13 +165,13 @@ SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial(const
 }
 
 /**
- * Create a SMQP from a univariate rational polynomial. 
- * 
- * @param p: A SUQP polynomial. 
+ * Create a SMQP from a univariate rational polynomial.
+ *
+ * @param p: A SUQP polynomial.
  **/
-SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial (const DenseUnivariateRationalPolynomial& p) : 
+SparseMultivariateRationalPolynomial::SparseMultivariateRationalPolynomial (const DenseUnivariateRationalPolynomial& p) :
     nvar(1),
-    poly(NULL) 
+    poly(NULL)
 {
     names = new Symbol[nvar+1];
     names[0] = "9";
@@ -349,7 +349,7 @@ void SparseMultivariateRationalPolynomial::preparePolysForSRC(const SparseMultiv
         Q.setRingVariables(superRing);
         pZ = P.poly;
         qZ = Q.poly;
-        P.poly = NULL;    
+        P.poly = NULL;
         Q.poly = NULL;
     } else {
         mpq_t tmp;
@@ -381,18 +381,18 @@ void SparseMultivariateRationalPolynomial::preparePolysForSRC(const SparseMultiv
     if (pZ->nvar != trueNvar) {
         shrinkAndReorderVars_AAZ(pZ, varMap, pZ->nvar);
         shrinkAndReorderVars_AAZ(qZ, varMap, qZ->nvar);
-    }   
+    }
 
     *ppZ = pZ;
     *qqZ = qZ;
 }
 
 /**
- * Given a polynomial q, compute the subresultant chain between this and q, viewing both polynomial 
- * recursively with main variable v. 
+ * Given a polynomial q, compute the subresultant chain between this and q, viewing both polynomial
+ * recursively with main variable v.
  *
- * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants. 
- * 
+ * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants.
+ *
  * @param q, the other polynomial for which to compute the subresultant chain.
  * @param v, the main variable to be used when computing the subresultant chain.
  *
@@ -404,9 +404,12 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
         throw std::invalid_argument("In SMQP::subresultantChain at least one of the input polynomials must have " + v.toString() + " as leading variable.");
     }
 
+    // // Debug Print
+    // std::cerr << "[SMQP+] subresultantChain mdeg(p)= " << this->mainDegree() << " mdeg(q)= " << q.mainDegree() << std::endl; 
+
     std::vector<Symbol> superRing;
     bool sameRing = orderPreservingSetUnion(this->ringVariables(), q.ringVariables(), superRing);
-    
+
     std::vector<SparseMultivariateRationalPolynomial> chain;
 
     if (isZero()) {
@@ -417,7 +420,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
     if (q.isZero()) {
         chain.emplace_back(superRing.size());
         chain[0].setRingVariables(superRing);
-        return chain;   
+        return chain;
     }
 
     bool foundVP = false;
@@ -454,7 +457,6 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
         return chain;
     }
 
-
     AltArrZ_t* pZ = NULL;
     AltArrZ_t* qZ = NULL;
     int origNvar = superRing.size();
@@ -465,10 +467,25 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 
     AltArrsZ_t* SC = NULL;
     int size = 0;
-    DucosSubresultantChainZ (pZ,qZ, &SC, &size);
+    SubresultantChainMode mode = AUTO;
 
-    freePolynomial_AAZ (pZ); 
-    freePolynomial_AAZ (qZ); 
+#if !(defined(SERIAL) && SERIAL) && (defined(PARALLEL_SUBRES) && PARALLEL_SUBRES)
+    long min_mdeg = (long) MIN(mainLeadingDegree_AAZ(pZ), mainLeadingDegree_AAZ(qZ));
+    long max_pdeg = (long) MAX(partialDegree_AAZ(pZ, 1), partialDegree_AAZ(qZ, 1));
+    if (pZ->nvar == 2 && ( min_mdeg > 20 && max_pdeg > 10) ) {
+        DUSP::ParallelSubresultantChainZ(pZ, qZ, min_mdeg, max_pdeg, &SC, &size);
+    } else {
+        SubresultantChainZ (mode, pZ,qZ, &SC, &size);
+    }
+#else
+    SubresultantChainZ (mode, pZ,qZ, &SC, &size);
+#endif
+
+    // // Debug Print
+    // std::cerr << "[SMQP+] subresultantChain... done!" << std::endl; 
+
+    freePolynomial_AAZ (pZ);
+    freePolynomial_AAZ (qZ);
 
     AltArr_t* tmp;
     AltArrsZ_t* cur = SC;
@@ -493,7 +510,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
     SparseMultivariateRationalPolynomial zero;
     zero.zero();
     zero.setRingVariables(superRing);
-    
+
     for (int i = 0; cur != NULL && i < size; ++i){
         reverseShrinkVariables_AAZ_inp(cur->poly, origNvar, varMap);
         if (swappedIdx != 0) {
@@ -502,7 +519,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 
         tmp = deepCopyPolynomial_AAFromAAZ (cur->poly);
         zero.poly = tmp;
-        chain.emplace_back(std::move(zero)); 
+        chain.emplace_back(std::move(zero));
         zero.poly = NULL;
         cur = cur->next;
     }
@@ -536,7 +553,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
             }
         }
     }
-    
+
     return chain;
 }
 
@@ -548,20 +565,23 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
  **/
 std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomial::subresultantChain (const SparseMultivariateRationalPolynomial& q, int filled) const {
 
+    // // Debug Print
+    // std::cerr << "[SMQP+] subresultantChain mdeg(p)= " << this->mainDegree() << " mdeg(q)= " << q.mainDegree() << std::endl; 
+
     if (isZero()) {
     	std::vector<SparseMultivariateRationalPolynomial> zeroChain_p;
     	zeroChain_p.push_back (q);
-    	return zeroChain_p;	
+    	return zeroChain_p;
     }
 
     if (q.isZero()) {
     	std::vector<SparseMultivariateRationalPolynomial> zeroChain_q;
     	zeroChain_q.push_back (*this);
-    	return zeroChain_q;	
+    	return zeroChain_q;
     }
 
     bool TYPE = 0; // 0: SMZP Ducos Algorithm, 1: SUP Ducos Algorothm
-    
+
     Symbol v = q.leadingVariable();
     // commented to support constant polynomials in algebraic extension
     // if (v != leadingVariable()) {
@@ -594,7 +614,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
         int superNvar = xs.size() / 2;
         if (superNvar != nvar || superNvar != q.nvar) {
 
-    //map indices to the expanded superset. 
+    //map indices to the expanded superset.
             int varmap[nvar];
             int qvarmap[q.nvar];
             for (int i = 0; i < xs.size(); i += 2) {
@@ -628,7 +648,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 
     // ppP = this->primitivePart();
     // ppQ = q.primitivePart();
-        }    
+        }
 
         AltArr_t* Pq = primitivePart_AA (ppP.poly);
         AltArr_t* Qq = primitivePart_AA (ppQ.poly);
@@ -659,20 +679,20 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
         //     }
         //     isShrinked = 1;
         // }
-		
+
 		if (lvarP > 0) {
 			int varmap[superNvar];
 			int j = 0;
-		
+
 			for (int i = 0; i < lvarP; i++) {
 				varmap[i] = -1;
 			}
-			
+
 			for (int i = lvarP; i < superNvar; i++) {
 				varmap[i] = j;
 				j++;
 			}
-		
+
 			shrinkAndReorderVars_AAZ (P, varmap, superNvar);
 			shrinkAndReorderVars_AAZ (Q, varmap, superNvar);
 			isShrinked = 1;
@@ -686,16 +706,25 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
         AltArrsZ_t* SC;
         AltArr_t* tmp;
         int size = 0;
+        SubresultantChainMode mode = AUTO;
 
-        DucosSubresultantChainZ (P,Q, &SC, &size);
+#if !(defined(SERIAL) && SERIAL) && defined(PARALLEL_SUBRES) && PARALLEL_SUBRES
+    long min_mdeg = (long) MIN(mainLeadingDegree_AAZ(P), mainLeadingDegree_AAZ(Q));
+    long max_pdeg = (long) MAX(partialDegree_AAZ(P, 1), partialDegree_AAZ(Q, 1));
+    if (P->nvar == 2 && (min_mdeg > 20 && max_pdeg > 10)) {
+            DUSP::ParallelSubresultantChainZ(P, Q, min_mdeg, max_pdeg, &SC, &size);
+    } else {
+            SubresultantChainZ (mode, P,Q, &SC, &size);
+    }
+#else
+    SubresultantChainZ (mode, P,Q, &SC, &size);
+#endif
 
-        freePolynomial_AAZ (P); // free
-        freePolynomial_AAZ (Q); // free
+        freePolynomial_AAZ (P); 
+        freePolynomial_AAZ (Q);
 
         AltArrsZ_t* cur = SC;
         subr.reserve (size);
-        // cerr << "size := " << size << std::endl;                        // TEST
-
         for (int i = 0; cur != NULL && i < size; ++i){
         tmp = deepCopyPolynomial_AAFromAAZ (cur->poly);
         if (isShrinked && tmp != NULL && tmp->size != 0){
@@ -757,7 +786,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 
     return subr;
     } else {
-    // Subresultant from SUP: 
+    // Subresultant from SUP:
         std::cout << "SUP Subresultant" << std::endl;
         std::vector<SparseMultivariateRationalPolynomial> Out;
         std::vector<SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial>> S;
@@ -781,31 +810,35 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
     }
 }
 
-
-
-
 /**
- * Given a polynomial q, compute the subresultant of index idx between this and q, viewing both polynomial 
+ * Given a polynomial q, compute the subresultant of index idx between this and q, viewing both polynomial
  * recursively with main variable v. This function in fact computes the subresultant of index idx and idx+1
- * and so both are returned, unless idx+1 does not exist. 
+ * and so both are returned, unless idx+1 does not exist.
  *
  * @note, if the subresultant of index idx+1 is degenerative then many subresultants will be returned until the first non-degenerative one is found.
- * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants. 
- * 
+ * @note, if this and q do not exist in the same ambient space, the space of p will define the ordering of the subresultants.
+ *
  * @param q, the other polynomial for which to compute the subresultant chain.
  * @param v, the main variable to be used when computing the subresultant chain.
  *
  * @return a vector containing the subresultant chain whereby index 0 is requested subresultant idx subresultant degrees increase with index.
  *
  */
-std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomial::subresultantChainAtIdx(const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx, std::vector<SparseMultivariateRationalPolynomial>* principleCoefs) const {
+std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomial::subresultantAtIdx (const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx, specSRC_AAZ ** lazyInfo) const {
+    
+    // // Debug Print
+    // std::cerr << "[SMQP+] subresultantAtIdx mdeg(p)= " << this->mainDegree() << " mdeg(q)= " << q.mainDegree() << " index= " << idx << std::endl; 
+    // std::cerr << "[SMQP+] p = " << this << std::endl;
+    // std::cerr << "[SMQP+] q = " << q << std::endl;
+
+
     if (this->leadingVariable() != v && q.leadingVariable() != v) {
-        throw std::invalid_argument("In SMQP::subresultantChain at least one of the input polynomials must have " + v.toString() + " as leading variable.");
+        throw std::invalid_argument("In SMQP::subresultantChainAtIdx_new at least one of the input polynomials must have " + v.toString() + " as leading variable.");
     }
 
     std::vector<Symbol> superRing;
     bool sameRing = orderPreservingSetUnion(this->ringVariables(), q.ringVariables(), superRing);
-    
+
     std::vector<SparseMultivariateRationalPolynomial> chain;
 
     if (isZero()) {
@@ -816,7 +849,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
     if (q.isZero()) {
         chain.emplace_back(superRing.size());
         chain[0].setRingVariables(superRing);
-        return chain;   
+        return chain;
     }
 
     bool foundVP = false;
@@ -865,21 +898,45 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
     AltArrZ_t* SC_idx1 = NULL;
     AltArr_t* tmp;
 
-    AltArrsZ_t* princCoefs = NULL;
-    int pcSz = 0;
+    SubresultantChainMode mode = AUTO;
 
-    if (principleCoefs == NULL) {
-        DucosSubresultantChainAtIdxZ (pZ, qZ, idx, &SC_idx, &SC_idx1);
+#if !(defined(SERIAL) && SERIAL) && (defined(PARALLEL_SUBRES) && PARALLEL_SUBRES)
+    // fprintf(stderr, "PARALLEL_HGCD-SUBRES... ON\n");
+    long min_mdeg = (long) MIN(mainLeadingDegree_AAZ(pZ), mainLeadingDegree_AAZ(qZ));
+    long max_pdeg = (long) MAX(partialDegree_AAZ(pZ, 1), partialDegree_AAZ(qZ, 1));
+    if (pZ->nvar == 2 && ( min_mdeg > 20 && max_pdeg > 10) ) {
+        AltArrsZ_t* SS = NULL;
+        int size = 0;
+        int flag = DUSP::hgcdBiModularFFTSubresultantChainZ(pZ, qZ, idx, &SS, &size);
+		if (flag) {
+			if (size == 2) {
+				SC_idx1 = deepCopyPolynomial_AAZ(SS->poly);
+				SC_idx = deepCopyPolynomial_AAZ(SS->next->poly);
+			} else if (size == 1) {
+				SC_idx1 = deepCopyPolynomial_AAZ(SS->poly);
+				SC_idx = NULL;
+			} else {
+				SC_idx1 = NULL;
+				SC_idx = NULL;
+			}
+			freeAltArrsZ (SS);
+		} else {
+        SubresultantChainAtIdxZ (mode, pZ, qZ, idx, &SC_idx, &SC_idx1, lazyInfo);
+        }
     } else {
-        DucosSubresultantChainAtIdxZ_withPrincipleCoefs (pZ, qZ, idx, &SC_idx, &SC_idx1, &princCoefs, &pcSz);
+        SubresultantChainAtIdxZ (mode, pZ, qZ, idx, &SC_idx, &SC_idx1, lazyInfo);
     }
+#else
+    // fprintf(stderr, "PARALLEL_HGCD-SUBRES... OFF\n");
+        SubresultantChainAtIdxZ (mode, pZ, qZ, idx, &SC_idx, &SC_idx1, lazyInfo);
+#endif
 
-    int degQ = mainDegree_AAZ(qZ);
+    // int degQ = mainDegree_AAZ(qZ);
     freePolynomial_AAZ (pZ); // free
     freePolynomial_AAZ (qZ); // free
 
-    int mdeg = mainDegree_AAZ(SC_idx1);
-    chain.reserve (mdeg - idx + 1);
+    // int mdeg = mainDegree_AAZ(SC_idx1);
+    chain.reserve (2);
 
     int swapMap[origNvar];
     if (swappedIdx != 0) {
@@ -895,12 +952,11 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
         superRing[swappedIdx] = tmpV;
     }
 
-
     //despite the name, it is only used as the zero polynomial in the second loop if filled==1
     SparseMultivariateRationalPolynomial zero;
     zero.zero();
     zero.setRingVariables(superRing);
-    
+
     reverseShrinkVariables_AAZ_inp(SC_idx, origNvar, varMap);
     if (swappedIdx != 0) {
         reorderVars_AAZ(SC_idx, swapMap, origNvar);
@@ -908,15 +964,8 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
     tmp = deepCopyPolynomial_AAFromAAZ (SC_idx);
     freePolynomial_AAZ(SC_idx);
     zero.poly = tmp;
-    chain.emplace_back(std::move(zero)); 
+    chain.emplace_back(std::move(zero));
     zero.poly = NULL;
-
-    //fill in degenerative cases
-    if (idx < degQ) {
-        for (int i = idx+1; i < mdeg; ++i) {
-            chain.push_back(zero);
-        }
-    }
 
     reverseShrinkVariables_AAZ_inp(SC_idx1, origNvar, varMap);
     if (swappedIdx != 0) {
@@ -928,24 +977,144 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
     chain.emplace_back(std::move(zero));
     zero.poly = NULL;
 
+    return chain;
+}
 
-    if (pcSz && principleCoefs != NULL) {
-        principleCoefs->clear();
-        principleCoefs->emplace_back(chain[0].leadingCoefficientInVariable(v)); //princCoefs starts from i+1 so manually insert this
-        AltArrsZ_t* pc_cur = princCoefs;
-        while (pc_cur != NULL) {
-            reverseShrinkVariables_AAZ_inp(pc_cur->poly, origNvar, varMap);
-            if (swappedIdx != 0) {
-                reorderVars_AAZ(pc_cur->poly, swapMap, origNvar);
-            }
-            tmp = deepCopyPolynomial_AAFromAAZ (pc_cur->poly);
-            zero.poly = tmp;
-            principleCoefs->push_back(std::move(zero)); // was emplace_back 
-            pc_cur = pc_cur->next;
-        }
+std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomial::subresultantInitialAtIdx (const SparseMultivariateRationalPolynomial& q, const Symbol& v, int idx, Integer& mdegIdx, Integer& mdegIdx1, specSRC_AAZ **lazyInfo) const {
 
-        freeAltArrsZ (princCoefs);    
+    // // Debug Print
+    // std::cerr << "[SMQP+] subresultantInitialAtIdx mdeg(p)= " << this->mainDegree() << " mdeg(q)= " << q.mainDegree() << " index= " << idx << std::endl; 
+
+    if (this->leadingVariable() != v && q.leadingVariable() != v) {
+        throw std::invalid_argument("In SMQP::PrincipleCoefficientAtIdx_new at least one of the input polynomials must have " + v.toString() + " as leading variable.");
     }
+
+    std::vector<Symbol> superRing;
+    bool sameRing = orderPreservingSetUnion(this->ringVariables(), q.ringVariables(), superRing);
+
+    std::vector<SparseMultivariateRationalPolynomial> chain;
+
+    if (isZero()) {
+        chain.emplace_back(q);
+        chain[0].setRingVariables(superRing);
+        return chain;
+    }
+    if (q.isZero()) {
+        chain.emplace_back(superRing.size());
+        chain[0].setRingVariables(superRing);
+        return chain;
+    }
+
+    bool foundVP = false;
+    for (int i = 0; i < nvar && !foundVP; ++i) {
+        if (names[i+1] == v) {
+            foundVP = true;
+        }
+    }
+    bool foundVQ = false;
+    for (int i = 0; i < q.nvar && !foundVQ; ++i) {
+        if (q.names[i+1] == v) {
+            foundVQ = true;
+        }
+    }
+    foundVP = foundVP || (this->degree(v) == 0);
+    foundVQ = foundVQ || (q.degree(v) == 0);
+
+
+    // std::cerr << "foundVP : " << foundVP << " , foundVQ: " << foundVQ << std::endl;
+
+    if (!foundVP && !foundVQ) {
+        chain.emplace_back(*this); //do this so chain exists in proper ambient space
+        chain[0].one();
+        chain[0].setRingVariables(superRing);
+        return chain;
+    } else if (!foundVQ) {
+        //degree of q in v is 0
+        chain.push_back(q ^ this->mainDegree());
+        chain[0].setRingVariables(superRing);
+        return chain;
+    } else if (!foundVP) {
+        chain.push_back(*this ^ q.mainDegree());
+        chain[0].setRingVariables(superRing);
+        return chain;
+    }
+
+
+    AltArrZ_t* pZ = NULL;
+    AltArrZ_t* qZ = NULL;
+    int origNvar = superRing.size();
+    int varMap[origNvar];
+    int swappedIdx = 0;
+    preparePolysForSRC(q, v, superRing, sameRing, varMap, swappedIdx, &pZ, &qZ);
+
+    AltArr_t* tmp;
+    PolyPairZ_t *pc_idx=NULL, *pc_idx1=NULL;
+    SubresultantChainMode mode = AUTO;
+
+    SubresultantInitAtIdxZ (mode, pZ, qZ, idx, &pc_idx, &pc_idx1, lazyInfo);
+    AltArrZ_t* SC_idx = NULL;     AltArrZ_t* SC_idx1 = NULL;
+    if (pc_idx != NULL) {SC_idx = pc_idx->poly;}
+    if (pc_idx1 != NULL) {SC_idx1 = pc_idx1->poly;}
+
+    // // Debug Print
+    // std::cerr << "[SMQP+] subresultantInitialAtIdx... done!"<< std::endl; 
+
+    //return main degrees of subreusltants.
+    mdegIdx = pc_idx->d;
+    mdegIdx1 = pc_idx1->d;
+
+    if (pc_idx != NULL) {
+        free (pc_idx);
+    }
+    if (pc_idx1 != NULL) {
+        free (pc_idx1);
+    }
+
+    // int degQ = mainDegree_AAZ(qZ);
+    freePolynomial_AAZ (pZ); // free
+    freePolynomial_AAZ (qZ); // free
+
+    // int mdeg = mainDegree_AAZ(SC_idx1);
+    chain.reserve (2);
+
+    int swapMap[origNvar];
+    if (swappedIdx != 0) {
+        for (int i = 0; i < origNvar; ++i) {
+            swapMap[i] = i;
+        }
+        swapMap[swappedIdx] = 0;
+        swapMap[0] = swappedIdx;
+
+        //reset superRing also
+        Symbol tmpV = superRing[0];
+        superRing[0] = superRing[swappedIdx];
+        superRing[swappedIdx] = tmpV;
+    }
+
+    //despite the name, it is only used as the zero polynomial in the second loop if filled==1
+    SparseMultivariateRationalPolynomial zero;
+    zero.zero();
+    zero.setRingVariables(superRing);
+
+    reverseShrinkVariables_AAZ_inp(SC_idx, origNvar, varMap);
+    if (swappedIdx != 0) {
+        reorderVars_AAZ(SC_idx, swapMap, origNvar);
+    }
+    tmp = deepCopyPolynomial_AAFromAAZ (SC_idx);
+    freePolynomial_AAZ(SC_idx);
+    zero.poly = tmp;
+    chain.emplace_back(std::move(zero));
+    zero.poly = NULL;
+
+    reverseShrinkVariables_AAZ_inp(SC_idx1, origNvar, varMap);
+    if (swappedIdx != 0) {
+        reorderVars_AAZ(SC_idx1, swapMap, origNvar);
+    }
+    tmp = deepCopyPolynomial_AAFromAAZ(SC_idx1);
+    freePolynomial_AAZ(SC_idx1);
+    zero.poly = tmp;
+    chain.emplace_back(std::move(zero));
+    zero.poly = NULL;
 
     return chain;
 }
@@ -954,25 +1123,25 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 // /**
 //  * Subresultant Chain At Idx
 //  * Return idx-th subresultant chain and next (with higher degree) polynomial in the chain.
-//  * @note idx default is 0 (to return last two subresultants) 
+//  * @note idx default is 0 (to return last two subresultants)
 //  **/
 // std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomial::subresultantChainAtIdx (const SparseMultivariateRationalPolynomial& q, int idx) const {
 
 //     if (isZero()) {
 //     	std::vector<SparseMultivariateRationalPolynomial> zeroChain_p;
 //     	zeroChain_p.push_back (q);
-//     	return zeroChain_p;	
+//     	return zeroChain_p;
 //     }
 
 //     if (q.isZero()) {
 //     	std::vector<SparseMultivariateRationalPolynomial> zeroChain_q;
 //     	zeroChain_q.push_back (*this);
-//     	return zeroChain_q;	
+//     	return zeroChain_q;
 //     }
 
-//     // bool TYPE = 0; // 0: SMZP Ducos Algorithm, 1: DUZP modular algorithm 
+//     // bool TYPE = 0; // 0: SMZP Ducos Algorithm, 1: DUZP modular algorithm
 //     // Now, these cases handle in C-size
-    
+
 //     std::cerr << "nvar = " << nvar << std::endl;
 //     std::cerr << "q.nvar = " << q.nvar << std::endl;
 
@@ -1008,7 +1177,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 //     int superNvar = xs.size() / 2;
 //     if (superNvar != nvar || superNvar != q.nvar) {
 
-// //map indices to the expanded superset. 
+// //map indices to the expanded superset.
 //         int varmap[nvar];
 //         int qvarmap[q.nvar];
 //         for (int i = 0; i < xs.size(); i += 2) {
@@ -1042,7 +1211,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 
 // // ppP = this->primitivePart();
 // // ppQ = q.primitivePart();
-//     }    
+//     }
 
 //     AltArr_t* Pq = primitivePart_AA (ppP.poly);
 //     AltArr_t* Qq = primitivePart_AA (ppQ.poly);
@@ -1060,7 +1229,7 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 //     int lvarQ = leadingVariable_AAZ (Q);
 //     bool isShrinked = 0;
 
-//     //TODO: 
+//     //TODO:
 //     //if main variables are NOT same, even if one (or both) has degree 0 in that first variable.
 //     // ppP.names[1] != ppQ.names[1];
 
@@ -1080,20 +1249,20 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
 //     //     }
 //     //     isShrinked = 1;
 //     // }
-    
+
 //     if (lvarP > 0) {
 //         int varmap[superNvar];
 //         int j = 0;
-    
+
 //         for (int i = 0; i < lvarP; i++) {
 //             varmap[i] = -1;
 //         }
-        
+
 //         for (int i = lvarP; i < superNvar; i++) {
 //             varmap[i] = j;
 //             j++;
 //         }
-    
+
 //         shrinkAndReorderVars_AAZ (P, varmap, superNvar);
 //         shrinkAndReorderVars_AAZ (Q, varmap, superNvar);
 //         isShrinked = 1;
@@ -1153,6 +1322,9 @@ std::vector<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPoly
  **/
 std::vector<std::vector<SparseMultivariateRationalPolynomial>> SparseMultivariateRationalPolynomial::exSubresultantChain (const SparseMultivariateRationalPolynomial& q, const Symbol& v) const {
 
+    // // Debug Print
+    // std::cerr << "[SMQP+] exSubresultantChain mdeg(p)= " << this->mainDegree() << " mdeg(q)= " << q.mainDegree() << std::endl; 
+
     if (isZero()) {
         std::vector<std::vector<SparseMultivariateRationalPolynomial>> zeroChain_p;
         std::vector<SparseMultivariateRationalPolynomial> zeroElem_p;
@@ -1163,7 +1335,7 @@ std::vector<std::vector<SparseMultivariateRationalPolynomial>> SparseMultivariat
         zeroElem_p.push_back (zero_p);
         zeroElem_p.push_back (one_p);
         zeroChain_p.push_back (zeroElem_p);
-        return zeroChain_p; 
+        return zeroChain_p;
     }
 
     if (q.isZero()) {
@@ -1176,7 +1348,7 @@ std::vector<std::vector<SparseMultivariateRationalPolynomial>> SparseMultivariat
         zeroElem_q.push_back (one_q);
         zeroElem_q.push_back (zero_q);
         zeroChain_q.push_back (zeroElem_q);
-        return zeroChain_q; 
+        return zeroChain_q;
     }
 
     if (this->degree(v) != q.degree(v)) {
@@ -1233,7 +1405,7 @@ std::vector<std::vector<SparseMultivariateRationalPolynomial>> SparseMultivariat
     SparseMultivariateRationalPolynomial zero;
     zero.zero();
     zero.setRingVariables(superRing);
-    
+
     for (int i = 0; cur != NULL && i < size; ++i){
 
         std::vector<SparseMultivariateRationalPolynomial> vElems;
@@ -1275,15 +1447,18 @@ std::vector<std::vector<SparseMultivariateRationalPolynomial>> SparseMultivariat
 
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::resultant (const SparseMultivariateRationalPolynomial& q, const Symbol& v) const
 {
+    // // Debug Print
+    // std::cerr << "[SMQP+] resultant mdeg(p)= " << this->mainDegree() << " mdeg(q)= " << q.mainDegree() << std::endl; 
+    
     if (this->degree(v) == 0 && q.degree(v) == 0) {
         std::cout << "BPAS: error, cannot compute subresultant chain if both polynomials do not contain variable v." << std::endl;
 
     }
     if (this->degree(v) == 0) {
-    	return q;	
+    	return q;
     }
     if (q.degree(v) == 0) {
-    	return *this;	
+    	return *this;
     }
 
     std::vector<Symbol> superRing;
@@ -1317,7 +1492,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::resul
     SparseMultivariateRationalPolynomial tmpSMQP;
     tmpSMQP.zero();
     tmpSMQP.setRingVariables(superRing);
-    
+
     reverseShrinkVariables_AAZ_inp(res, origNvar, varMap);
     if (swappedIdx != 0) {
         reorderVars_AAZ(res, swapMap, origNvar);
@@ -1338,25 +1513,25 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::resul
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::subresultantGCD (const SparseMultivariateRationalPolynomial& q) const {
     Symbol v = q.leadingVariable();
     SparseMultivariateRationalPolynomial one;
-    one.one();  
+    one.one();
     if (v != leadingVariable()) {
         return one;
         // std::cout << "BPAS: error, cannot compute subresultant gcd if leading variable of input is different from leading variable of the current object." << std::endl;
         // exit(1);
     }
-    
+
     if (isConstant() || q.isConstant()) {
         return one;
     }
-    
+
     if (this->numberOfRingVariables() == 1 || q.numberOfRingVariables() == 1) {
         return this->primitiveGCD(q);
     }
-    // // // 
+    // // //
     // GCD from C++ side:
     //startTimer(&start);
     std::vector<SparseMultivariateRationalPolynomial> src = subresultantChain(q);
-    
+
     //  for (int i=0; i<src.size(); ++i)
     //      std::cerr << "src[" << i << "] = " << src[i] << std::endl;
     if (!src[0].isZero()) {
@@ -1377,31 +1552,31 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::subre
     	}
     }
     // // //
-    
+
     // // // //
     // // GCD from C side:
-    
+
     // SparseMultivariateRationalPolynomial ppP = this->primitivePart();
     // SparseMultivariateRationalPolynomial ppQ = q.primitivePart();
     // AltArrZ_t* P = deepCopyPolynomial_AAZFromAA (ppP.poly);
     // AltArrZ_t* Q = deepCopyPolynomial_AAZFromAA (ppQ.poly);
     // AltArr_t* gcd;
     // gcd = deepCopyPolynomial_AAFromAAZ (DucosGCDZ (P, Q));
-    // return SparseMultivariateRationalPolynomial (gcd, nvar, names);   
-    // // // // 
+    // return SparseMultivariateRationalPolynomial (gcd, nvar, names);
+    // // // //
 }
 
 /**
  * Get the GCD between this and b.
  * If this and b have all integer coefficients, the gcd will have integer coefficients
  * with proper GCD among those coefficients. Otherwise, the returned GCD is monic
- * with rational number coefficients. 
+ * with rational number coefficients.
  */
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(const SparseMultivariateRationalPolynomial& b) const {
 
     bool TYPE = 0; // 0: gcd_AAZ, 1: primitiveGCD
     SparseMultivariateRationalPolynomial ret;
-    
+
     if (TYPE == 0){
 	// std::cout << "[Ali-TEST] computing SMQP::gcd ... " << std::endl;
 	std::vector<int> xs;
@@ -1411,7 +1586,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 	// // TEST
 	// std::cout << "BPAS : *this := " << *this << std::endl;
 	// std::cout << "BPAS : b := " << b << std::endl;
-	
+
 	if (!isOrdered) {
 	    std::cout << "BPAS: error, trying to compute gcd  between Q[";
 	    for (int i = 1; i <= nvar; ++i) {
@@ -1426,11 +1601,11 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 	    std::cout << "]." << std::endl;
 	    exit(1);
 	}
-    
+
 	int superNvar = xs.size() / 2;
 	if (superNvar != nvar || superNvar != b.nvar) {
-	
-	    //map indices to the expanded superset. 
+
+	    //map indices to the expanded superset.
 	    int varmap[nvar];
 	    int bvarmap[b.nvar];
 	    for (int i = 0; i < xs.size(); i += 2) {
@@ -1441,7 +1616,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 		    bvarmap[xs[i+1]-1] = i/2;
 		}
 	    }
-	
+
 	    //create new combined names array
 	    Symbol newnames[superNvar+1];
 	    //isOrderedRing returns false if this.names[0] != b.names[0], therefore safe
@@ -1453,7 +1628,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 		    newnames[(i/2) + 1] = b.names[xs[i+1]];
 		}
 	    }
-	
+
 	    ppP = this->expandVariables(superNvar, newnames, varmap);
 	    ppQ = b.expandVariables(superNvar, newnames, bvarmap);
 	    // ppP = ppP.primitivePart();
@@ -1461,14 +1636,14 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 	} else {
 	    ppP = *this;
 	    ppQ = b;
-	    
+
 	    // ppP = this->primitivePart();
 	    // ppQ = b.primitivePart();
-	}    
+	}
 
 	AltArr_t* Pq = primitivePart_AA (ppP.poly);
 	AltArr_t* Qq = primitivePart_AA (ppQ.poly);
-	
+
 	AltArrZ_t* P = deepCopyPolynomial_AAZFromAA (Pq);
 	AltArrZ_t* Q = deepCopyPolynomial_AAZFromAA (Qq);
     int Pnvar = P == NULL ? 0 : P->nvar;
@@ -1476,52 +1651,26 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 	// TODO: uncomment :
 	freePolynomial_AA (Pq);
 	freePolynomial_AA (Qq);
-	
+
 	// std::cout << "\n\n\n\n";
 	// std::cout << "ppP := " << ppP << std::endl;
 	// std::cout << "ppQ := " << ppQ << std::endl;
-	
+
 	// AltArrZ_t* P = deepCopyPolynomial_AAZFromAA (ppP.poly);
 	// AltArrZ_t* Q = deepCopyPolynomial_AAZFromAA (ppQ.poly);
 
 	// std::cout << "[Ali-TEST] nvar(P) = " << P->nvar << std::endl;
-	// std::cout << "[Ali-TEST] nvar(Q) = " << Q->nvar << std::endl;	
+	// std::cout << "[Ali-TEST] nvar(Q) = " << Q->nvar << std::endl;
 
 	// SparseMultivariateRationalPolynomial test_P (deepCopyPolynomial_AA (Pq), ppP.nvar, ppP.names);
 	// std::cout << "[Ali-TEST] P = "  << test_P << std::endl;
-	
+
 	// SparseMultivariateRationalPolynomial test_Q (deepCopyPolynomial_AA (Qq), ppP.nvar, ppP.names);
 	// std::cout << "[Ali-TEST] Q = "  << test_Q << std::endl;
 
 
-#if defined(WITH_MAPLE) && WITH_MAPLE
-    AltArrZ_t* gz = gcd_AAZ (P, Q);
-    // AltArrZ_t* gz = NULL;
-    // if (Pnvar > 1) {
-    //     if (P->size < 10 || Q->size < 10) {
-    //         gz = gcd_AAZ (P,Q);
-    //     } else {
-    //         char* c_names[Pnvar];
-    //         for (int i = 0; i < Pnvar; ++i) {
-    //             std::string str = ppP.names[i+1].toString();
-    //             c_names[i] = (char*) malloc(sizeof(char)*str.length()+1);
-    //             strcpy(c_names[i], str.c_str());
-    //         } 
-    //         gz = gcd_MplInt_AAZ(P, Q, (const char**) c_names);
-    //         for (int i = 0; i < nvar; ++i) {
-    //             free(c_names[i]);
-    //         }
-    //     }
-    // } else if (Pnvar == 1) {
-    //     gz = univariateGCD_AAZ(P, Q);
-    // } else {
-    //     gz = makePolynomial_AAZ(1, 0);
-    //     mpz_init(gz->elems->coef);
-    //     mpz_set_si(gz->elems->coef, 1l);
-    //     gz->size = 1;
-    // }
-#elif defined(WITH_BLAD) && WITH_BLAD
-	
+#if defined(WITH_BLAD) && WITH_BLAD
+
     AltArrZ_t* gz = NULL;
     if (Pnvar > 1) {
         if (P->size < 10 || Q->size < 10) {
@@ -1532,7 +1681,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
                 std::string str = ppP.names[i+1].toString();
                 c_names[i] = (char*) malloc(sizeof(char)*str.length()+1);
                 strcpy(c_names[i], str.c_str());
-            } 
+            }
             gcdBLAD_AAZ(P, Q, (const char**) c_names, &gz);
             for (int i = 0; i < nvar; ++i) {
                 free(c_names[i]);
@@ -1553,21 +1702,21 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 	// std::cout << "[Ali-TEST] gcd_AAZ from SMQP::gcd is done... " << std::endl;
 
 	// std::cout << "[Ali-TEST] gcd_AAZ from SMQP::gcd is called... " << std::endl;
-	
+
 	AltArr_t* g = deepCopyPolynomial_AAFromAAZ (gz);
 	freePolynomial_AAZ (P);
 	freePolynomial_AAZ (Q);
 	freePolynomial_AAZ (gz);
-	
+
 	SparseMultivariateRationalPolynomial gcd (g, ppP.nvar, ppP.names);
 	ret = gcd;
 	// gcd += ppP.content() * ppQ.content();
 	// return SparseMultivariateRationalPolynomial (gcd);
-	
+
     } else {
 	ret = this->primitiveGCD(b);
     }
-    
+
     mpz_t g1;
     mpz_t g2;
     mpz_init(g1);
@@ -1579,12 +1728,12 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::gcd(c
 	mpz_gcd(g1, g1, g2);
 	ret *= RationalNumber(g1);
     } else if (!ret.isConstant()) {
-	ret /= ret.leadingCoefficient();        
+	ret /= ret.leadingCoefficient();
     }
-    
+
     mpz_clear(g1);
     mpz_clear(g2);
-	
+
     return ret;
 
 }
@@ -1615,7 +1764,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
     //             gmp_fprintf(stderr, "gcd: %Zd, this coef: %Qd\n", mpzG, this->poly->elems[i].coef);
     //             if (mpz_cmp_si(mpq_denref(this->poly->elems[i].coef), 1l) != 0) {
     //                 mpz_set_ui(mpzG, 1l);
-    //                 break;    
+    //                 break;
     //             }
     //             mpz_gcd(mpzG, mpzG, mpq_numref(this->poly->elems[i].coef));
     //             gmp_fprintf(stderr, "gcd: %Zd\n", mpzG);
@@ -1630,7 +1779,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
     //             gmp_fprintf(stderr, "gcd: %Zd, b coef: %Qd\n", mpzG, b.poly->elems[i].coef);
     //             if (mpz_cmp_si(mpq_denref(b.poly->elems[i].coef), 1l) != 0) {
     //                 mpz_set_ui(mpzG, 1l);
-    //                 break;    
+    //                 break;
     //             }
     //             mpz_gcd(mpzG, mpzG, mpq_numref(b.poly->elems[i].coef));
     //             gmp_fprintf(stderr, "gcd: %Zd\n", mpzG);
@@ -1652,7 +1801,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
         SparseMultivariateRationalPolynomial ret(0);
         ret.one();
         return ret;
-    }    
+    }
 
     if (this->nvar == 1 && b.nvar == 1) {
         if (xs.size() > 2) {
@@ -1688,7 +1837,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
         vars.erase(vars.begin()+match);
 
         SparseMultivariateRationalPolynomial newB = b.content(vars);
-        
+
         //it is possible that the content that comes back is an integral content.
         if (newB.nvar == 0) {
             //recursive call to handle is isContstant() case above
@@ -1734,11 +1883,11 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
         }
         SparseMultivariateRationalPolynomial ret(g, b.nvar, b.names);
         return ret;
-    }   
+    }
 
     int superNvar = xs.size() / 2;
     if (superNvar != nvar || superNvar != b.nvar) {
-        //map indices to the expanded superset. 
+        //map indices to the expanded superset.
         int varmap[nvar];
         int bvarmap[b.nvar];
         for (int i = 0; i < xs.size(); i += 2) {
@@ -1764,7 +1913,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
 
         SparseMultivariateRationalPolynomial tempa = this->expandVariables(superNvar, newnames, varmap);
         SparseMultivariateRationalPolynomial tempb = b.expandVariables(superNvar, newnames, bvarmap);
-        
+
 
         std::vector<Symbol> vars;
         vars.push_back(newnames[1]);
@@ -1781,7 +1930,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
         SparseMultivariateRationalPolynomial ret = g * ppGP;
 
         ret.setRingVariables(ret.variables());
-        return ret;    
+        return ret;
     } else {
         //exact same ring, easy.
         std::vector<Symbol> vars;
@@ -1847,8 +1996,8 @@ Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomi
     SparseMultivariateRationalPolynomial content;
     SparseMultivariateRationalPolynomial primPart = this->primitivePart(curVars, content);
 
-    // std::cout << "primPart = " << primPart << std::endl; 
-    
+    // std::cout << "primPart = " << primPart << std::endl;
+
     if (primPart.isConstant()) {
         if (!primPart.isOne()) {
             sf.addFactor(primPart, 1);
@@ -1858,12 +2007,12 @@ Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomi
         // SparseMultivariateRationalPolynomial g = primPart.gcd(df);
         // SparseMultivariateRationalPolynomial next = primPart / g;
         // next *= g;
-        // sf.push_back(next); 
+        // sf.push_back(next);
 
-        sf.addFactor(primPart, 1); 
+        sf.addFactor(primPart, 1);
     } else {
         SparseMultivariateRationalPolynomial dx = primPart.derivative(names[strIdx]);
-    
+
     // std::cout << "dx = " << dx << std::endl;
 
         SparseMultivariateRationalPolynomial g = (primPart.gcd(dx)).primitivePart();
@@ -1887,7 +2036,7 @@ Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomi
                 temp = makeConstPolynomial_AA(1, nvar, RationalNumber(1).get_mpq_t());
                 degree_t tempDegs[nvar] = {0};
                 degree_t deg = partialDegreeTerm_AA(comFact, 0, 0);
-                SparseMultivariateRationalPolynomial fac(temp, nvar, names);       
+                SparseMultivariateRationalPolynomial fac(temp, nvar, names);
                 if (deg != 0) {
                     tempDegs[0] = 1;
                     setDegrees_AA_inp(temp, 0, tempDegs, nvar);
@@ -1926,8 +2075,8 @@ Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomi
         sf.addFactor(next, k);
     }
 
-    //if content is constant then this recursive call will set the ringElement 
-    //to be that constant. Do this instead of setting the ring constant to 
+    //if content is constant then this recursive call will set the ringElement
+    //to be that constant. Do this instead of setting the ring constant to
     //the integral content of this.
     // if (!content.isConstant()) {
         Factors<SparseMultivariateRationalPolynomial> contSf = content.squareFree(nextVars);
@@ -1948,12 +2097,12 @@ Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomi
  */
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::squareFreePart() const {
 
-    int TYPE = 0; // 0: SMZP (C version), 1: SMQP (C++ version) 
-    
+    int TYPE = 0; // 0: SMZP (C version), 1: SMQP (C++ version)
+
     if (isZero()) {
         return *this;
     }
-	
+
     if (!TYPE) {
         mpq_t qCont;
         mpq_init(qCont);
@@ -1968,7 +2117,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::squar
         SparseMultivariateRationalPolynomial result (sqrPart_AA, this->nvar, this->names);
         return result;
     }
-    
+
     std::vector<Symbol> vars = this->ringVariables();
     return this->squareFreePart(vars);
 }
@@ -2019,7 +2168,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::squar
         if (cont.isConstant()) {
             break;
         }
-        primpart = cont;      
+        primpart = cont;
     }
 
     return fact;
@@ -2030,15 +2179,15 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::squar
 /**
  * Finds the variable superset which contains both variable orderings from *this and b, if possible.
  *
- * xs is filled such that it's length is twice that of the number of variables in 
+ * xs is filled such that it's length is twice that of the number of variables in
  * the resulting superset and it's indices are such that for variable i in [0, ..., size(xs)/2)
  * in the superset is equal to this.names[xs[2*i]] if xs[2*i] != 0 and equal to
- * b.names[xs[2*i+1]] if xs[2*i+1] != 0. 
+ * b.names[xs[2*i+1]] if xs[2*i+1] != 0.
  * This means that if both xs[2*i] and xs[2*i+1] are non-zero, then the variable is shared
- * between *this and b. 
+ * between *this and b.
  *
  * For example, [9,x,y] and [9,s,t,x] produces [0,1,0,2,1,3,2,0]. Recall leading "9" indicates
- * user-supplied ordering. 
+ * user-supplied ordering.
  *
  * returns true iff such an ordering is possible.
  */
@@ -2167,8 +2316,8 @@ bool SparseMultivariateRationalPolynomial::isOrderedRing(const SparseMultivariat
     else { return 1; }
 }
 
-/** 
- * Returns a copy of *this under the new variable ordering supplied. 
+/**
+ * Returns a copy of *this under the new variable ordering supplied.
  * varmap is such that this.names[i] = newvars[varmap[i]]
  * Returns an SMQP equal to *this but expended to newvars.
  */
@@ -2198,7 +2347,7 @@ void SparseMultivariateRationalPolynomial::expandVarsInPlace(int vars, Symbol* n
         }
     } else {
         expandNumVars_AA(poly, vars);
-        
+
         //here we use nvar and vars as # of vars as varmap is of size nvar.
         reorderVars_AA(poly, varmap, nvar);
     }
@@ -2209,7 +2358,7 @@ void SparseMultivariateRationalPolynomial::expandVarsInPlace(int vars, Symbol* n
     std::copy(newvars, newvars+vars+1, names);
 }
 
-/** 
+/**
  * Rearrange exponent vectors in place and then re-sort the polynomial.
  */
 void SparseMultivariateRationalPolynomial::reorderVarsInPlace(int varmap[]) {
@@ -2219,17 +2368,17 @@ void SparseMultivariateRationalPolynomial::reorderVarsInPlace(int varmap[]) {
     if (isConstant()) {
         return;
     }
-    
+
     reorderVars_AA(poly, varmap, nvar);
     Symbol* newvars = new Symbol[nvar+1];
     newvars[0] = names[0];
     for (int i = 0; i < nvar; ++i) {
-        newvars[varmap[i]+1] = names[i+1]; 
+        newvars[varmap[i]+1] = names[i+1];
     }
     delete[] names;
     names = newvars;
 
-} 
+}
 
 ////////// BPASPolynomial ////////////////////////////////////
 
@@ -2237,9 +2386,9 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
     if (this != &b) {
         freePolynomial_AA(poly);
         poly = deepCopyPolynomial_AA(b.poly);
-        
+
         nvar = b.nvar;
-        delete[] names; 
+        delete[] names;
         names = new Symbol[nvar+1];
         std::copy(b.names, b.names+nvar+1, names);
         slp = b.slp;
@@ -2273,7 +2422,7 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
         freePolynomial_AA(poly);
         poly = NULL;
     }
-    
+
     slp.clear();
     poly = makeConstPolynomial_AA(1, nvar, r.get_mpq_t());
 
@@ -2284,7 +2433,7 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::operator+ (const SparseMultivariateRationalPolynomial& b) const {
     if (b.isZero()) {
         return *this;
-    } 
+    }
     if (isZero()) {
         return b;
     }
@@ -2316,7 +2465,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
     int superNvar = xs.size() / 2;
     if (superNvar != nvar || superNvar != b.nvar) {
 
-        //map indices to the expanded superset. 
+        //map indices to the expanded superset.
         int varmap[nvar];
         int bvarmap[b.nvar];
         for (int i = 0; i < xs.size(); i += 2) {
@@ -2342,11 +2491,11 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 
         SparseMultivariateRationalPolynomial tempa = this->expandVariables(superNvar, newnames, varmap);
         SparseMultivariateRationalPolynomial tempb = b.expandVariables(superNvar, newnames, bvarmap);
-        
+
         AltArr_t* sum = addPolynomials_AA(tempa.poly, tempb.poly, superNvar);
         SparseMultivariateRationalPolynomial ret(sum, superNvar, newnames);
         return ret;
-    
+
     } else {
         AltArr_t* sum = addPolynomials_AA(poly, b.poly, nvar);
         SparseMultivariateRationalPolynomial ret(sum, nvar, names);
@@ -2371,13 +2520,13 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
 //    	std::cerr << "nvar: " << nvar << std::endl;
 //    	std::cerr << "this: " << *this << std::endl;
 //    	std::cerr << "b   : " << b << std::endl;
-    	
-    
+
+
         std::vector<int> xs;
         bool isOrdered = isOrderedRing(b, xs);
         int superNvar = xs.size() / 2;
         if (isOrdered && superNvar == nvar) {
-            this->poly = addPolynomials_AA_inp(this->poly, b.poly, nvar); 
+            this->poly = addPolynomials_AA_inp(this->poly, b.poly, nvar);
             return *this;
         }
     }
@@ -2395,7 +2544,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::operator- (const SparseMultivariateRationalPolynomial& b) const {
     if (b.isZero()) {
         return *this;
-    } 
+    }
     if (isZero()) {
         return -b;
     }
@@ -2429,7 +2578,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
     int superNvar = xs.size() / 2;
     if (superNvar != nvar || superNvar != b.nvar) {
 
-        //map indices to the expanded superset. 
+        //map indices to the expanded superset.
         int varmap[nvar];
         int bvarmap[b.nvar];
         for (int i = 0; i < xs.size(); i += 2) {
@@ -2455,11 +2604,11 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 
         SparseMultivariateRationalPolynomial tempa = this->expandVariables(superNvar, newnames, varmap);
         SparseMultivariateRationalPolynomial tempb = b.expandVariables(superNvar, newnames, bvarmap);
-        
+
         AltArr_t* sum = subPolynomials_AA(tempa.poly, tempb.poly, superNvar);
         SparseMultivariateRationalPolynomial ret(sum, superNvar, newnames);
         return ret;
-    
+
     } else {
         AltArr_t* sum = subPolynomials_AA(poly, b.poly, nvar);
         SparseMultivariateRationalPolynomial ret(sum, nvar, names);
@@ -2471,7 +2620,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
     SparseMultivariateRationalPolynomial ret = b;
     ret.negate();
     ret += *this;
-    return ret;   
+    return ret;
 }
 
 // SparseMultivariateRationalPolynomial operator- (SparseMultivariateRationalPolynomial&& a, const SparseMultivariateRationalPolynomial& b) {
@@ -2486,7 +2635,7 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
         bool isOrdered = isOrderedRing(b, xs);
         int superNvar = xs.size() / 2;
         if (isOrdered && superNvar == nvar) {
-            this->poly = subPolynomials_AA_inp(this->poly, b.poly, nvar); 
+            this->poly = subPolynomials_AA_inp(this->poly, b.poly, nvar);
             return *this;
         }
     }
@@ -2530,7 +2679,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
     int superNvar = xs.size() / 2;
     if (superNvar != nvar || superNvar != b.nvar) {
 
-        //map indices to the expanded superset. 
+        //map indices to the expanded superset.
         int varmap[nvar];
         int bvarmap[b.nvar];
         for (int i = 0; i < xs.size(); i += 2) {
@@ -2559,7 +2708,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
         AltArr_t* prod = multiplyPolynomials_AA(tempa.poly, tempb.poly, superNvar);
         SparseMultivariateRationalPolynomial ret(prod, superNvar, newnames);
         return ret;
-    
+
     } else {
         AltArr_t* prod = multiplyPolynomials_AA(poly, b.poly, nvar);
         SparseMultivariateRationalPolynomial ret(prod, nvar, names);
@@ -2570,7 +2719,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::operator* (SparseMultivariateRationalPolynomial&& b) const {
     SparseMultivariateRationalPolynomial ret = b;
     ret *= *this;
-    return ret;   
+    return ret;
 }
 
 // SparseMultivariateRationalPolynomial operator* (SparseMultivariateRationalPolynomial&& a, const SparseMultivariateRationalPolynomial& b) {
@@ -2626,7 +2775,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::operator/ (SparseMultivariateRationalPolynomial&& b) const {
     SparseMultivariateRationalPolynomial ret = b;
     ret /= *this;
-    return ret;   
+    return ret;
 }
 
 // SparseMultivariateRationalPolynomial operator/ (SparseMultivariateRationalPolynomial&& a, const SparseMultivariateRationalPolynomial& b) {
@@ -2646,13 +2795,13 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
 /**
  * Exponentiate *this by the input exponent integer.
  * Treats negative exponents as positive.
- */ 
+ */
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::operator^ (long long int e) const {
     if (e == 0) {
         SparseMultivariateRationalPolynomial ret(NULL, nvar, names);
         ret.one();
         return ret;
-    } 
+    }
 
     if (isZero()) {
         return SparseMultivariateRationalPolynomial(NULL, nvar, names);
@@ -2679,17 +2828,17 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
 
 /**
  * Determine if *this is equal to the specified polynomial.
- * This takes into account the variable ordering on both poylnomials 
+ * This takes into account the variable ordering on both poylnomials
  * in such a way that the same polynomial under different variable orderings
  * are NOT equal.
- */ 
+ */
 bool SparseMultivariateRationalPolynomial::operator== (const SparseMultivariateRationalPolynomial& b) const {
     return this->isEqual(b);
 }
 
 /**
  * Determine if *this is not equal to the specified polynomial.
- * This takes into account the variable ordering on both poylnomials 
+ * This takes into account the variable ordering on both poylnomials
  * in such a way that the same polynomial under different variable orderings
  * are NOT equal.
  */
@@ -2733,7 +2882,7 @@ void SparseMultivariateRationalPolynomial::fromString(const std::string& str) {
 
     freePolynomial_AA(this->poly);
     this->poly = pack->altarr_t_data;
-    
+
     delete[] this->names;
     this->names = new Symbol[pack->numVars + 1];
     for (int i = 0; i < pack->numVars; ++i) {
@@ -2769,7 +2918,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::conte
     if (isZero()) {
         return SparseMultivariateRationalPolynomial(NULL, nvar, names);
     }
-	
+
     bool allFound = 1;
     std::vector<Symbol> matchingSyms;
     std::vector<Symbol> actualSyms = this->variables();
@@ -2786,7 +2935,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::conte
             allFound = 0;
         }
     }
-    
+
     // std::cerr << "\n\nGetting content: " << std::endl;
     // for (auto v : matchingSyms) {
     //     std::cerr << "matching v:" << v << std::endl;
@@ -2819,7 +2968,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::conte
         return this->content();
     }
 
-    for (int i = 1; i < matchingSyms.size(); ++i) {  
+    for (int i = 1; i < matchingSyms.size(); ++i) {
         sup = this->convertToSUP(matchingSyms[i]);
         SparseMultivariateRationalPolynomial temp = sup.content().primitivePart();
         content = content.gcd(temp);
@@ -2857,11 +3006,11 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
         return SparseMultivariateRationalPolynomial(NULL, nvar, names);
     }
 
-    // std::cout << "[Ali-TEST] computing primitivePart_AA... " << std::endl;    
+    // std::cout << "[Ali-TEST] computing primitivePart_AA... " << std::endl;
     AltArr_t* pp = primitivePart_AA(this->poly);
     // std::cout << "[Ali-TEST] primitivePart_AA is done... " << std::endl;
 
-	
+
     return SparseMultivariateRationalPolynomial(pp, nvar, names);
 }
 
@@ -2905,9 +3054,9 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::primi
         return SparseMultivariateRationalPolynomial(NULL, nvar, names);
     }
 
-    // std::cout << "[Ali-TEST] computing content(v) in PrimitivePart ... " << std::endl;    
+    // std::cout << "[Ali-TEST] computing content(v) in PrimitivePart ... " << std::endl;
     content = this->content(v);
-    // std::cout << "[Ali-TEST] content(v) in PrimitivePart is done! ... " << std::endl;    
+    // std::cout << "[Ali-TEST] content(v) in PrimitivePart is done! ... " << std::endl;
 
     return (*this / content);
 }
@@ -2924,17 +3073,23 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::mainP
         content.one();
         return SparseMultivariateRationalPolynomial(NULL, nvar, names);
     }
-    
-    AltArr_t* pPoly = primitivePart_AA (this->poly);
-    AltArrZ_t* p = deepCopyPolynomial_AAZFromAA (pPoly);
+
+
+
+    mpq_t qcont;
+    mpq_init(qcont);
+    AltArrZ_t* pPoly = primitivePartAndContent_AAZFromAA(this->poly, qcont);
     AltArrZ_t* cont = NULL;
-    AltArrZ_t* res = mainPrimitiveFactorization_AAZ (p, &cont);
-    
-    SparseMultivariateRationalPolynomial ref (deepCopyPolynomial_AAFromAAZ (cont), nvar, names);
-    
+    AltArrZ_t* res = mainPrimitiveFactorization_AAZ (pPoly, &cont);
+
+    AltArr_t* retCont = deepCopyPolynomial_AAFromAAZ(cont);
+    multiplyByRational_AA_inp(retCont, qcont);
+    mpq_clear(qcont);
+
+    SparseMultivariateRationalPolynomial ref (retCont, nvar, names);
+
     freePolynomial_AAZ (cont);
-    freePolynomial_AAZ (p);
-    freePolynomial_AA (pPoly);
+    freePolynomial_AAZ (pPoly);
 
     content = ref;
     return SparseMultivariateRationalPolynomial(deepCopyPolynomial_AAFromAAZ (res), nvar, names);
@@ -2961,7 +3116,7 @@ int SparseMultivariateRationalPolynomial::numberOfVariables() const {
 
 
 /**
- * Get the number of non-zero terms 
+ * Get the number of non-zero terms
  */
 Integer SparseMultivariateRationalPolynomial::numberOfTerms() const {
     if (poly != NULL) {
@@ -2970,7 +3125,7 @@ Integer SparseMultivariateRationalPolynomial::numberOfTerms() const {
     return 0;
 }
 
-/** 
+/**
  * Total degree.
  */
 Integer SparseMultivariateRationalPolynomial::degree() const {
@@ -2981,7 +3136,7 @@ Integer SparseMultivariateRationalPolynomial::degree() const {
 }
 
 /**
- * Get the degree of a variable 
+ * Get the degree of a variable
  */
 Integer SparseMultivariateRationalPolynomial::degree(const Symbol& str) const {
     if (isZero()) {
@@ -3009,7 +3164,7 @@ Integer SparseMultivariateRationalPolynomial::degree(const Symbol& str) const {
 }
 
 /**
- * Get the leading coefficient 
+ * Get the leading coefficient
  */
 RationalNumber SparseMultivariateRationalPolynomial::leadingCoefficient() const {
     if (isZero()) {
@@ -3030,7 +3185,7 @@ RationalNumber SparseMultivariateRationalPolynomial::trailingCoefficient() const
 
 /**
  * Get a coefficient, given the exponent of each variable in d.
- * v is the number of variables in d. It is assumed that the first this.nvar 
+ * v is the number of variables in d. It is assumed that the first this.nvar
  * variables of d match the variables of this polynomial
  */
 RationalNumber SparseMultivariateRationalPolynomial::coefficient(int v, const int* d) const {
@@ -3038,7 +3193,7 @@ RationalNumber SparseMultivariateRationalPolynomial::coefficient(int v, const in
         std::cerr << "BPAS ERROR: SMQP calling coefficient without enough variables." << std::endl;
         exit(1);
     }
-   
+
     RationalNumber ret;
     coefficient_AA(poly, d, v, ret.get_mpq_t());
     return ret;
@@ -3062,7 +3217,7 @@ void SparseMultivariateRationalPolynomial::setCoefficient(int v, const int* d, c
     }
 
     setCoefficient_AA(poly, d, v, rn.get_mpq_t());
-} 
+}
 
 /**
  * Set variables' name.
@@ -3095,13 +3250,13 @@ void SparseMultivariateRationalPolynomial::setRingVariables (const std::vector<S
         for (int j = i+1; j < ns; ++j) {
             if (xs[i] == xs[j]) {
                 std::cerr << "BPAS ERROR: SMQP: Duplicate variable name in input variables for setVariableNames: " << xs[i] << " " << xs[j] << std::endl;
-                exit(1); 
+                exit(1);
             }
         }
     }
 
     if (ns >= nvar) {
-        //just a reorder or rename of vars.  
+        //just a reorder or rename of vars.
 
         Symbol newnames[ns+1];
         newnames[0] = "9";
@@ -3142,7 +3297,7 @@ void SparseMultivariateRationalPolynomial::setRingVariables (const std::vector<S
             for (int i = 0; i < nvar; ++i) {
                 names[i+1] = xs[i];
             }
-            return;            
+            return;
         }
 
         //at this point, foundArr holds all variable in both this and xs.
@@ -3167,7 +3322,7 @@ void SparseMultivariateRationalPolynomial::setRingVariables (const std::vector<S
     }
 
     //otherwise, we are decreasing the variables of the ring
-    //we must check that this is a valid operation. 
+    //we must check that this is a valid operation.
     std::vector<Symbol> nonZeros = this->variables();
     bool foundArr[nvar];
     bool usedXs[nvar];
@@ -3180,7 +3335,7 @@ void SparseMultivariateRationalPolynomial::setRingVariables (const std::vector<S
         usedXs[i] = 0;
     }
 
-    
+
     //search first for variables that much in this.names and xs.
     for (int i = 0; i < nvar; ++i) {
         for (int j = 0; j < ns; ++j) {
@@ -3201,7 +3356,7 @@ void SparseMultivariateRationalPolynomial::setRingVariables (const std::vector<S
                 if (!usedXs[j]) {
                     varmap[i] = j;
                     usedXs[j] = 1;
-                
+
                     foundArr[i] = 1;
                     break;
                 }
@@ -3251,7 +3406,7 @@ std::vector<Symbol> SparseMultivariateRationalPolynomial::variables() const {
 }
 
 /**
- * Get variable names of all variables available to this polynomial, 
+ * Get variable names of all variables available to this polynomial,
  * even those that have zero degree.
  */
 std::vector<Symbol> SparseMultivariateRationalPolynomial::ringVariables() const {
@@ -3259,7 +3414,7 @@ std::vector<Symbol> SparseMultivariateRationalPolynomial::ringVariables() const 
     for (int i = 0; i < nvar; ++i) {
         varNames.push_back(names[i+1]);
     }
-    return varNames;   
+    return varNames;
 }
 
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::derivative(const Symbol& s, int k) const {
@@ -3321,7 +3476,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::integ
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::initial() const {
     if (nvar == 0 || isConstant() || isZero()) {
         return *this;
-    }  
+    }
     return leadingCoefficientInVariable(leadingVariable());
 }
 
@@ -3339,7 +3494,7 @@ int SparseMultivariateRationalPolynomial::mainDegree() const {
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::rank() const {
     if (isZero()) {
         return SparseMultivariateRationalPolynomial(NULL, nvar, names);
-    } 
+    }
 
     if (isConstant()) {
         SparseMultivariateRationalPolynomial ret(NULL, nvar, names);
@@ -3423,7 +3578,7 @@ bool SparseMultivariateRationalPolynomial::isEqual(const SparseMultivariateRatio
  * vars must be a list of variables which are a (not necessarily proper) subset.
  * vars and values should have matching indices. i.e. the values of vars[i] is values[i].
  *
- * returns a new SMQP where all variables in vars have been evaluated using the values given. 
+ * returns a new SMQP where all variables in vars have been evaluated using the values given.
  */
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::evaluate(const std::vector<Symbol>& vars, const std::vector<RationalNumber>& values) const {
 
@@ -3468,7 +3623,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::evalu
             if (names[j+1] == vars[i]) {
                 found = 1;
 
-                --newNvar;    
+                --newNvar;
                 active[j] = 1;
                 mpq_set(vals[j], values[i].get_mpq_ref().get_mpq_t());
             }
@@ -3480,7 +3635,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::evalu
     }
 
     Symbol newnames[newNvar+1];
-    if (newNvar == 0) { 
+    if (newNvar == 0) {
         newnames[0] = "1";
     } else {
         newnames[0] = names[0];
@@ -3575,7 +3730,7 @@ bool SparseMultivariateRationalPolynomial::divide(const SparseMultivariateRation
 
     int superNvar = xs.size() / 2;
     if (superNvar != nvar || superNvar != b.nvar) {
-        //map indices to the expanded superset. 
+        //map indices to the expanded superset.
         int varmap[nvar];
         int bvarmap[b.nvar];
         for (int i = 0; i < xs.size(); i += 2) {
@@ -3632,7 +3787,7 @@ bool SparseMultivariateRationalPolynomial::divide(const SparseMultivariateRation
         q = SparseMultivariateRationalPolynomial(qAA, nvar, names);
         r = SparseMultivariateRationalPolynomial(rAA, nvar, names);
         return (rAA == NULL || rAA->size == 0);
-    }    
+    }
 }
 
 /**
@@ -3646,7 +3801,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 
 /**
  * Update *this by setting it to the remainder of *this divided by b.
- */ 
+ */
 SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::operator%= (const SparseMultivariateRationalPolynomial& b) {
     *this = (*this % b);
     return *this;
@@ -3707,7 +3862,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
 
     int superNvar = xs.size() / 2;
     if (superNvar != nvar || superNvar != b.nvar) {
-        //map indices to the expanded superset. 
+        //map indices to the expanded superset.
         int varmap[nvar];
         int bvarmap[b.nvar];
         for (int i = 0; i < xs.size(); i += 2) {
@@ -3753,7 +3908,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
                     continue;
                 }
 
-                //direct map for vars after leadVar, otherwise shift up by 1. 
+                //direct map for vars after leadVar, otherwise shift up by 1.
                 newvars[i+1+before] = tempb.names[i+1];
                 reorderVarmap[i] = i+before;
             }
@@ -3761,7 +3916,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
             int invVarmap[superNvar];
             for (int i = 0; i < superNvar; ++i) {
                 invVarmap[reorderVarmap[i]] = i;
-            }            
+            }
 
 
             tempc.reorderVarsInPlace(reorderVarmap);
@@ -3851,7 +4006,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
                     continue;
                 }
 
-                //direct map for vars after leadVar, otherwise shift up by 1. 
+                //direct map for vars after leadVar, otherwise shift up by 1.
                 newvars[i+1+before] = b.names[i+1];
                 varmap[i] = i+before;
             }
@@ -3895,13 +4050,13 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
             freePolynomial_AAZ(qAA);
             freePolynomial_AAZ(hPow);
             return r;
-       }  
+       }
 
        if (nvar == 1 && b.nvar == 1) {
            AltArr_t* qAA = NULL, *rAA = NULL;
            int e = 0;
            univariatePseudoDividePolynomials_AA(this->poly, b.poly, &qAA, &rAA, &e, lazy);
-           
+
            if (quo != NULL) {
                *quo = SparseMultivariateRationalPolynomial(qAA, nvar, names);
            }
@@ -3909,7 +4064,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
            if (mult != NULL) {
                 RationalNumber h(b.poly->elems->coef);
                 h ^= e;
-                *mult = h;                
+                *mult = h;
             }
             return SparseMultivariateRationalPolynomial(rAA, nvar, names);
         }
@@ -3945,7 +4100,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
         freePolynomial_AAZ(hPow);
 
         return r;
-    }    
+    }
 }
 
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseudoDivide(const SparseMultivariateRationalPolynomial& b, SparseMultivariateRationalPolynomial* quo, SparseMultivariateRationalPolynomial* mult, bool lazy) const {
@@ -4007,7 +4162,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
 
     int superNvar = xs.size() / 2;
     if (superNvar != nvar || superNvar != b.nvar) {
-        //map indices to the expanded superset. 
+        //map indices to the expanded superset.
         int varmap[nvar];
         int bvarmap[b.nvar];
         for (int i = 0; i < xs.size(); i += 2) {
@@ -4053,7 +4208,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
                     continue;
                 }
 
-                //direct map for vars after leadVar, otherwise shift up by 1. 
+                //direct map for vars after leadVar, otherwise shift up by 1.
                 newvars[i+1+before] = tempb.names[i+1];
                 reorderVarmap[i] = i+before;
             }
@@ -4061,7 +4216,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
             int invVarmap[superNvar];
             for (int i = 0; i < superNvar; ++i) {
                 invVarmap[reorderVarmap[i]] = i;
-            }            
+            }
 
             tempc.reorderVarsInPlace(reorderVarmap);
             tempb.reorderVarsInPlace(reorderVarmap);
@@ -4142,7 +4297,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
                     continue;
                 }
 
-                //direct map for vars after leadVar, otherwise shift up by 1. 
+                //direct map for vars after leadVar, otherwise shift up by 1.
                 newvars[i+1+before] = b.names[i+1];
                 varmap[i] = i+before;
             }
@@ -4165,7 +4320,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
             pesudoDivide_RecArray(recC, recB, &qAA, &rAA, &e, &hPow, superNvar, lazy);
             cReordered.poly = cAA = convertFromRecursiveArray(recC, nvar);
             bReordered.poly = bAA = convertFromRecursiveArray(recB, nvar);
-            
+
             q = SparseMultivariateRationalPolynomial(qAA, nvar, newvars);
             r = SparseMultivariateRationalPolynomial(rAA, nvar, newvars);
 
@@ -4181,13 +4336,13 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
                *mult = smqpHPow;
            }
            return r;
-       }  
+       }
 
        if (nvar == 1 && b.nvar == 1) {
            AltArr_t* qAA = NULL, *rAA = NULL;
            int e = 0;
            univariatePseudoDividePolynomials_AA(this->poly, b.poly, &qAA, &rAA, &e, lazy);
-           
+
            if (quo != NULL) {
                *quo = SparseMultivariateRationalPolynomial(qAA, nvar, names);
            }
@@ -4195,7 +4350,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
            if (mult != NULL) {
                 RationalNumber h(b.poly->elems->coef);
                 h ^= e;
-                *mult = h;                
+                *mult = h;
             }
             return SparseMultivariateRationalPolynomial(rAA, nvar, names);
         }
@@ -4225,7 +4380,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::pseud
         }
 
         return r;
-    }    
+    }
 }
 
 
@@ -4252,7 +4407,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 /**
  * Update *this by adding r
  */
-SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::operator+= (const RationalNumber& c) {    
+SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::operator+= (const RationalNumber& c) {
     slp.clear();
 
     if (isZero()) {
@@ -4352,7 +4507,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
     if (c == 1) {
         return SparseMultivariateRationalPolynomial(*this);
     }
-    
+
     ratNum_t rInv;
     mpq_init(rInv);
     mpq_inv(rInv, c.get_mpq_t());
@@ -4379,7 +4534,7 @@ SparseMultivariateRationalPolynomial operator/ (const ratNum_t& r, const SparseM
     }
 }
 
-/** 
+/**
  * Update *this by dividing by ratNum_t r.
  */
 SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::operator/= (const RationalNumber& c) {
@@ -4389,7 +4544,7 @@ SparseMultivariateRationalPolynomial& SparseMultivariateRationalPolynomial::oper
 
 
 /**
- * Get the polynomial term at index. Returns 0 if index is beyond the 
+ * Get the polynomial term at index. Returns 0 if index is beyond the
  * number of terms in this polynomial.
  */
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::operator[] (int index) const {
@@ -4400,7 +4555,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::opera
 
 /**
  * Get the leading variable, that is, the highest-order variable with positive degree
- * of this polynomial. 
+ * of this polynomial.
  * returns the leading variable or the empty string if this polynomial has zero variables.
  */
 Symbol SparseMultivariateRationalPolynomial::leadingVariable() const {
@@ -4442,7 +4597,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::leadi
     if (isZero()){
         return *this;
     }
-    
+
     int k = 0;
     for (int i = 1; i <= nvar; ++i) {
         if (names[i] == x) {
@@ -4469,7 +4624,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::leadi
         r.poly = makeConstPolynomial_AA(1, v, poly->elems->coef);
         return r;
     }
-    
+
     --k; //recall names index is +1 of degs index
 
     int varmap[nvar];
@@ -4487,7 +4642,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::leadi
         reorderVars_AA(tempPoly, varmap, nvar);
         deg = mainLeadingDegree_AA(tempPoly);
         lc = mainLeadingCoefficient_AA(tempPoly);
-        freePolynomial_AA(tempPoly);    
+        freePolynomial_AA(tempPoly);
     } else {
         deg = mainLeadingDegree_AA(poly);
         lc = mainLeadingCoefficient_AA(poly);
@@ -4512,7 +4667,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::leadi
  */
 SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomial::convertToSUP(const Symbol& x) const {
     SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> r;
-    r.setVariableName(x); 
+    r.setVariableName(x);
 
     int k = 0;
     for (int i = 1; i <= nvar; ++i) {
@@ -4545,7 +4700,7 @@ SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> SparseMultivari
     for (int i = k; i < v+1; ++i) {
         tempSMQP.names[i] = names[i+1];
     }
- 
+
     --k; //recall names index is +1 of degs index
 
     int varmap[nvar];
@@ -4591,7 +4746,7 @@ SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> SparseMultivari
     }
 
     // std::vector<SparseMultivariateRationalPolynomial> mpolys(d+1, SparseMultivariateRationalPolynomial(v));
-    
+
     // Symbol newnames[v+1];
     // for (int i = 0; i < k; ++i) {
     //     newnames[i] = names[i];
@@ -4625,7 +4780,7 @@ SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> SparseMultivari
     //     mpolys[curD].poly->elems[mpolys[curD].poly->size].degs = poly->elems[i].degs & (~masks[k]);
     //     ++(mpolys[curD].poly->size);
     // }
-    
+
     // for (int i = 0; i <= d; ++i) {
     //     if (mpolys[i].isZero()) {
     //         continue;
@@ -4645,7 +4800,7 @@ SparseUnivariatePolynomial<SparseMultivariateRationalPolynomial> SparseMultivari
 
 
 /**
- * Negate all the coefficients of *this. Note, that due to the 
+ * Negate all the coefficients of *this. Note, that due to the
  * sharing nature of underling nodes, this may alter the Nodes of
  * other SMQP.
  */
@@ -4656,9 +4811,9 @@ void SparseMultivariateRationalPolynomial::negate() {
     negatePolynomial_AA(poly);
 }
 
-/** 
- * Get a copy of this polynomial. 
- */ 
+/**
+ * Get a copy of this polynomial.
+ */
 SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::deepCopy() const {
     if (isZero()) {
         return SparseMultivariateRationalPolynomial(NULL, nvar, names);
@@ -4670,7 +4825,7 @@ SparseMultivariateRationalPolynomial SparseMultivariateRationalPolynomial::deepC
 
 Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomial::factor() const {
     Factors<SparseMultivariateIntegerPolynomial> ZFacts;
-    
+
     SparseMultivariateIntegerPolynomial f;
     RationalNumber content;
     f = this->primitivePartSMZP(content);
@@ -4679,7 +4834,7 @@ Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomi
 //for (int i=0; i<ZFacts.size(); ++i)
 //	cout << "ZFacts[" << i+1 << "] = " << ZFacts[i] << endl;
     content *= RationalNumber(ZFacts.ringElement().leadingCoefficient());
-    
+
     std::vector<SparseMultivariateRationalPolynomial> QFacts;
     std::vector<int> QExps;
     QFacts.reserve(ZFacts.size());
@@ -4688,7 +4843,7 @@ Factors<SparseMultivariateRationalPolynomial> SparseMultivariateRationalPolynomi
     	QFacts.emplace_back(ZFacts[i].first);
     	QExps.push_back(ZFacts[i].second);
     }
-    
+
     return Factors<SparseMultivariateRationalPolynomial>(QFacts,QExps,content);
 }
 
@@ -4718,12 +4873,12 @@ static int firstNonZero(degree_t* d, int vars) {
 void SparseMultivariateRationalPolynomial::straightLineProgram() {
     slp.clear();
     if (isZero()) {
-        SLPRepresentation r; 
+        SLPRepresentation r;
         r.type = 4;
         r.b = -1;
         r.a.c = new RationalNumber(0);
         slp.push_back(r);
-        return; 
+        return;
     }
 
     if (isConstant()) {
@@ -4741,18 +4896,18 @@ void SparseMultivariateRationalPolynomial::straightLineProgram() {
     // at the center of this kind-of horner's method, expanding outwards
     // and adding coefficients of terms as needed, multiplying by variables
     // as well to achieve the proper degree for each term.
-    // 
+    //
     // the variable d sort of keeps track of how many multiplications remain
     // for each variable, for every preceeding term in the SLP.
-    // you can see that d[i] is decremented when we add a new multiplicative 
-    // element to the slp. 
-    // 
+    // you can see that d[i] is decremented when we add a new multiplicative
+    // element to the slp.
+    //
     // The stack here allows for multi "expansions" of horner's method for
     // different terms. When a term appears that has incompatible degree
     // with what is left to be multiplied in the preceeding horner's expansion
-    // then we push that horner's expansion onto the stack and start another. 
-    // then finally, popping from the stack, and adding two horner's expansions 
-    // together. 
+    // then we push that horner's expansion onto the stack and start another.
+    // then finally, popping from the stack, and adding two horner's expansions
+    // together.
     //
 
 
@@ -4951,7 +5106,7 @@ void SparseMultivariateRationalPolynomial::printSLP(std::ostream& out) const {
     int m = slp.size();
     if (m == 0) {
         out << "BPAS: No form for straight-line program." << std::endl;
-        return; 
+        return;
     }
 
     if (isConstant()) {
@@ -5127,7 +5282,7 @@ ExprTreeNode* exprTreeNodeFromAAElem(const AltArr_t* n, int idx, int nvar, const
     }
 
     ExprTreeNode* t = new ExprTreeNode(mpq_class(n->elems[idx].coef));
-    
+
     if (nvar > 0) {
         degree_t degsList[nvar];
         partialDegreesTerm_AA(n, idx, degsList);
@@ -5153,7 +5308,7 @@ ExpressionTree SparseMultivariateRationalPolynomial::convertToExpressionTree() c
     if (isZero()) {
         ExprTreeNode* r = new ExprTreeNode(0l);
         ExpressionTree t(r);
-        return t; 
+        return t;
     }
 
     ExprTreeNode* prev = exprTreeNodeFromAAElem(poly, 0, nvar, &names[1]);
